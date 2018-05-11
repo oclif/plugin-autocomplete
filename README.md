@@ -18,37 +18,41 @@ autocomplte plugin for oclif
 <!-- usage -->
 ```sh-session
 $ npm install -g @oclif/plugin-autocomplete
-$ oclif-example COMMAND
+$ oclif COMMAND
 running command...
-$ oclif-example (-v|--version|version)
+$ oclif (-v|--version|version)
 @oclif/plugin-autocomplete/0.0.0 darwin-x64 node-v9.3.0
-$ oclif-example --help [COMMAND]
+$ oclif --help [COMMAND]
 USAGE
-  $ oclif-example COMMAND
+  $ oclif COMMAND
 ...
 ```
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-* [`oclif-example hello [FILE]`](#oclif-example-hello-file)
+* [`oclif autocomplete [SHELL]`](#oclif-autocomplete-shell)
 
-## `oclif-example hello [FILE]`
+## `oclif autocomplete [SHELL]`
 
-describe the command here
+display autocomplete instructions
 
 ```
 USAGE
-  $ oclif-example hello [FILE]
+  $ oclif autocomplete [SHELL]
+
+ARGUMENTS
+  SHELL  shell type
 
 OPTIONS
-  -f, --force
-  -h, --help       show CLI help
-  -n, --name=name  name to print
+  -s, --skip-instructions  Do not show installation instructions
 
-EXAMPLE
-  $ oclif-example hello
-  hello world from ./src/hello.ts!
+EXAMPLES
+  $ heroku autocomplete
+
+  $ heroku autocomplete bash
+
+  $ heroku autocomplete zsh
 ```
 
-_See code: [src/commands/hello.ts](https://github.com/oclif/plugin-autocomplete/blob/v0.0.0/src/commands/hello.ts)_
+_See code: [src/commands/autocomplete.ts](https://github.com/oclif/plugin-autocomplete/blob/v0.0.0/src/commands/autocomplete.ts)_
 <!-- commandsstop -->

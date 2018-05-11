@@ -1,0 +1,93 @@
+#compdef auto
+
+_auto () {
+  local curcontext="$curcontext" state line
+  typeset -A opt_args
+
+  _arguments \
+      '1: :->country'\
+      '*: :->city'
+
+  case $state in
+  country)
+      _arguments '1:Countries:(France Germany Italy)'
+  ;;
+  *)
+      case $words[2] in
+      France)
+          compadd "$@" Paris Lyon Marseille
+      ;;
+      Germany)
+          compadd "$@" Berlin Munich Dresden
+      ;;
+      Italy)
+          compadd "$@" Rome Napoli Palermo
+      ;;
+      *)
+          _files
+      esac
+  esac
+}
+
+_auto
+
+# local -a _command_flags=(
+#   '--app=-[app to use]'
+#   '--add[add to use]'
+# )
+
+# _arguments  ': :->command' \
+#             '*: :->flag' \
+#             $_command_flags
+
+# case $state in
+# command)
+#     # echo 'command'
+#     _describe -t all-commands "all commands" _commands
+# ;;
+# flag)
+#   if [ $CURRENT -gt 2 ]; then
+#     if [[ "$_cur" == -* ]]; then
+#       _complete_flags
+#     fi
+#   fi
+# ;;
+# esac
+
+# _auto () {
+#   local _command_id=${words[2]}
+#   local _cur=${words[CURRENT]}
+#   local -a _command_flags=()
+#
+#   _arguments '*:: :->command'
+#               # '*: :->flag'
+#   _arguments '2: :->flag'
+#
+#   case $state in
+#   command)
+#       echo 'command'
+#       # _describe -t all-fcommands "all commands" _commands
+#   ;;
+#   flag)
+#     echo 'flag'
+#   ;;
+#   esac
+# }
+
+# _arguments -S '1:all commands:_complete_commands'
+
+# _arguments -S '1: :_complete_commands' \
+            # "--name=-[name to use]:name:(boo far)" \
+            # "--bame=-[bame to use]:"
+
+  # case $state in
+  # name)
+  #   compadd "$@" boo far
+  # ;;
+  # esac
+
+# _arguments '-l+:left border:' \
+#          '-format:paper size:(letter A4)' \
+#          '*-copy:output file:_files::resolution:(300 600)' \
+#          ':postscript file:_files -g \*.\(ps\|eps\)' \
+#          '*:page number:'
