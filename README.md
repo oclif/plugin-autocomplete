@@ -44,15 +44,14 @@ ARGUMENTS
   SHELL  shell type
 
 OPTIONS
-  -s, --skip-instructions  Do not show installation instructions
+  -r, --refresh-cache  Refresh cache (ignores displaying instructions)
 
 EXAMPLES
   $ heroku autocomplete
-
   $ heroku autocomplete bash
-
   $ heroku autocomplete zsh
+  $ heroku autocomplete --refresh-cache
 ```
 
-_See code: [src/commands/autocomplete.ts](https://github.com/oclif/plugin-autocomplete/blob/v0.0.0/src/commands/autocomplete.ts)_
+_See code: [src/commands/autocomplete/index.ts](https://github.com/oclif/plugin-autocomplete/blob/v0.0.0/src/commands/autocomplete/index.ts)_
 <!-- commandsstop -->
