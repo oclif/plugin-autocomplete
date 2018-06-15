@@ -7,7 +7,7 @@ import {AutocompleteBase} from '../../base'
 import Create from './create'
 
 export default class Index extends AutocompleteBase {
-  static description = 'display autocomplete instructions'
+  static description = 'display autocomplete installation instructions'
 
   static args = [{name: 'shell', description: 'shell type', required: false}]
 
@@ -16,10 +16,10 @@ export default class Index extends AutocompleteBase {
   }
 
   static examples = [
-    '$ heroku autocomplete',
-    '$ heroku autocomplete bash',
-    '$ heroku autocomplete zsh',
-    '$ heroku autocomplete --refresh-cache'
+    '$ <%= config.bin %> autocomplete',
+    '$ <%= config.bin %> autocomplete bash',
+    '$ <%= config.bin %> autocomplete zsh',
+    '$ <%= config.bin %> autocomplete --refresh-cache'
   ]
 
   async run() {

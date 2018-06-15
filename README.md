@@ -1,7 +1,7 @@
 @oclif/plugin-autocomplete
 ==========================
 
-autocomplte plugin for oclif
+autocomplete plugin for oclif (bash & zsh)
 
 [![Version](https://img.shields.io/npm/v/@oclif/plugin-autocomplete.svg)](https://npmjs.org/package/@oclif/plugin-autocomplete)
 [![CircleCI](https://circleci.com/gh/oclif/plugin-autocomplete/tree/master.svg?style=shield)](https://circleci.com/gh/oclif/plugin-autocomplete/tree/master)
@@ -15,30 +15,18 @@ autocomplte plugin for oclif
 * [Commands](#commands)
 <!-- tocstop -->
 # Usage
-<!-- usage -->
-```sh-session
-$ npm install -g @oclif/plugin-autocomplete
-$ oclif COMMAND
-running command...
-$ oclif (-v|--version|version)
-@oclif/plugin-autocomplete/0.0.0 darwin-x64 node-v9.3.0
-$ oclif --help [COMMAND]
-USAGE
-  $ oclif COMMAND
-...
-```
-<!-- usagestop -->
+See https://oclif.io/docs/plugins.html
 # Commands
 <!-- commands -->
-* [`oclif autocomplete [SHELL]`](#oclif-autocomplete-shell)
+* [`oclif-example autocomplete [SHELL]`](#oclif-example-autocomplete-shell)
 
-## `oclif autocomplete [SHELL]`
+## `oclif-example autocomplete [SHELL]`
 
-display autocomplete instructions
+display autocomplete installation instructions
 
 ```
 USAGE
-  $ oclif autocomplete [SHELL]
+  $ oclif-example autocomplete [SHELL]
 
 ARGUMENTS
   SHELL  shell type
@@ -47,10 +35,10 @@ OPTIONS
   -r, --refresh-cache  Refresh cache (ignores displaying instructions)
 
 EXAMPLES
-  $ heroku autocomplete
-  $ heroku autocomplete bash
-  $ heroku autocomplete zsh
-  $ heroku autocomplete --refresh-cache
+  $ oclif-example autocomplete
+  $ oclif-example autocomplete bash
+  $ oclif-example autocomplete zsh
+  $ oclif-example autocomplete --refresh-cache
 ```
 
 _See code: [src/commands/autocomplete/index.ts](https://github.com/oclif/plugin-autocomplete/blob/v0.0.0/src/commands/autocomplete/index.ts)_

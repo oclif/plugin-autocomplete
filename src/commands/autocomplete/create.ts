@@ -71,13 +71,9 @@ export default class Create extends AutocompleteBase {
     return path.join(this.zshFunctionsDir, `_${this.cliBin}`)
   }
 
-  private get cliBin(): string {
-    return this.config.bin
-  }
-
   private get bashSetupScript(): string {
     const setup = path.join(this.bashFunctionsDir, `${this.cliBin}.bash`)
-    const bin = this.cliBin
+    const bin = this.cliBinEnvVar
     return `${bin}_AC_BASH_COMPFUNC_PATH=${setup} && test -f \$${bin}_AC_BASH_COMPFUNC_PATH && source \$${bin}_AC_BASH_COMPFUNC_PATH;
 `
   }

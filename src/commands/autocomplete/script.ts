@@ -12,7 +12,7 @@ export default class Script extends AutocompleteBase {
     const shell = args.shell || this.config.shell
     this.errorIfNotSupportedShell(shell)
 
-    let binUpcase = this.config.bin.toUpperCase()
+    let binUpcase = this.cliBinEnvVar
     let shellUpcase = shell.toUpperCase()
     this.log(
       `${this.prefix}${binUpcase}_AC_${shellUpcase}_SETUP_PATH=${path.join(
@@ -23,6 +23,6 @@ export default class Script extends AutocompleteBase {
   }
 
   private get prefix(): string {
-    return `\n# ${this.config.bin} autocomplete setup\n`
+    return `\n# ${this.cliBin} autocomplete setup\n`
   }
 }

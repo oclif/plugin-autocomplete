@@ -42,13 +42,13 @@ skipWindows('Create', () => {
     it('file paths', () => {
       const dir = cmd.config.cacheDir
       expect(cmd.bashSetupScriptPath).to.eq(`${dir}/autocomplete/bash_setup`)
-      expect(cmd.bashCompletionFunctionPath).to.eq(`${dir}/autocomplete/functions/bash/oclif.bash`)
+      expect(cmd.bashCompletionFunctionPath).to.eq(`${dir}/autocomplete/functions/bash/oclif-example.bash`)
       expect(cmd.zshSetupScriptPath).to.eq(`${dir}/autocomplete/zsh_setup`)
-      expect(cmd.zshCompletionFunctionPath).to.eq(`${dir}/autocomplete/functions/zsh/_oclif`)
+      expect(cmd.zshCompletionFunctionPath).to.eq(`${dir}/autocomplete/functions/zsh/_oclif-example`)
     })
 
     it('#bashSetupScript', () => {
-      expect(cmd.bashSetupScript).to.eq(`oclif_AC_BASH_COMPFUNC_PATH=${config.cacheDir}/autocomplete/functions/bash/oclif.bash && test -f $oclif_AC_BASH_COMPFUNC_PATH && source $oclif_AC_BASH_COMPFUNC_PATH;\n`)
+      expect(cmd.bashSetupScript).to.eq(`OCLIF_EXAMPLE_AC_BASH_COMPFUNC_PATH=${config.cacheDir}/autocomplete/functions/bash/oclif-example.bash && test -f $OCLIF_EXAMPLE_AC_BASH_COMPFUNC_PATH && source $OCLIF_EXAMPLE_AC_BASH_COMPFUNC_PATH;\n`)
     })
 
     it('#zshSetupScript', () => {
@@ -88,7 +88,7 @@ if ! type __ltrim_colon_completions >/dev/null 2>&1; then
   }
 fi
 
-_oclif()
+_oclif-example()
 {
 
   local cur="\${COMP_WORDS[COMP_CWORD]}" opts IFS=$' \\t\\n'
@@ -112,13 +112,13 @@ autocomplete:foo --bar --baz --json
   return 0
 }
 
-complete -F _oclif oclif\n`)
+complete -F _oclif-example oclif-example\n`)
     })
 
     it('#zshCompletionFunction', () => {
-      expect(cmd.zshCompletionFunction).to.eq(`#compdef oclif
+      expect(cmd.zshCompletionFunction).to.eq(`#compdef oclif-example
 
-_oclif () {
+_oclif-example () {
   local _command_id=\${words[2]}
   local _cur=\${words[CURRENT]}
   local -a _command_flags=()
@@ -164,7 +164,7 @@ autocomplete:foo)
                 $_command_flags
 }
 
-_oclif\n`)
+_oclif-example\n`)
     })
   })
 })

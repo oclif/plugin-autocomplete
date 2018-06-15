@@ -45,7 +45,7 @@
   "license": "MIT",
   "oclif": {
     "commands": "./lib/commands",
-    "bin": "oclif",
+    "bin": "oclif-example",
     "devPlugins": [
       "@oclif/plugin-help"
     ]
