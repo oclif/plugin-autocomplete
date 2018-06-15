@@ -8,15 +8,8 @@ export default class Script extends AutocompleteBase {
   static args = [{name: 'shell', description: 'shell type', required: false}]
 
   async run() {
-    this.errorIfWindows()
-
     const {args} = this.parse(Script)
     const shell = args.shell || this.config.shell
-
-    if (!shell) {
-      this.error('Missing required argument shell')
-    }
-
     this.errorIfNotSupportedShell(shell)
 
     let binUpcase = this.config.bin.toUpperCase()

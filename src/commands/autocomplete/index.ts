@@ -22,15 +22,8 @@ export default class Index extends AutocompleteBase {
   ]
 
   async run() {
-    this.errorIfWindows()
-
     const {args, flags} = this.parse(Index)
     const shell = args.shell || this.config.shell
-
-    if (!shell) {
-      this.error('Error: Missing required argument shell')
-    }
-
     this.errorIfNotSupportedShell(shell)
 
     cli.action.start(`${chalk.bold('Building the autocomplete cache')}`)
