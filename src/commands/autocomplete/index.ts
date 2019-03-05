@@ -34,8 +34,8 @@ export default class Index extends AutocompleteBase {
 
     if (!flags['refresh-cache']) {
       const bin = this.config.bin
-      let tabStr = shell === 'bash' ? '<TAB><TAB>' : '<TAB>'
-      let note = shell === 'zsh' ? `After sourcing, you can run \`${chalk.cyan('$ compaudit -D')}\` to ensure no permissions conflicts are present` : 'If your terminal starts as a login shell you may need to print the init script into ~/.bash_profile or ~/.profile.'
+      const tabStr = this.getTabStr(shell)
+      const note = this.getNote(shell)
 
       this.log(`
 ${chalk.bold(`Setup Instructions for ${bin.toUpperCase()} CLI Autocomplete ---`)}
@@ -51,6 +51,31 @@ ${chalk.cyan(`$ ${bin} command --${tabStr}`)}       # Flag completion
 
 Enjoy!
 `)
+    }
+  }
+
+  private getNote(shell: string): string {
+    switch (shell) {
+      case 'bash':
+        return 'If your terminal starts as a login shell you may need to print the init script into ~/.bash_profile or ~/.profile.'
+      case 'fish':
+        return 'TODO: Fill this in'
+      case 'zsh':
+        return `After sourcing, you can run \`${chalk.cyan('$ compaudit -D')}\` to ensure no permissions conflicts are present`
+      default:
+        return ''
+    }
+  }
+
+  private getTabStr(shell: string): string {
+    switch (shell) {
+      case 'bash':
+        return '<TAB><TAB>'
+      case 'fish':
+      case 'zsh':
+        return '<TAB>'
+      default:
+        return ''
     }
   }
 }
