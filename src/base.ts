@@ -33,7 +33,7 @@ export abstract class AutocompleteBase extends Command {
       this.error('Missing required argument shell')
     }
     this.errorIfWindows()
-    if (!['bash', 'zsh'].includes(shell)) {
+    if (!['bash', 'fish', 'zsh'].includes(shell)) {
       throw new Error(`${shell} is not a supported shell for autocomplete`)
     }
   }
