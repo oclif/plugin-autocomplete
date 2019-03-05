@@ -1,5 +1,5 @@
 import {flags} from '@oclif/command'
-import * as chalk from 'chalk'
+import chalk from 'chalk'
 import {cli} from 'cli-ux'
 
 import {AutocompleteBase} from '../../base'
@@ -20,12 +20,12 @@ export default class Index extends AutocompleteBase {
     '$ <%= config.bin %> autocomplete bash',
     '$ <%= config.bin %> autocomplete fish',
     '$ <%= config.bin %> autocomplete zsh',
-    '$ <%= config.bin %> autocomplete --refresh-cache',
+    '$ <%= config.bin %> autocomplete --refresh-cache'
   ]
 
   async run() {
     const {args, flags} = this.parse(Index)
-    const shell = args.shell || this.determineShell(this.config.shell)
+    const shell = args.shell || this.config.shell
     this.errorIfNotSupportedShell(shell)
 
     cli.action.start(`${chalk.bold('Building the autocomplete cache')}`)
@@ -41,7 +41,7 @@ export default class Index extends AutocompleteBase {
 ${chalk.bold(`Setup Instructions for ${bin.toUpperCase()} CLI Autocomplete ---`)}
 
 1) Add the autocomplete env var to your ${shell} profile and source it
-${chalk.cyan(`$ printf "eval $(${bin} autocomplete:script ${shell})" >> ~/.${shell}rc; source ~/.${shell}rc`)}
+${chalk.cyan(`$ printf "$(${bin} autocomplete:script ${shell})" >> ~/.${shell}rc; source ~/.${shell}rc`)}
 
 NOTE: ${note}
 
