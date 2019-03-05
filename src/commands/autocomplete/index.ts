@@ -18,6 +18,7 @@ export default class Index extends AutocompleteBase {
   static examples = [
     '$ <%= config.bin %> autocomplete',
     '$ <%= config.bin %> autocomplete bash',
+    '$ <%= config.bin %> autocomplete fish',
     '$ <%= config.bin %> autocomplete zsh',
     '$ <%= config.bin %> autocomplete --refresh-cache',
   ]
