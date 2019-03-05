@@ -30,6 +30,8 @@ export default class Create extends AutocompleteBase {
     await fs.ensureDir(this.autocompleteCacheDir)
     // ensure autocomplete bash function dir
     await fs.ensureDir(this.bashFunctionsDir)
+    // ensure autocomplete fish function dir
+    await fs.ensureDir(this.fishFunctionsDir)
     // ensure autocomplete zsh function dir
     await fs.ensureDir(this.zshFunctionsDir)
   }
@@ -37,6 +39,8 @@ export default class Create extends AutocompleteBase {
   private async createFiles() {
     await fs.writeFile(this.bashSetupScriptPath, this.bashSetupScript)
     await fs.writeFile(this.bashCompletionFunctionPath, this.bashCompletionFunction)
+    await fs.writeFile(this.fishSetupScriptPath, this.fishSetupScript)
+    await fs.writeFile(this.fishCompletionFunctionPath, this.fishCompletionFunction)
     await fs.writeFile(this.zshSetupScriptPath, this.zshSetupScript)
     await fs.writeFile(this.zshCompletionFunctionPath, this.zshCompletionFunction)
   }
@@ -44,6 +48,11 @@ export default class Create extends AutocompleteBase {
   private get bashSetupScriptPath(): string {
     // <cachedir>/autocomplete/bash_setup
     return path.join(this.autocompleteCacheDir, 'bash_setup')
+  }
+
+  private get fishSetupScriptPath(): string {
+    // <cachedir>/autocomplete/fish_setup
+    return path.join(this.autocompleteCacheDir, 'fish_setup')
   }
 
   private get zshSetupScriptPath(): string {
@@ -56,6 +65,11 @@ export default class Create extends AutocompleteBase {
     return path.join(this.autocompleteCacheDir, 'functions', 'bash')
   }
 
+  private get fishFunctionsDir(): string {
+    // <cachedir>/autocomplete/functions/fish
+    return path.join(this.autocompleteCacheDir, 'functions', 'fish')
+  }
+
   private get zshFunctionsDir(): string {
     // <cachedir>/autocomplete/functions/zsh
     return path.join(this.autocompleteCacheDir, 'functions', 'zsh')
@@ -64,6 +78,11 @@ export default class Create extends AutocompleteBase {
   private get bashCompletionFunctionPath(): string {
     // <cachedir>/autocomplete/functions/bash/<bin>.bash
     return path.join(this.bashFunctionsDir, `${this.cliBin}.bash`)
+  }
+
+  private get fishCompletionFunctionPath(): string {
+    // <cachedir>/autocomplete/functions/fish/<bin>.fish
+    return path.join(this.fishFunctionsDir, `${this.cliBin}.fish`)
   }
 
   private get zshCompletionFunctionPath(): string {
@@ -76,6 +95,10 @@ export default class Create extends AutocompleteBase {
     const bin = this.cliBinEnvVar
     return `${bin}_AC_BASH_COMPFUNC_PATH=${setup} && test -f \$${bin}_AC_BASH_COMPFUNC_PATH && source \$${bin}_AC_BASH_COMPFUNC_PATH;
 `
+  }
+
+  private get fishSetupScript(): string {
+    return 'TODO: Fill this in'
   }
 
   private get zshSetupScript(): string {
@@ -220,6 +243,10 @@ ${this.bashCommandsWithFlagsList}
 
 complete -F _${cliBin} ${cliBin}
 `
+    }
+
+    private get fishCompletionFunction(): string {
+      return 'complete -xc fish -s h -l help -d \"Show usage help\"'
     }
 
     private get zshCompletionFunction(): string {
