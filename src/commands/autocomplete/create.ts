@@ -31,8 +31,6 @@ export default class Create extends AutocompleteBase {
     await fs.ensureDir(this.autocompleteCacheDir)
     // ensure autocomplete bash function dir
     await fs.ensureDir(this.bashFunctionsDir)
-    // ensure autocomplete fish function dir
-    await fs.ensureDir(this.fishFunctionsDir)
     // ensure autocomplete zsh function dir
     await fs.ensureDir(this.zshFunctionsDir)
   }
@@ -58,11 +56,6 @@ export default class Create extends AutocompleteBase {
   private get bashFunctionsDir(): string {
     // <cachedir>/autocomplete/functions/bash
     return path.join(this.autocompleteCacheDir, 'functions', 'bash')
-  }
-
-  private get fishFunctionsDir(): string {
-    // <cachedir>/autocomplete/functions/fish
-    return path.join(this.autocompleteCacheDir, 'functions', 'fish')
   }
 
   private get zshFunctionsDir(): string {
