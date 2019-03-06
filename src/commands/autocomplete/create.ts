@@ -237,6 +237,46 @@ complete -o default -F _${cliBin} ${cliBin}
   }
 
   private get fishCompletionFunction(): string {
+    const cliBin = this.cliBin
+    const completions = []
+    completions.push(`
+function __fish_${cliBin}_needs_command
+  set cmd (commandline -opc)
+  if [ (count $cmd) -eq 1 ]
+    return 0
+  else
+    return 1
+  end
+end
+
+function  __fish_${cliBin}_using_command
+  set cmd (commandline -opc)
+  if [ (count $cmd) -gt 1 ]
+    if [ $argv[1] = $cmd[2] ]
+      return 0
+    end
+  end
+  return 1
+end`,
+    )
+
+    for (const command of this.commands) {
+      completions.push(`complete -f -c ${cliBin} -n '__fish_${cliBin}_needs_command' -a ${command.id} -d "${command.description}"`)
+      const flags = command.flags || {}
+      Object.keys(flags)
+      .filter(flag => flags[flag] && !flags[flag].hidden)
+      .forEach(flag => {
+        const f = flags[flag] || {}
+        const shortFlag = f.char ? `-s ${f.char}` : ''
+        const description = f.description ? `-d "${f.description}"` : ''
+        const options = f.options ? `-r -a "${f.options.join(' ')}"` : ''
+        completions.push(`complete -f -c ${cliBin} -n ' __fish_${cliBin}_using_command ${command.id}' -l ${flag} ${shortFlag} ${options} ${description}`)
+      })
+    }
+    return completions.join('\n')
+  }
+
+  private get fishCompletionFunction(): string {
     return 'complete -xc fish -s h -l help -d \"Show usage help\"'
   }
 
