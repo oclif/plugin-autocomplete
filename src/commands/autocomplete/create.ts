@@ -1,3 +1,4 @@
+import * as child_process from 'child_process'
 import * as fs from 'fs-extra'
 import * as path from 'path'
 
@@ -51,20 +52,14 @@ export default class Create extends AutocompleteBase {
   private async createFiles() {
     await fs.writeFile(this.bashSetupScriptPath, this.bashSetupScript)
     await fs.writeFile(this.bashCompletionFunctionPath, this.bashCompletionFunction)
-    await fs.writeFile(this.fishSetupScriptPath, this.fishSetupScript)
-    await fs.writeFile(this.fishCompletionFunctionPath, this.fishCompletionFunction)
     await fs.writeFile(this.zshSetupScriptPath, this.zshSetupScript)
     await fs.writeFile(this.zshCompletionFunctionPath, this.zshCompletionFunction)
+    await fs.writeFile(this.fishCompletionFunctionPath, this.fishCompletionFunction)
   }
 
   private get bashSetupScriptPath(): string {
     // <cachedir>/autocomplete/bash_setup
     return path.join(this.autocompleteCacheDir, 'bash_setup')
-  }
-
-  private get fishSetupScriptPath(): string {
-    // <cachedir>/autocomplete/fish_setup
-    return path.join(this.autocompleteCacheDir, 'fish_setup')
   }
 
   private get zshSetupScriptPath(): string {
@@ -93,8 +88,9 @@ export default class Create extends AutocompleteBase {
   }
 
   private get fishCompletionFunctionPath(): string {
-    // <cachedir>/autocomplete/functions/fish/<bin>.fish
-    return path.join(this.fishFunctionsDir, `${this.cliBin}.fish`)
+    // dynamically load path to completions file
+    const dir = child_process.execSync('pkg-config --variable completionsdir fish').toString().trimRight()
+    return `${dir}/${this.cliBin}.fish`
   }
 
   private get zshCompletionFunctionPath(): string {
@@ -108,10 +104,6 @@ export default class Create extends AutocompleteBase {
     /* eslint-disable-next-line no-useless-escape */
     return `${bin}_AC_BASH_COMPFUNC_PATH=${setup} && test -f \$${bin}_AC_BASH_COMPFUNC_PATH && source \$${bin}_AC_BASH_COMPFUNC_PATH;
 `
-  }
-
-  private get fishSetupScript(): string {
-    return 'TODO: Fill this in'
   }
 
   private get zshSetupScript(): string {
