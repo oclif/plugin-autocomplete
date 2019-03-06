@@ -20,7 +20,7 @@ export default class Index extends AutocompleteBase {
     '$ <%= config.bin %> autocomplete bash',
     '$ <%= config.bin %> autocomplete fish',
     '$ <%= config.bin %> autocomplete zsh',
-    '$ <%= config.bin %> autocomplete --refresh-cache'
+    '$ <%= config.bin %> autocomplete --refresh-cache',
   ]
 
   async run() {
@@ -34,14 +34,14 @@ export default class Index extends AutocompleteBase {
 
     if (!flags['refresh-cache']) {
       const bin = this.config.bin
-      const tabStr = shell === 'bash' ? '<TAB><TAB>' : '<TAB>'
-      const note = shell === 'zsh' ? `After sourcing, you can run \`${chalk.cyan('$ compaudit -D')}\` to ensure no permissions conflicts are present` : 'If your terminal starts as a login shell you may need to print the init script into ~/.bash_profile or ~/.profile.'
+      const tabStr = this.getTabStr(shell)
+      const setupStep = this.getSetupStep(shell, bin)
+      const note = this.getNote(shell)
 
       this.log(`
 ${chalk.bold(`Setup Instructions for ${bin.toUpperCase()} CLI Autocomplete ---`)}
 
-1) Add the autocomplete env var to your ${shell} profile and source it
-${chalk.cyan(`$ printf "$(${bin} autocomplete:script ${shell})" >> ~/.${shell}rc; source ~/.${shell}rc`)}
+1) ${setupStep}
 
 NOTE: ${note}
 
@@ -51,6 +51,45 @@ ${chalk.cyan(`$ ${bin} command --${tabStr}`)}       # Flag completion
 
 Enjoy!
 `)
+    }
+  }
+
+  private getSetupStep(shell: string, bin: string): string {
+    switch (shell) {
+    case 'bash':
+    case 'zsh':
+      return `Add the autocomplete env var to your ${shell} profile and source it
+${chalk.cyan(`$ printf "$(${bin} autocomplete:script ${shell})" >> ~/.${shell}rc; source ~/.${shell}rc`)}`
+    case 'fish':
+      return `Update your shell to load the new completions
+${chalk.cyan('source ~/.config/fish/config.fish')}`
+    default:
+      return ''
+    }
+  }
+
+  private getNote(shell: string): string {
+    switch (shell) {
+    case 'bash':
+      return 'If your terminal starts as a login shell you may need to print the init script into ~/.bash_profile or ~/.profile.'
+    case 'fish':
+      return 'This assumes your Fish shell is configuration is stored at ~/.config/fish'
+    case 'zsh':
+      return `After sourcing, you can run \`${chalk.cyan('$ compaudit -D')}\` to ensure no permissions conflicts are present`
+    default:
+      return ''
+    }
+  }
+
+  private getTabStr(shell: string): string {
+    switch (shell) {
+    case 'bash':
+      return '<TAB><TAB>'
+    case 'fish':
+    case 'zsh':
+      return '<TAB>'
+    default:
+      return ''
     }
   }
 }
