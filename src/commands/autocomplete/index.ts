@@ -73,7 +73,7 @@ ${chalk.cyan('source ~/.config/fish/config.fish')}`
       case 'bash':
         return 'If your terminal starts as a login shell you may need to print the init script into ~/.bash_profile or ~/.profile.'
       case 'fish':
-        return 'This assumes your Fish shell is configuration is stored at ~/.config/fish'
+        return 'This assumes your Fish configuration is stored at ~/.config/fish/config.fish'
       case 'zsh':
         return `After sourcing, you can run \`${chalk.cyan('$ compaudit -D')}\` to ensure no permissions conflicts are present`
       default:
