@@ -12,8 +12,15 @@ export abstract class AutocompleteBase extends Command {
     return this.config.bin.toUpperCase().replace('-', '_')
   }
 
+  public convertWindowsBash(shell: string) {
+    if (this.isBashOnWindows(shell)) {
+      return 'bash'
+    }
+    return shell
+  }
+
   public errorIfWindows() {
-    if (this.config.windows) {
+    if (this.config.windows && !this.isBashOnWindows(this.config.shell)) {
       throw new Error('Autocomplete is not currently supported in Windows')
     }
   }
@@ -41,5 +48,9 @@ export abstract class AutocompleteBase extends Command {
     let fd = fs.openSync(this.acLogfilePath, 'a')
     // @ts-ignore
     fs.write(fd, entry)
+  }
+
+  isBashOnWindows(shell: string) {
+    return shell.endsWith('\\bash.exe')
   }
 }

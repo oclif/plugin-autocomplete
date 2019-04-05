@@ -17,16 +17,38 @@ const config = new Config({root})
 const cmd = new AutocompleteTest([], config)
 
 runtest('AutocompleteBase', () => {
-  before(async () => {
+  beforeEach(async () => {
     await config.load()
   })
 
+  it('#convertWindowsBash', async () => {
+    expect(cmd.convertWindowsBash('bash')).to.eq('bash')
+    expect(cmd.convertWindowsBash('zsh')).to.eq('zsh')
+    expect(cmd.convertWindowsBash('fish')).to.eq('fish')
+    expect(cmd.convertWindowsBash('C:\\Users\\someone\\bin\\bash.exe')).to.eq('bash')
+  })
+
   it('#errorIfWindows', async () => {
+    let lastError
+    cmd.config.windows = true
     try {
       cmd.errorIfWindows()
     } catch (e) {
-      expect(e.message).to.eq('Autocomplete is not currently supported in Windows')
+      lastError = e
     }
+    expect(lastError.message).to.eq('Autocomplete is not currently supported in Windows')
+  })
+
+  it('#errorIfWindows no error with bash on windows', async () => {
+    let lastError
+    cmd.config.windows = true
+    cmd.config.shell = 'C:\\bin\\bash.exe'
+    try {
+      cmd.errorIfWindows()
+    } catch (e) {
+      lastError = e
+    }
+    expect(lastError).to.eq(undefined)
   })
 
   it('#errorIfNotSupportedShell', async () => {
