@@ -121,7 +121,7 @@ complete -F _oclif-example oclif-example\n`)
 _oclif-example () {
   local _command_id=\${words[2]}
   local _cur=\${words[CURRENT]}
-  local -a _command_flags=()
+  local -a _command_flags_and_args=()
 
   ## public cli commands & flags
   local -a _all_commands=(
@@ -129,16 +129,17 @@ _oclif-example () {
 "autocomplete\\:foo:cmd for autocomplete testing"
   )
 
-  _set_flags () {
+  _set_flags_and_arguments () {
     case $_command_id in
 autocomplete)
-  _command_flags=(
+  _command_flags_and_args=(
     "--skip-instructions[don't show installation instructions]"
+":shell type:(bash zsh)"
   )
 ;;
 
 autocomplete:foo)
-  _command_flags=(
+  _command_flags_and_args=(
     "--bar=-[bar for testing]:"
 "--baz=-[baz for testing]:"
 "--json[output in json format]"
@@ -154,14 +155,12 @@ autocomplete:foo)
   }
 
   if [ $CURRENT -gt 2 ]; then
-    if [[ "$_cur" == -* ]]; then
-      _set_flags
-    fi
+    _set_flags_and_arguments
   fi
 
 
   _arguments -S '1: :_complete_commands' \\
-                $_command_flags
+                $_command_flags_and_args
 }
 
 _oclif-example\n`)

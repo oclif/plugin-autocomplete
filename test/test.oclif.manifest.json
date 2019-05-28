@@ -24,7 +24,8 @@
         {
           "name": "shell",
           "description": "shell type",
-          "required": false
+          "required": false,
+          "options": ["zsh", "bash"]
         }
       ]
     },

@@ -1,3 +1,4 @@
+import * as Parser from '@oclif/parser'
 import * as fs from 'fs-extra'
 import * as path from 'path'
 
@@ -8,7 +9,8 @@ import {AutocompleteBase} from '../../base'
 type CommandCompletion = {
   id: string
   description: string
-  flags: any
+  flags: any,
+  args: Parser.args.IArg[]
 }
 
 export default class Create extends AutocompleteBase {
@@ -101,7 +103,8 @@ compinit;\n`
           cmds.push({
             id: c.id,
             description: c.description || '',
-            flags: c.flags
+            flags: c.flags,
+            args: c.args
           })
         } catch (err) {
           debug(`Error creating zsh flag spec for command ${c.id}`)
@@ -116,8 +119,12 @@ compinit;\n`
     return this._commands
   }
 
-  private genZshFlagSpecs(Klass: any): string {
-    return Object.keys(Klass.flags || {})
+  // Gives us a list of flags and args for one command class. Zsh will
+  // autocomplete the command arguments in the order they appear, allowing the
+  // flags to be interspersed with them in any order.
+  // https://github.com/zsh-users/zsh-completions/blob/master/zsh-completions-howto.org#writing-completion-functions-using-_arguments
+  private genZshFlagAndArgSpecs(Klass: CommandCompletion): string {
+    const flags = Object.keys(Klass.flags || {})
       .filter(flag => Klass.flags && !Klass.flags[flag].hidden)
       .map(flag => {
         const f = (Klass.flags && Klass.flags[flag]) || {description: ''}
@@ -127,7 +134,19 @@ compinit;\n`
         const completion = `--${name}[${f.description}]${valueCmpl}`
         return `"${completion}"`
       })
-      .join('\n')
+
+    const commandArguments = (Klass.args || [])
+      .map(argOptions => {
+         if (argOptions.hidden) {
+           // Order matters for arguments, so we want to keep the hidden ones
+           // to preserve the ordering, but hide the options.
+           return '":hidden argument:"'
+         }
+         const autocompleteOptions = argOptions.options ? `(${argOptions.options.sort().join(' ')})` : ''
+         return `":${argOptions.description}:${autocompleteOptions}"`
+      })
+
+    return flags.concat(commandArguments).join('\n')
   }
 
     private get genAllCommandsMetaString(): string {
@@ -136,17 +155,20 @@ compinit;\n`
       }).join('\n')
     }
 
-    private get genCaseStatementForFlagsMetaString(): string {
+    private get genCaseStatementForFlagsAndArgsMetaString(): string {
       // command)
       //   _command_flags=(
-      //   "--boolean[bool descr]"
-      //   "--value=-[value descr]:"
+      //     "--boolean[bool descr]"
+      //     "--value=-[value descr]:"
+      //     ":argument description:(option-1 option-2 option-3)"
+      //     ":argument without options description:"
+      //     ":hidden argument:"
       //   )
       // ;;
       return this.commands.map(c => {
         return `${c.id})
-  _command_flags=(
-    ${this.genZshFlagSpecs(c)}
+  _command_flags_and_args=(
+    ${this.genZshFlagAndArgSpecs(c)}
   )
 ;;\n`
       }).join('\n')
@@ -225,23 +247,25 @@ complete -F _${cliBin} ${cliBin}
     private get zshCompletionFunction(): string {
       const cliBin = this.cliBin
       const allCommandsMeta = this.genAllCommandsMetaString
-      const caseStatementForFlagsMeta = this.genCaseStatementForFlagsMetaString
+      const caseStatementForFlagsAndArgsMeta = this.genCaseStatementForFlagsAndArgsMetaString
 
+      // Docs on what this all means:
+      // https://github.com/zsh-users/zsh-completions/blob/master/zsh-completions-howto.org#writing-completion-functions-using-_arguments
       return `#compdef ${cliBin}
 
 _${cliBin} () {
   local _command_id=\${words[2]}
   local _cur=\${words[CURRENT]}
-  local -a _command_flags=()
+  local -a _command_flags_and_args=()
 
   ## public cli commands & flags
   local -a _all_commands=(
 ${allCommandsMeta}
   )
 
-  _set_flags () {
+  _set_flags_and_arguments () {
     case $_command_id in
-${caseStatementForFlagsMeta}
+${caseStatementForFlagsAndArgsMeta}
     esac
   }
   ## end public cli commands & flags
@@ -251,14 +275,12 @@ ${caseStatementForFlagsMeta}
   }
 
   if [ $CURRENT -gt 2 ]; then
-    if [[ "$_cur" == -* ]]; then
-      _set_flags
-    fi
+    _set_flags_and_arguments
   fi
 
 
   _arguments -S '1: :_complete_commands' \\
-                $_command_flags
+                $_command_flags_and_args
 }
 
 _${cliBin}
