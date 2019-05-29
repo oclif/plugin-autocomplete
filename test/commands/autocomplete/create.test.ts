@@ -134,7 +134,7 @@ _oclif-example () {
 autocomplete)
   _command_flags_and_args=(
     "--skip-instructions[don't show installation instructions]"
-":shell type:(bash zsh)"
+"::shell type:(bash zsh)"
   )
 ;;
 

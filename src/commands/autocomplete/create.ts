@@ -137,13 +137,14 @@ compinit;\n`
 
     const commandArguments = (Klass.args || [])
       .map(argOptions => {
-         if (argOptions.hidden) {
+        const optionalPrefix = argOptions.required ? '' : ':'
+        if (argOptions.hidden) {
            // Order matters for arguments, so we want to keep the hidden ones
            // to preserve the ordering, but hide the options.
-           return '":hidden argument:"'
-         }
-         const autocompleteOptions = argOptions.options ? `(${argOptions.options.sort().join(' ')})` : ''
-         return `":${argOptions.description}:${autocompleteOptions}"`
+           return `"${optionalPrefix}:hidden argument:"`
+        }
+        const autocompleteOptions = argOptions.options ? `(${argOptions.options.sort().join(' ')})` : ''
+        return `"${optionalPrefix}:${argOptions.description}:${autocompleteOptions}"`
       })
 
     return flags.concat(commandArguments).join('\n')
@@ -162,6 +163,7 @@ compinit;\n`
       //     "--value=-[value descr]:"
       //     ":argument description:(option-1 option-2 option-3)"
       //     ":argument without options description:"
+      //     "::optional argument without options description:"
       //     ":hidden argument:"
       //   )
       // ;;
