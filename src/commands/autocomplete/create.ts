@@ -132,7 +132,7 @@ compinit;\n`
 
     private get genAllCommandsMetaString(): string {
       return this.commands.map(c => {
-        return `\"${c.id.replace(/:/g, '\\:')}:${c.description}\"`
+        return `\"${c.id.replace(/:/g, '\\:')}:${c.description.split('\n')[0]}\"`
       }).join('\n')
     }
 

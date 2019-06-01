@@ -30,7 +30,7 @@
     },
     "autocomplete:foo": {
       "id": "autocomplete:foo",
-      "description": "cmd for autocomplete testing",
+      "description": "cmd for autocomplete testing\nwith a multi-line description",
       "pluginName": "@oclif/plugin-autocomplete",
       "pluginType": "core",
       "aliases": [],
