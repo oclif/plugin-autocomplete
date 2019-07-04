@@ -100,7 +100,7 @@ compinit;\n`
           if (c.hidden) return
           cmds.push({
             id: c.id,
-            description: c.description || '',
+            description: (c.description || '').replace(/`/g, '\''),
             flags: c.flags
           })
         } catch (err) {
@@ -124,7 +124,7 @@ compinit;\n`
         const isBoolean = f.type === 'boolean'
         const name = isBoolean ? flag : `${flag}=-`
         let valueCmpl = isBoolean ? '' : ':'
-        const completion = `--${name}[${f.description}]${valueCmpl}`
+        const completion = `--${name}[${f.description.replace(/`/g, '\'')}]${valueCmpl}`
         return `"${completion}"`
       })
       .join('\n')
