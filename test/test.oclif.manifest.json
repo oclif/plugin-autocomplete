@@ -47,7 +47,7 @@
         },
         "dangerous": {
           "name": "dangerous",
-          "type": "boolean",
+          "type": "option",
           "description": "`with some potentially dangerous script`"
         },
         "json": {
