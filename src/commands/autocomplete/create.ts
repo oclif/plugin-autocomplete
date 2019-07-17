@@ -11,7 +11,10 @@ type CommandCompletion = {
   flags: any
 }
 
-function sanitizeDescription(description: string): string {
+function sanitizeDescription(description?: string): string {
+  if (description === undefined) {
+    return ''
+  }
   return description.replace(/`/g, '\\\\\\\`')
 }
 
