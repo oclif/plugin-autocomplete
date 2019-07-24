@@ -11,6 +11,13 @@ type CommandCompletion = {
   flags: any
 }
 
+function sanitizeDescription(description?: string): string {
+  if (description === undefined) {
+    return ''
+  }
+  return description.replace(/`/g, '\\\\\\\`')
+}
+
 export default class Create extends AutocompleteBase {
   static hidden = true
   static description = 'create autocomplete setup scripts and completion functions'
@@ -100,7 +107,7 @@ compinit;\n`
           if (c.hidden) return
           cmds.push({
             id: c.id,
-            description: c.description || '',
+            description: sanitizeDescription(c.description || ''),
             flags: c.flags
           })
         } catch (err) {
@@ -124,7 +131,7 @@ compinit;\n`
         const isBoolean = f.type === 'boolean'
         const name = isBoolean ? flag : `${flag}=-`
         let valueCmpl = isBoolean ? '' : ':'
-        const completion = `--${name}[${f.description}]${valueCmpl}`
+        const completion = `--${name}[${sanitizeDescription(f.description)}]${valueCmpl}`
         return `"${completion}"`
       })
       .join('\n')
