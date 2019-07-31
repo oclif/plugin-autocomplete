@@ -15,7 +15,9 @@ function sanitizeDescription(description?: string): string {
   if (description === undefined) {
     return ''
   }
-  return description.replace(/`/g, '\\\\\\\`')
+  return description
+    .replace(/(`)/g, '\\\\\\$1') // backticks require triple-backslashes
+    .replace(/([\[\]])/g, '\\\\$1') // square brackets require double-backslashes
 }
 
 export default class Create extends AutocompleteBase {
