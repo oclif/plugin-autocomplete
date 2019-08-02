@@ -29,6 +29,10 @@ jobs:
             - ~/cli/node_modules
             - /usr/local/share/.cache/yarn
             - /usr/local/share/.config/yarn
+  node-10:
+    <<: *test
+    docker:
+      - image: node:10
   node-8:
     <<: *test
     docker:
@@ -39,4 +43,5 @@ workflows:
   "@oclif/plugin-autocomplete":
     jobs:
       - node-latest
+      - node-10
       - node-8

@@ -13,6 +13,15 @@ type CommandCompletion = {
   args: Parser.args.IArg[]
 }
 
+function sanitizeDescription(description?: string): string {
+  if (description === undefined) {
+    return ''
+  }
+  return description
+    .replace(/(`)/g, '\\\\\\$1') // backticks require triple-backslashes
+    .replace(/([\[\]])/g, '\\\\$1') // square brackets require double-backslashes
+}
+
 export default class Create extends AutocompleteBase {
   static hidden = true
   static description = 'create autocomplete setup scripts and completion functions'
@@ -102,9 +111,9 @@ compinit;\n`
           if (c.hidden) return
           cmds.push({
             id: c.id,
-            description: c.description || '',
+            description: sanitizeDescription(c.description || ''),
             flags: c.flags,
-            args: c.args
+            args: c.args,
           })
         } catch (err) {
           debug(`Error creating zsh flag spec for command ${c.id}`)
@@ -131,7 +140,7 @@ compinit;\n`
         const isBoolean = f.type === 'boolean'
         const name = isBoolean ? flag : `${flag}=-`
         let valueCmpl = isBoolean ? '' : ':'
-        const completion = `--${name}[${f.description}]${valueCmpl}`
+        const completion = `--${name}[${sanitizeDescription(f.description)}]${valueCmpl}`
         return `"${completion}"`
       })
 
@@ -152,7 +161,7 @@ compinit;\n`
 
     private get genAllCommandsMetaString(): string {
       return this.commands.map(c => {
-        return `\"${c.id.replace(/:/g, '\\:')}:${c.description}\"`
+        return `\"${c.id.replace(/:/g, '\\:')}:${c.description.split('\n')[0]}\"`
       }).join('\n')
     }
 
