@@ -206,7 +206,7 @@ fi
 
 _${cliBin}()
 {
-
+  COMP_WORDBREAKS=\${COMP_WORDBREAKS//:}
   local cur="\${COMP_WORDS[COMP_CWORD]}" opts IFS=$' \\t\\n'
   COMPREPLY=()
 
