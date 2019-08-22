@@ -16,7 +16,7 @@ function sanitizeDescription(description?: string): string {
     return ''
   }
   return description
-    .replace(/(`)/g, '\\\\\\$1') // backticks require triple-backslashes
+    .replace(/([`"])/g, '\\\\\\$1') // backticks and double-quotes require triple-backslashes
     .replace(/([\[\]])/g, '\\\\$1') // square brackets require double-backslashes
 }
 
