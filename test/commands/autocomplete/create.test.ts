@@ -96,7 +96,7 @@ _oclif-example()
 
   local commands="
 autocomplete --skip-instructions
-autocomplete:foo --bar --baz --dangerous --brackets --json
+autocomplete:foo --bar --baz --dangerous --brackets --double-quotes --json
 "
 
   if [[ "\${COMP_CWORD}" -eq 1 ]] ; then
@@ -126,7 +126,7 @@ _oclif-example () {
   ## public cli commands & flags
   local -a _all_commands=(
 "autocomplete:display autocomplete instructions"
-"autocomplete\\:foo:cmd for autocomplete testing \\\\\\\`with some potentially dangerous script\\\\\\\` and \\\\\[square brackets\\\\\]"
+"autocomplete\\:foo:cmd for autocomplete testing \\\\\\\`with some potentially dangerous script\\\\\\\` and \\\\\[square brackets\\\\\] and \\\\\\\"double-quotes\\\\\\\""
   )
 
   _set_flags () {
@@ -143,6 +143,7 @@ autocomplete:foo)
 "--baz=-[baz for testing]:"
 "--dangerous=-[\\\\\\\`with some potentially dangerous script\\\\\\\`]:"
 "--brackets=-[\\\\\[square brackets\\\\\]]:"
+"--double-quotes=-[\\\\\\\"double-quotes\\\\\\\"]:"
 "--json[output in json format]"
   )
 ;;
