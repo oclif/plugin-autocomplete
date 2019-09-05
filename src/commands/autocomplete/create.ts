@@ -18,6 +18,7 @@ function sanitizeDescription(description?: string): string {
   return description
     .replace(/([`"])/g, '\\\\\\$1') // backticks and double-quotes require triple-backslashes
     .replace(/([\[\]])/g, '\\\\$1') // square brackets require double-backslashes
+    .split('\n')[0] // only use the first line
 }
 
 export default class Create extends AutocompleteBase {
@@ -141,7 +142,7 @@ compinit;\n`
 
     private get genAllCommandsMetaString(): string {
       return this.commands.map(c => {
-        return `\"${c.id.replace(/:/g, '\\:')}:${c.description.split('\n')[0]}\"`
+        return `\"${c.id.replace(/:/g, '\\:')}:${c.description}\"`
       }).join('\n')
     }
 

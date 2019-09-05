@@ -96,7 +96,7 @@ _oclif-example()
 
   local commands="
 autocomplete --skip-instructions
-autocomplete:foo --bar --baz --dangerous --brackets --double-quotes --json
+autocomplete:foo --bar --baz --dangerous --brackets --double-quotes --multi-line --json
 "
 
   if [[ "\${COMP_CWORD}" -eq 1 ]] ; then
@@ -144,6 +144,7 @@ autocomplete:foo)
 "--dangerous=-[\\\\\\\`with some potentially dangerous script\\\\\\\`]:"
 "--brackets=-[\\\\\[square brackets\\\\\]]:"
 "--double-quotes=-[\\\\\\\"double-quotes\\\\\\\"]:"
+"--multi-line=-[multi-]:"
 "--json[output in json format]"
   )
 ;;

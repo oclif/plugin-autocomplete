@@ -60,6 +60,11 @@
           "type": "option",
           "description": "\"double-quotes\""
         },
+        "multi-line": {
+          "name": "multi-line",
+          "type": "option",
+          "description": "multi-\nline"
+        },
         "json": {
           "name": "json",
           "type": "boolean",
