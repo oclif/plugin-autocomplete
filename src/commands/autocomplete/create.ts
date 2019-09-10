@@ -52,7 +52,10 @@ export default class Create extends AutocompleteBase {
     await fs.writeFile(this.bashCompletionFunctionPath, this.bashCompletionFunction)
     await fs.writeFile(this.zshSetupScriptPath, this.zshSetupScript)
     await fs.writeFile(this.zshCompletionFunctionPath, this.zshCompletionFunction)
-    await fs.writeFile(this.fishCompletionFunctionPath, this.fishCompletionFunction)
+    if (this.config.shell === "fish") {
+      debug(`fish shell detected, writing completion to ${this.fishCompletionFunctionPath}`);
+      await fs.writeFile(this.fishCompletionFunctionPath, this.fishCompletionFunction)
+    }
   }
 
   private get bashSetupScriptPath(): string {
