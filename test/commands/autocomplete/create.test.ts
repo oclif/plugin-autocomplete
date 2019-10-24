@@ -112,7 +112,7 @@ autocomplete:foo --bar --baz --dangerous --brackets --double-quotes --multi-line
   return 0
 }
 
-complete -F _oclif-example oclif-example\n`)
+complete -o default -F _oclif-example oclif-example\n`)
     })
 
     it('#zshCompletionFunction', () => {
