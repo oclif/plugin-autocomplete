@@ -228,7 +228,7 @@ ${this.bashCommandsWithFlagsList}
   return 0
 }
 
-complete -F _${cliBin} ${cliBin}
+complete -o default -F _${cliBin} ${cliBin}
 `
     }
 
