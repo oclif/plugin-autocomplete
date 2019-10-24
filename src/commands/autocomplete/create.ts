@@ -263,6 +263,8 @@ ${caseStatementForFlagsMeta}
   if [ $CURRENT -gt 2 ]; then
     if [[ "$_cur" == -* ]]; then
       _set_flags
+    else
+      _path_files
     fi
   fi
 
