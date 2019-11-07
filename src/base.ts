@@ -12,7 +12,7 @@ export abstract class AutocompleteBase extends Command {
     return this.config.bin.toUpperCase().replace('-', '_')
   }
 
-  public convertWindowsBash(shell: string) {
+  public determineShell(shell: string) {
     if (!shell) {
       this.error('Missing required argument shell')
     } else if (this.isBashOnWindows(shell)) {
@@ -53,7 +53,7 @@ export abstract class AutocompleteBase extends Command {
     fs.write(fd, entry)
   }
 
-  isBashOnWindows(shell: string) {
+  private isBashOnWindows(shell: string) {
     return shell.endsWith('\\bash.exe')
   }
 }

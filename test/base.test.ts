@@ -22,11 +22,11 @@ runtest('AutocompleteBase', () => {
   })
 
   it('#convertWindowsBash', async () => {
-    expect(cmd.convertWindowsBash('bash')).to.eq('bash')
-    expect(cmd.convertWindowsBash('zsh')).to.eq('zsh')
-    expect(cmd.convertWindowsBash('fish')).to.eq('fish')
-    expect(cmd.convertWindowsBash('C:\\Users\\someone\\bin\\bash.exe')).to.eq('bash')
-    expect(() => {cmd.convertWindowsBash('')}).to.throw()
+    expect(cmd.determineShell('bash')).to.eq('bash')
+    expect(cmd.determineShell('zsh')).to.eq('zsh')
+    expect(cmd.determineShell('fish')).to.eq('fish')
+    expect(cmd.determineShell('C:\\Users\\someone\\bin\\bash.exe')).to.eq('bash')
+    expect(() => {cmd.determineShell('')}).to.throw()
   })
 
   it('#errorIfWindows', async () => {

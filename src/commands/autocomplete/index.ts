@@ -24,7 +24,7 @@ export default class Index extends AutocompleteBase {
 
   async run() {
     const {args, flags} = this.parse(Index)
-    const shell = args.shell || this.convertWindowsBash(this.config.shell)
+    const shell = args.shell || this.determineShell(this.config.shell)
     this.errorIfNotSupportedShell(shell)
 
     cli.action.start(`${chalk.bold('Building the autocomplete cache')}`)
