@@ -128,9 +128,10 @@
   version "10.0.5"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.0.5.tgz#08c97d0e8ef6ea8ed1df119c839834ffb9e0321a"
 
-"@types/node@^10.1.4":
-  version "10.1.4"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-10.1.4.tgz#606651d3f8a8bec08b8cb262161aab9209f4a29d"
+"@types/node@^8.10.59":
+  version "8.10.59"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-8.10.59.tgz#9e34261f30183f9777017a13d185dfac6b899e04"
+  integrity sha512-8RkBivJrDCyPpBXhVZcjh7cQxVBSmRk9QM7hOketZzp6Tg79c0N8kkpAIito9bnJ3HCVCHVYz+KHTEbfQNfeVQ==
 
 "@typescript-eslint/eslint-plugin@^2.6.1":
   version "2.6.1"
