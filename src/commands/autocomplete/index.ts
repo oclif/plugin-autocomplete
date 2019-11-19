@@ -19,7 +19,7 @@ export default class Index extends AutocompleteBase {
     '$ <%= config.bin %> autocomplete',
     '$ <%= config.bin %> autocomplete bash',
     '$ <%= config.bin %> autocomplete zsh',
-    '$ <%= config.bin %> autocomplete --refresh-cache'
+    '$ <%= config.bin %> autocomplete --refresh-cache',
   ]
 
   async run() {
@@ -33,8 +33,8 @@ export default class Index extends AutocompleteBase {
 
     if (!flags['refresh-cache']) {
       const bin = this.config.bin
-      let tabStr = shell === 'bash' ? '<TAB><TAB>' : '<TAB>'
-      let note = shell === 'zsh' ? `After sourcing, you can run \`${chalk.cyan('$ compaudit -D')}\` to ensure no permissions conflicts are present` : 'If your terminal starts as a login shell you may need to print the init script into ~/.bash_profile or ~/.profile.'
+      const tabStr = shell === 'bash' ? '<TAB><TAB>' : '<TAB>'
+      const note = shell === 'zsh' ? `After sourcing, you can run \`${chalk.cyan('$ compaudit -D')}\` to ensure no permissions conflicts are present` : 'If your terminal starts as a login shell you may need to print the init script into ~/.bash_profile or ~/.profile.'
 
       this.log(`
 ${chalk.bold(`Setup Instructions for ${bin.toUpperCase()} CLI Autocomplete ---`)}

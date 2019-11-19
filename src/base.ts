@@ -37,9 +37,9 @@ export abstract class AutocompleteBase extends Command {
   }
 
   writeLogFile(msg: string) {
-    let entry = `[${moment().format()}] ${msg}\n`
-    let fd = fs.openSync(this.acLogfilePath, 'a')
-    // @ts-ignore
-    fs.write(fd, entry)
+    const entry = `[${moment().format()}] ${msg}\n`
+    const fd = fs.openSync(this.acLogfilePath, 'a')
+    const offset = 0
+    fs.write(fd, entry, offset)
   }
 }

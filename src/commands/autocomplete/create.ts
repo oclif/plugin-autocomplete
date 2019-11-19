@@ -6,9 +6,9 @@ const debug = require('debug')('autocomplete:create')
 import {AutocompleteBase} from '../../base'
 
 type CommandCompletion = {
-  id: string
-  description: string
-  flags: any
+  id: string;
+  description: string;
+  flags: any;
 }
 
 function sanitizeDescription(description?: string): string {
@@ -16,13 +16,15 @@ function sanitizeDescription(description?: string): string {
     return ''
   }
   return description
-    .replace(/([`"])/g, '\\\\\\$1') // backticks and double-quotes require triple-backslashes
-    .replace(/([\[\]])/g, '\\\\$1') // square brackets require double-backslashes
-    .split('\n')[0] // only use the first line
+  .replace(/([`"])/g, '\\\\\\$1') // backticks and double-quotes require triple-backslashes
+  // eslint-disable-next-line no-useless-escape
+  .replace(/([\[\]])/g, '\\\\$1') // square brackets require double-backslashes
+  .split('\n')[0] // only use the first line
 }
 
 export default class Create extends AutocompleteBase {
   static hidden = true
+
   static description = 'create autocomplete setup scripts and completion functions'
 
   private _commands?: CommandCompletion[]
@@ -84,6 +86,7 @@ export default class Create extends AutocompleteBase {
   private get bashSetupScript(): string {
     const setup = path.join(this.bashFunctionsDir, `${this.cliBin}.bash`)
     const bin = this.cliBinEnvVar
+    /* eslint-disable-next-line no-useless-escape */
     return `${bin}_AC_BASH_COMPFUNC_PATH=${setup} && test -f \$${bin}_AC_BASH_COMPFUNC_PATH && source \$${bin}_AC_BASH_COMPFUNC_PATH;
 `
   }
@@ -102,21 +105,21 @@ compinit;\n`
     if (this._commands) return this._commands
 
     const plugins = this.config.plugins
-    let cmds: CommandCompletion[] = []
+    const cmds: CommandCompletion[] = []
 
-    plugins.map(p => {
-      p.commands.map(c => {
+    plugins.forEach(p => {
+      p.commands.forEach(c => {
         try {
           if (c.hidden) return
           cmds.push({
             id: c.id,
             description: sanitizeDescription(c.description || ''),
-            flags: c.flags
+            flags: c.flags,
           })
-        } catch (err) {
+        } catch (error) {
           debug(`Error creating zsh flag spec for command ${c.id}`)
-          debug(err.message)
-          this.writeLogFile(err.message)
+          debug(error.message)
+          this.writeLogFile(error.message)
         }
       })
     })
@@ -128,59 +131,61 @@ compinit;\n`
 
   private genZshFlagSpecs(Klass: any): string {
     return Object.keys(Klass.flags || {})
-      .filter(flag => Klass.flags && !Klass.flags[flag].hidden)
-      .map(flag => {
-        const f = (Klass.flags && Klass.flags[flag]) || {description: ''}
-        const isBoolean = f.type === 'boolean'
-        const name = isBoolean ? flag : `${flag}=-`
-        let valueCmpl = isBoolean ? '' : ':'
-        const completion = `--${name}[${sanitizeDescription(f.description)}]${valueCmpl}`
-        return `"${completion}"`
-      })
-      .join('\n')
+    .filter(flag => Klass.flags && !Klass.flags[flag].hidden)
+    .map(flag => {
+      const f = (Klass.flags && Klass.flags[flag]) || {description: ''}
+      const isBoolean = f.type === 'boolean'
+      const name = isBoolean ? flag : `${flag}=-`
+      const valueCmpl = isBoolean ? '' : ':'
+      const completion = `--${name}[${sanitizeDescription(f.description)}]${valueCmpl}`
+      return `"${completion}"`
+    })
+    .join('\n')
   }
 
-    private get genAllCommandsMetaString(): string {
-      return this.commands.map(c => {
-        return `\"${c.id.replace(/:/g, '\\:')}:${c.description}\"`
-      }).join('\n')
-    }
+  /* eslint-disable no-useless-escape */
+  private get genAllCommandsMetaString(): string {
+    return this.commands.map(c => {
+      return `\"${c.id.replace(/:/g, '\\:')}:${c.description}\"`
+    }).join('\n')
+  }
+  /* eslint-enable no-useless-escape */
 
-    private get genCaseStatementForFlagsMetaString(): string {
-      // command)
-      //   _command_flags=(
-      //   "--boolean[bool descr]"
-      //   "--value=-[value descr]:"
-      //   )
-      // ;;
-      return this.commands.map(c => {
-        return `${c.id})
+  private get genCaseStatementForFlagsMetaString(): string {
+    // command)
+    //   _command_flags=(
+    //   "--boolean[bool descr]"
+    //   "--value=-[value descr]:"
+    //   )
+    // ;;
+    return this.commands.map(c => {
+      return `${c.id})
   _command_flags=(
     ${this.genZshFlagSpecs(c)}
   )
 ;;\n`
-      }).join('\n')
-    }
+    }).join('\n')
+  }
 
-    private genCmdPublicFlags(Command: CommandCompletion): string {
-      let Flags = Command.flags || {}
-      return Object.keys(Flags)
-        .filter(flag => !Flags[flag].hidden)
-        .map(flag => `--${flag}`)
-        .join(' ')
-    }
+  private genCmdPublicFlags(Command: CommandCompletion): string {
+    const Flags = Command.flags || {}
+    return Object.keys(Flags)
+    .filter(flag => !Flags[flag].hidden)
+    .map(flag => `--${flag}`)
+    .join(' ')
+  }
 
-    private get bashCommandsWithFlagsList(): string {
-      return this.commands.map(c => {
-        const publicFlags = this.genCmdPublicFlags(c).trim()
-        return `${c.id} ${publicFlags}`
-      }).join('\n')
-    }
+  private get bashCommandsWithFlagsList(): string {
+    return this.commands.map(c => {
+      const publicFlags = this.genCmdPublicFlags(c).trim()
+      return `${c.id} ${publicFlags}`
+    }).join('\n')
+  }
 
-    private get bashCompletionFunction(): string {
-      const cliBin = this.cliBin
+  private get bashCompletionFunction(): string {
+    const cliBin = this.cliBin
 
-      return `#!/usr/bin/env bash
+    return `#!/usr/bin/env bash
 
 if ! type __ltrim_colon_completions >/dev/null 2>&1; then
   #   Copyright © 2006-2008, Ian Macdonald <ian@caliban.org>
@@ -230,14 +235,14 @@ ${this.bashCommandsWithFlagsList}
 
 complete -F _${cliBin} ${cliBin}
 `
-    }
+  }
 
-    private get zshCompletionFunction(): string {
-      const cliBin = this.cliBin
-      const allCommandsMeta = this.genAllCommandsMetaString
-      const caseStatementForFlagsMeta = this.genCaseStatementForFlagsMetaString
+  private get zshCompletionFunction(): string {
+    const cliBin = this.cliBin
+    const allCommandsMeta = this.genAllCommandsMetaString
+    const caseStatementForFlagsMeta = this.genCaseStatementForFlagsMetaString
 
-      return `#compdef ${cliBin}
+    return `#compdef ${cliBin}
 
 _${cliBin} () {
   local _command_id=\${words[2]}
@@ -273,5 +278,5 @@ ${caseStatementForFlagsMeta}
 
 _${cliBin}
 `
-    }
+  }
 }
