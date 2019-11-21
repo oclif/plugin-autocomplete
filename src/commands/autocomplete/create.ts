@@ -1,3 +1,6 @@
+import {generate as generateBash} from '@completely/bash-generator'
+import {Schema as CompletelyDescription} from '@completely/spec'
+import {generate as generateZsh} from '@completely/zsh-generator'
 import * as fs from 'fs-extra'
 import * as path from 'path'
 
@@ -111,7 +114,7 @@ compinit;\n`
           cmds.push({
             id: c.id,
             description: sanitizeDescription(c.description || ''),
-            flags: c.flags
+            flags: c.flags,
           })
         } catch (err) {
           debug(`Error creating zsh flag spec for command ${c.id}`)
@@ -126,152 +129,49 @@ compinit;\n`
     return this._commands
   }
 
-  private genZshFlagSpecs(Klass: any): string {
-    return Object.keys(Klass.flags || {})
-      .filter(flag => Klass.flags && !Klass.flags[flag].hidden)
-      .map(flag => {
-        const f = (Klass.flags && Klass.flags[flag]) || {description: ''}
-        const isBoolean = f.type === 'boolean'
-        const name = isBoolean ? flag : `${flag}=-`
-        let valueCmpl = isBoolean ? '' : ':'
-        const completion = `--${name}[${sanitizeDescription(f.description)}]${valueCmpl}`
-        return `"${completion}"`
-      })
-      .join('\n')
-  }
+    private get buildDescription(): CompletelyDescription {
+      const subcommands = this.commands
+        .map(command => {
+          const flags = Object.entries(command.flags).map(([key, value]: any) => {
+            const flag: any = {
+              name: key,
+              type: value.type === 'option' ? 'string' : 'boolean',
+            }
+            if (flag.type === 'string') {
+              flag.completion = {
+                type: 'any'
+              }
+              if (value.options) {
+                flag.completion.type = 'oneOf'
+                flag.completion.values = value.options
+              }
+            }
 
-    private get genAllCommandsMetaString(): string {
-      return this.commands.map(c => {
-        return `\"${c.id.replace(/:/g, '\\:')}:${c.description}\"`
-      }).join('\n')
-    }
+            return flag
+          })
 
-    private get genCaseStatementForFlagsMetaString(): string {
-      // command)
-      //   _command_flags=(
-      //   "--boolean[bool descr]"
-      //   "--value=-[value descr]:"
-      //   )
-      // ;;
-      return this.commands.map(c => {
-        return `${c.id})
-  _command_flags=(
-    ${this.genZshFlagSpecs(c)}
-  )
-;;\n`
-      }).join('\n')
-    }
+          return {
+            command: command.id,
+            flags,
+            args: []
+          }
+        })
 
-    private genCmdPublicFlags(Command: CommandCompletion): string {
-      let Flags = Command.flags || {}
-      return Object.keys(Flags)
-        .filter(flag => !Flags[flag].hidden)
-        .map(flag => `--${flag}`)
-        .join(' ')
-    }
-
-    private get bashCommandsWithFlagsList(): string {
-      return this.commands.map(c => {
-        const publicFlags = this.genCmdPublicFlags(c).trim()
-        return `${c.id} ${publicFlags}`
-      }).join('\n')
+      return {
+        command: this.cliBin,
+        subcommands
+      }
     }
 
     private get bashCompletionFunction(): string {
-      const cliBin = this.cliBin
+      const bashScript = generateBash(this.buildDescription)
 
-      return `#!/usr/bin/env bash
-
-if ! type __ltrim_colon_completions >/dev/null 2>&1; then
-  #   Copyright © 2006-2008, Ian Macdonald <ian@caliban.org>
-  #             © 2009-2017, Bash Completion Maintainers
-  __ltrim_colon_completions() {
-      # If word-to-complete contains a colon,
-      # and bash-version < 4,
-      # or bash-version >= 4 and COMP_WORDBREAKS contains a colon
-      if [[
-          "$1" == *:* && (
-              \${BASH_VERSINFO[0]} -lt 4 ||
-              (\${BASH_VERSINFO[0]} -ge 4 && "$COMP_WORDBREAKS" == *:*)
-          )
-      ]]; then
-          # Remove colon-word prefix from COMPREPLY items
-          local colon_word=\${1%\${1##*:}}
-          local i=\${#COMPREPLY[*]}
-          while [ $((--i)) -ge 0 ]; do
-              COMPREPLY[$i]=\${COMPREPLY[$i]#"$colon_word"}
-          done
-      fi
-  }
-fi
-
-_${cliBin}()
-{
-
-  local cur="\${COMP_WORDS[COMP_CWORD]}" opts IFS=$' \\t\\n'
-  COMPREPLY=()
-
-  local commands="
-${this.bashCommandsWithFlagsList}
-"
-
-  if [[ "\${COMP_CWORD}" -eq 1 ]] ; then
-      opts=$(printf "$commands" | grep -Eo '^[a-zA-Z0-9:_-]+')
-      COMPREPLY=( $(compgen -W "\${opts}" -- \${cur}) )
-       __ltrim_colon_completions "$cur"
-  else
-      if [[ $cur == "-"* ]] ; then
-        opts=$(printf "$commands" | grep "\${COMP_WORDS[1]}" | sed -n "s/^\${COMP_WORDS[1]} //p")
-        COMPREPLY=( $(compgen -W  "\${opts}" -- \${cur}) )
-      fi
-  fi
-  return 0
-}
-
-complete -F _${cliBin} ${cliBin}
-`
+      return bashScript
     }
 
     private get zshCompletionFunction(): string {
-      const cliBin = this.cliBin
-      const allCommandsMeta = this.genAllCommandsMetaString
-      const caseStatementForFlagsMeta = this.genCaseStatementForFlagsMetaString
+      const zshScript = generateZsh(this.buildDescription)
 
-      return `#compdef ${cliBin}
-
-_${cliBin} () {
-  local _command_id=\${words[2]}
-  local _cur=\${words[CURRENT]}
-  local -a _command_flags=()
-
-  ## public cli commands & flags
-  local -a _all_commands=(
-${allCommandsMeta}
-  )
-
-  _set_flags () {
-    case $_command_id in
-${caseStatementForFlagsMeta}
-    esac
-  }
-  ## end public cli commands & flags
-
-  _complete_commands () {
-    _describe -t all-commands "all commands" _all_commands
-  }
-
-  if [ $CURRENT -gt 2 ]; then
-    if [[ "$_cur" == -* ]]; then
-      _set_flags
-    fi
-  fi
-
-
-  _arguments -S '1: :_complete_commands' \\
-                $_command_flags
-}
-
-_${cliBin}
-`
+      return zshScript
     }
 }
