@@ -26,17 +26,16 @@ skipWindows('Create', () => {
   // Unit test private methods for extra coverage
   describe('private methods', () => {
     let cmd: any
-    // let Klass: any
     let plugin: any
     before(async () => {
       await config.load()
       cmd = new Create([], config)
       plugin = new Plugin({root})
       cmd.config.plugins = [plugin]
+      plugin._manifest = () => {
+        return loadJSON(path.resolve(__dirname, '../../test.oclif.manifest.json'))
+      }
       await plugin.load()
-      plugin.manifest = await loadJSON(path.resolve(__dirname, '../../test.oclif.manifest.json'))
-      plugin.commands = Object.entries(plugin.manifest.commands).map(([id, c]) => ({...c, load: () => plugin.findCommand(id, {must: true})}))
-      // Klass = plugin.commands[1]
     })
 
     it('file paths', () => {
@@ -116,6 +115,7 @@ complete -F _oclif-example oclif-example\n`)
     })
 
     it('#zshCompletionFunction', () => {
+      /* eslint-disable no-useless-escape */
       expect(cmd.zshCompletionFunction).to.eq(`#compdef oclif-example
 
 _oclif-example () {
@@ -169,6 +169,8 @@ autocomplete:foo)
 }
 
 _oclif-example\n`)
+
+      /* eslint-enable no-useless-escape */
     })
   })
 })

@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 import {expect, test} from '@oclif/test'
 
 // autocomplete will throw error on windows ci
@@ -22,7 +23,7 @@ $ oclif-example command --<TAB><TAB>       # Flag completion
 
 Enjoy!
 
-`
+`,
     )
   })
 
@@ -44,7 +45,7 @@ $ oclif-example command --<TAB>       # Flag completion
 
 Enjoy!
 
-`
+`,
     )
   })
 })

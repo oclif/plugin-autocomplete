@@ -7,7 +7,6 @@
   "dependencies": {
     "@oclif/command": "^1.4.31",
     "@oclif/config": "^1.6.22",
-    "@types/fs-extra": "^5.0.2",
     "chalk": "^2.4.1",
     "cli-ux": "^4.4.0",
     "debug": "^3.1.0",
@@ -18,17 +17,19 @@
     "@oclif/dev-cli": "^1.13.29",
     "@oclif/plugin-help": "^2.0.4",
     "@oclif/test": "^1",
-    "@oclif/tslint": "^1.1.2",
     "@types/chai": "^4",
+    "@types/fs-extra": "^8.0.1",
     "@types/mocha": "^5",
-    "@types/node": "^10.1.4",
+    "@types/node": "^8.10.59",
     "chai": "^4",
+    "eslint": "^6.6.0",
+    "eslint-config-oclif": "^3.1.0",
+    "eslint-config-oclif-typescript": "^0.1.0",
     "globby": "^8",
     "mocha": "^5.2.0",
     "nyc": "^11.8.0",
     "ts-node": "^6.0.5",
     "tslib": "^1.9.2",
-    "tslint": "^5",
     "typescript": "^2.9.1"
   },
   "engines": {
@@ -52,10 +53,12 @@
   },
   "repository": "oclif/plugin-autocomplete",
   "scripts": {
-    "postpack": "rm -f oclif.manifest.json",
-    "posttest": "tsc -p test --noEmit && tslint -p test -t stylish",
-    "prepack": "rm -rf lib && tsc && oclif-dev manifest && oclif-dev readme",
+    "lint": "eslint . --ext .ts --config .eslintrc",
+    "pretest": "tsc -p test --noEmit",
     "test": "nyc mocha --forbid-only \"test/**/*.test.ts\"",
+    "posttest": "yarn lint",
+    "prepack": "rm -rf lib && tsc && oclif-dev manifest && oclif-dev readme",
+    "postpack": "rm -f oclif.manifest.json",
     "version": "oclif-dev readme && git add README.md"
   }
 }
