@@ -233,7 +233,7 @@ ${this.bashCommandsWithFlagsList}
   return 0
 }
 
-complete -F _${cliBin} ${cliBin}
+complete -o default -F _${cliBin} ${cliBin}
 `
   }
 
@@ -268,6 +268,8 @@ ${caseStatementForFlagsMeta}
   if [ $CURRENT -gt 2 ]; then
     if [[ "$_cur" == -* ]]; then
       _set_flags
+    else
+      _path_files
     fi
   fi
 
