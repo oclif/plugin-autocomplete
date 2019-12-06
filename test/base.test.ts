@@ -8,7 +8,9 @@ import {AutocompleteBase} from '../src/base'
 const {default: runtest} = require('./helpers/runtest')
 
 class AutocompleteTest extends AutocompleteBase {
-  async run() {}
+  async run() {
+    return null
+  }
 }
 
 const root = path.resolve(__dirname, '../package.json')
@@ -43,8 +45,8 @@ runtest('AutocompleteBase', () => {
   it('#errorIfNotSupportedShell', async () => {
     try {
       cmd.errorIfNotSupportedShell('fish')
-    } catch (e) {
-      expect(e.message).to.eq('fish is not a supported shell for autocomplete')
+    } catch (error) {
+      expect(error.message).to.eq('fish is not a supported shell for autocomplete')
     }
   })
 
