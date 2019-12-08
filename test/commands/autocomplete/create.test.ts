@@ -26,17 +26,16 @@ skipWindows('Create', () => {
   // Unit test private methods for extra coverage
   describe('private methods', () => {
     let cmd: any
-    // let Klass: any
     let plugin: any
     before(async () => {
       await config.load()
       cmd = new Create([], config)
       plugin = new Plugin({root})
       cmd.config.plugins = [plugin]
+      plugin._manifest = () => {
+        return loadJSON(path.resolve(__dirname, '../../test.oclif.manifest.json'))
+      }
       await plugin.load()
-      plugin.manifest = await loadJSON(path.resolve(__dirname, '../../test.oclif.manifest.json'))
-      plugin.commands = Object.entries(plugin.manifest.commands).map(([id, c]) => ({...c, load: () => plugin.findCommand(id, {must: true})}))
-      // Klass = plugin.commands[1]
     })
 
     it('file paths', () => {
@@ -96,7 +95,7 @@ _oclif-example()
 
   local commands="
 autocomplete --skip-instructions
-autocomplete:foo --bar --baz --json
+autocomplete:foo --bar --baz --dangerous --brackets --double-quotes --multi-line --json
 "
 
   if [[ "\${COMP_CWORD}" -eq 1 ]] ; then
@@ -112,10 +111,11 @@ autocomplete:foo --bar --baz --json
   return 0
 }
 
-complete -F _oclif-example oclif-example\n`)
+complete -o default -F _oclif-example oclif-example\n`)
     })
 
     it('#zshCompletionFunction', () => {
+      /* eslint-disable no-useless-escape */
       expect(cmd.zshCompletionFunction).to.eq(`#compdef oclif-example
 
 _oclif-example () {
@@ -126,7 +126,7 @@ _oclif-example () {
   ## public cli commands & flags
   local -a _all_commands=(
 "autocomplete:display autocomplete instructions"
-"autocomplete\\:foo:cmd for autocomplete testing"
+"autocomplete\\:foo:cmd for autocomplete testing \\\\\\\`with some potentially dangerous script\\\\\\\` and \\\\\[square brackets\\\\\] and \\\\\\\"double-quotes\\\\\\\""
   )
 
   _set_flags () {
@@ -141,6 +141,10 @@ autocomplete:foo)
   _command_flags=(
     "--bar=-[bar for testing]:"
 "--baz=-[baz for testing]:"
+"--dangerous=-[\\\\\\\`with some potentially dangerous script\\\\\\\`]:"
+"--brackets=-[\\\\\[square brackets\\\\\]]:"
+"--double-quotes=-[\\\\\\\"double-quotes\\\\\\\"]:"
+"--multi-line=-[multi-]:"
 "--json[output in json format]"
   )
 ;;
@@ -156,6 +160,8 @@ autocomplete:foo)
   if [ $CURRENT -gt 2 ]; then
     if [[ "$_cur" == -* ]]; then
       _set_flags
+    else
+      _path_files
     fi
   fi
 
@@ -165,6 +171,8 @@ autocomplete:foo)
 }
 
 _oclif-example\n`)
+
+      /* eslint-enable no-useless-escape */
     })
   })
 })

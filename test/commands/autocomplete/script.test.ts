@@ -11,9 +11,9 @@ skipWindows('autocomplete:script', () => {
     expect(ctx.stdout).to.contain(`
 # oclif-example autocomplete setup
 OCLIF_EXAMPLE_AC_BASH_SETUP_PATH=${
-    ctx.config.cacheDir
-  }/autocomplete/bash_setup && test -f $OCLIF_EXAMPLE_AC_BASH_SETUP_PATH && source $OCLIF_EXAMPLE_AC_BASH_SETUP_PATH;
-`
+  ctx.config.cacheDir
+}/autocomplete/bash_setup && test -f $OCLIF_EXAMPLE_AC_BASH_SETUP_PATH && source $OCLIF_EXAMPLE_AC_BASH_SETUP_PATH;
+`,
     )
   })
 
@@ -24,9 +24,9 @@ OCLIF_EXAMPLE_AC_BASH_SETUP_PATH=${
     expect(ctx.stdout).to.contain(`
 # oclif-example autocomplete setup
 OCLIF_EXAMPLE_AC_ZSH_SETUP_PATH=${
-    ctx.config.cacheDir
-  }/autocomplete/zsh_setup && test -f $OCLIF_EXAMPLE_AC_ZSH_SETUP_PATH && source $OCLIF_EXAMPLE_AC_ZSH_SETUP_PATH;
-`
+  ctx.config.cacheDir
+}/autocomplete/zsh_setup && test -f $OCLIF_EXAMPLE_AC_ZSH_SETUP_PATH && source $OCLIF_EXAMPLE_AC_ZSH_SETUP_PATH;
+`,
     )
   })
 

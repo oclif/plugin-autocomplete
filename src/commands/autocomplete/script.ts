@@ -4,7 +4,9 @@ import {AutocompleteBase} from '../../base'
 
 export default class Script extends AutocompleteBase {
   static description = 'outputs autocomplete config script for shells'
+
   static hidden = true
+
   static args = [{name: 'shell', description: 'shell type', required: false}]
 
   async run() {
@@ -12,8 +14,8 @@ export default class Script extends AutocompleteBase {
     const shell = args.shell || this.config.shell
     this.errorIfNotSupportedShell(shell)
 
-    let binUpcase = this.cliBinEnvVar
-    let shellUpcase = shell.toUpperCase()
+    const binUpcase = this.cliBinEnvVar
+    const shellUpcase = shell.toUpperCase()
     this.log(
       `${this.prefix}${binUpcase}_AC_${shellUpcase}_SETUP_PATH=${path.join(
         this.autocompleteCacheDir,

@@ -13,7 +13,7 @@ jobs:
             - v1-npm-{{checksum ".circleci/config.yml"}}
       - run:
           name: Install dependencies
-          command: .circleci/greenkeeper
+          command: yarn
       - run: ./bin/run --help
       - run:
           name: Testing
@@ -29,14 +29,19 @@ jobs:
             - ~/cli/node_modules
             - /usr/local/share/.cache/yarn
             - /usr/local/share/.config/yarn
-  node-8:
+  node-12:
     <<: *test
     docker:
-      - image: node:8
+      - image: node:12
+  node-10:
+    <<: *test
+    docker:
+      - image: node:10
 
 workflows:
   version: 2
   "@oclif/plugin-autocomplete":
     jobs:
       - node-latest
-      - node-8
+      - node-12
+      - node-10

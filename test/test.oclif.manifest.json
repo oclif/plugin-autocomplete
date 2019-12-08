@@ -30,7 +30,7 @@
     },
     "autocomplete:foo": {
       "id": "autocomplete:foo",
-      "description": "cmd for autocomplete testing",
+      "description": "cmd for autocomplete testing `with some potentially dangerous script` and [square brackets] and \"double-quotes\"\nand a multi-line description",
       "pluginName": "@oclif/plugin-autocomplete",
       "pluginType": "core",
       "aliases": [],
@@ -44,6 +44,26 @@
           "name": "baz",
           "type": "option",
           "description": "baz for testing"
+        },
+        "dangerous": {
+          "name": "dangerous",
+          "type": "option",
+          "description": "`with some potentially dangerous script`"
+        },
+        "brackets": {
+          "name": "brackets",
+          "type": "option",
+          "description": "[square brackets]"
+        },
+        "double-quotes": {
+          "name": "double-quotes",
+          "type": "option",
+          "description": "\"double-quotes\""
+        },
+        "multi-line": {
+          "name": "multi-line",
+          "type": "option",
+          "description": "multi-\nline"
         },
         "json": {
           "name": "json",

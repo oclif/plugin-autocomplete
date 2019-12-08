@@ -1,6 +1,10 @@
+/* eslint-disable no-useless-escape */
 import {expect, test} from '@oclif/test'
 
-describe('autocomplete index', () => {
+// autocomplete will throw error on windows ci
+const {default: skipWindows} = require('../../helpers/runtest')
+
+skipWindows('autocomplete index', () => {
   test
   .stdout()
   .command(['autocomplete', 'bash'])
@@ -19,7 +23,7 @@ $ oclif-example command --<TAB><TAB>       # Flag completion
 
 Enjoy!
 
-`
+`,
     )
   })
 
@@ -41,7 +45,7 @@ $ oclif-example command --<TAB>       # Flag completion
 
 Enjoy!
 
-`
+`,
     )
   })
 })

@@ -20,7 +20,7 @@ export default class Index extends AutocompleteBase {
     '$ <%= config.bin %> autocomplete bash',
     '$ <%= config.bin %> autocomplete fish',
     '$ <%= config.bin %> autocomplete zsh',
-    '$ <%= config.bin %> autocomplete --refresh-cache'
+    '$ <%= config.bin %> autocomplete --refresh-cache',
   ]
 
   async run() {
