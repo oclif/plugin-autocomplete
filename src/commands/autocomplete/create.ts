@@ -52,8 +52,8 @@ export default class Create extends AutocompleteBase {
     await fs.writeFile(this.bashCompletionFunctionPath, this.bashCompletionFunction)
     await fs.writeFile(this.zshSetupScriptPath, this.zshSetupScript)
     await fs.writeFile(this.zshCompletionFunctionPath, this.zshCompletionFunction)
-    if (this.config.shell === "fish") {
-      debug(`fish shell detected, writing completion to ${this.fishCompletionFunctionPath}`);
+    if (this.config.shell === 'fish') {
+      debug(`fish shell detected, writing completion to ${this.fishCompletionFunctionPath}`)
       await fs.writeFile(this.fishCompletionFunctionPath, this.fishCompletionFunction)
     }
   }
@@ -232,10 +232,10 @@ complete -o default -F _${cliBin} ${cliBin}
 `
   }
 
-  private get fishCompletionFunction(): string {
-    const cliBin = this.cliBin
-    const completions = []
-    completions.push(`
+    private get fishCompletionFunction(): string {
+      const cliBin = this.cliBin
+      const completions = []
+      completions.push(`
 function __fish_${cliBin}_needs_command
   set cmd (commandline -opc)
   if [ (count $cmd) -eq 1 ]
