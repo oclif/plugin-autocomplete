@@ -5,12 +5,12 @@
   "author": "Philipe Navarro @RasPhilCo",
   "bugs": "https://github.com/oclif/plugin-autocomplete/issues",
   "dependencies": {
-    "@oclif/command": "^1.4.31",
-    "@oclif/config": "^1.6.22",
+    "@oclif/command": "^1.5.13",
+    "@oclif/config": "^1.13.0",
     "chalk": "^2.4.1",
-    "cli-ux": "^4.4.0",
-    "debug": "^3.1.0",
-    "fs-extra": "^6.0.1",
+    "cli-ux": "^5.2.1",
+    "debug": "^4.0.0",
+    "fs-extra": "^7.0.0",
     "moment": "^2.22.1"
   },
   "devDependencies": {
@@ -30,7 +30,7 @@
     "nyc": "^11.8.0",
     "ts-node": "^6.0.5",
     "tslib": "^1.9.2",
-    "typescript": "^2.9.1"
+    "typescript": "^3.7.3"
   },
   "engines": {
     "node": ">=8.0.0"
