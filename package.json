@@ -5,7 +5,7 @@
   "author": "Philipe Navarro @RasPhilCo",
   "bugs": "https://github.com/oclif/plugin-autocomplete/issues",
   "dependencies": {
-    "@oclif/command": "^1.5.13",
+    "@oclif/command": "^1.6.0",
     "@oclif/config": "^1.13.0",
     "chalk": "^2.4.1",
     "cli-ux": "^5.2.1",
@@ -15,7 +15,7 @@
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1.13.29",
-    "@oclif/plugin-help": "^2.0.4",
+    "@oclif/plugin-help": "^3",
     "@oclif/test": "^1",
     "@types/chai": "^4",
     "@types/fs-extra": "^8.0.1",
