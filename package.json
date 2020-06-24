@@ -54,7 +54,7 @@
   "repository": "oclif/plugin-autocomplete",
   "scripts": {
     "lint": "eslint . --ext .ts --config .eslintrc",
-    "pretest": "yarn build --noEmit",
+    "pretest": "yarn build --noEmit && tsc -p test --noEmit",
     "test": "mocha --forbid-only \"test/**/*.test.ts\"",
     "posttest": "yarn lint",
     "prepack": "rm -rf lib && tsc && oclif-dev manifest && oclif-dev readme",
