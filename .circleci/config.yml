@@ -18,11 +18,11 @@ jobs:
       - run:
           name: Testing
           command: yarn test
-      - run:
-          name: Submitting code coverage to codecov
-          command: |
-            ./node_modules/.bin/nyc report --reporter text-lcov > coverage.lcov
-            curl -s https://codecov.io/bash | bash
+#       - run:
+#           name: Submitting code coverage to codecov
+#           command: |
+#             ./node_modules/.bin/nyc report --reporter text-lcov > coverage.lcov
+#             curl -s https://codecov.io/bash | bash
       - save_cache:
           key: v1-yarn-{{checksum ".circleci/config.yml"}}-{{checksum "yarn.lock"}}
           paths:
