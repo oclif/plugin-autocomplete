@@ -50,7 +50,7 @@ jobs:
 
 workflows:
   version: 2
-  "@oclif/package":
+  "@oclif/plugin-autocomplete":
     jobs:
       - node-latest
       - node-12
