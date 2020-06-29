@@ -10,7 +10,7 @@
     "chalk": "^2.4.1",
     "cli-ux": "^5.2.1",
     "debug": "^4.0.0",
-    "fs-extra": "^7.0.0",
+    "fs-extra": "^9.0.1",
     "moment": "^2.22.1"
   },
   "devDependencies": {
