@@ -25,7 +25,7 @@
     "eslint": "^6.6.0",
     "eslint-config-oclif": "^3.1.0",
     "eslint-config-oclif-typescript": "^0.2.0",
-    "globby": "^8",
+    "globby": "^11",
     "mocha": "^5.2.0",
     "nyc": "^15.1.0",
     "ts-node": "^8.10.2",
