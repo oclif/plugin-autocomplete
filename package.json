@@ -19,7 +19,7 @@
     "@oclif/test": "^1",
     "@types/chai": "^4",
     "@types/fs-extra": "^9.0.1",
-    "@types/mocha": "^7",
+    "@types/mocha": "^8",
     "@types/nock": "^11.1.0",
     "@types/node": "^14.0.14",
     "chai": "^4",
