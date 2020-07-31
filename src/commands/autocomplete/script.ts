@@ -20,11 +20,15 @@ export default class Script extends AutocompleteBase {
       `${this.prefix}${binUpcase}_AC_${shellUpcase}_SETUP_PATH=${path.join(
         this.autocompleteCacheDir,
         `${shell}_setup`,
-      )} && test -f $${binUpcase}_AC_${shellUpcase}_SETUP_PATH && source $${binUpcase}_AC_${shellUpcase}_SETUP_PATH;`,
+      )} && test -f $${binUpcase}_AC_${shellUpcase}_SETUP_PATH && source $${binUpcase}_AC_${shellUpcase}_SETUP_PATH;${this.suffix}`,
     )
   }
 
   private get prefix(): string {
-    return `\n# ${this.cliBin} autocomplete setup\n`
+    return '\n'
+  }
+
+  private get suffix(): string {
+    return ` # ${this.cliBin} autocomplete setup\n`
   }
 }
