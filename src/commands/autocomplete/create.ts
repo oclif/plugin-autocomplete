@@ -187,29 +187,6 @@ compinit;\n`
 
     return `#!/usr/bin/env bash
 
-if ! type __ltrim_colon_completions >/dev/null 2>&1; then
-  #   Copyright © 2006-2008, Ian Macdonald <ian@caliban.org>
-  #             © 2009-2017, Bash Completion Maintainers
-  __ltrim_colon_completions() {
-      # If word-to-complete contains a colon,
-      # and bash-version < 4,
-      # or bash-version >= 4 and COMP_WORDBREAKS contains a colon
-      if [[
-          "$1" == *:* && (
-              \${BASH_VERSINFO[0]} -lt 4 ||
-              (\${BASH_VERSINFO[0]} -ge 4 && "$COMP_WORDBREAKS" == *:*)
-          )
-      ]]; then
-          # Remove colon-word prefix from COMPREPLY items
-          local colon_word=\${1%\${1##*:}}
-          local i=\${#COMPREPLY[*]}
-          while [ $((--i)) -ge 0 ]; do
-              COMPREPLY[$i]=\${COMPREPLY[$i]#"$colon_word"}
-          done
-      fi
-  }
-fi
-
 _${cliBin}()
 {
 
@@ -220,17 +197,24 @@ _${cliBin}()
 ${this.bashCommandsWithFlagsList}
 "
 
-  if [[ "\${COMP_CWORD}" -eq 1 ]] ; then
-      opts=$(printf "$commands" | grep -Eo '^[a-zA-Z0-9:_-]+')
-      COMPREPLY=( $(compgen -W "\${opts}" -- \${cur}) )
-       __ltrim_colon_completions "$cur"
+  if [[ "$cur" != "-"* ]]; then
+    opts=$(printf "$commands" | grep -Eo '^[a-zA-Z0-9:_-]+')
   else
-      if [[ $cur == "-"* ]] ; then
-        opts=$(printf "$commands" | grep "\${COMP_WORDS[1]}" | sed -n "s/^\${COMP_WORDS[1]} //p")
-        COMPREPLY=( $(compgen -W  "\${opts}" -- \${cur}) )
-      fi
+    local __COMP_WORDS
+    if [[ \${COMP_WORDS[2]} == ":" ]]; then
+      #subcommand
+      __COMP_WORDS=$(printf "%s" "\${COMP_WORDS[@]:1:3}")
+    else
+      #simple command
+      __COMP_WORDS="\${COMP_WORDS[@]:1:1}"
+    fi
+    opts=$(printf "$commands" | grep "\${__COMP_WORDS}" | sed -n "s/^\${__COMP_WORDS} //p")
   fi
+  _get_comp_words_by_ref -n : cur
+  COMPREPLY=( $(compgen -W "\${opts}" -- \${cur}) )
+  __ltrim_colon_completions "$cur"
   return 0
+
 }
 
 complete -o default -F _${cliBin} ${cliBin}
