@@ -12,8 +12,18 @@ export abstract class AutocompleteBase extends Command {
     return this.config.bin.toUpperCase().replace('-', '_')
   }
 
+  public determineShell(shell: string) {
+    if (!shell) {
+      this.error('Missing required argument shell')
+    } else if (this.isBashOnWindows(shell)) {
+      return 'bash'
+    } else {
+      return shell
+    }
+  }
+
   public errorIfWindows() {
-    if (this.config.windows) {
+    if (this.config.windows && !this.isBashOnWindows(this.config.shell)) {
       throw new Error('Autocomplete is not currently supported in Windows')
     }
   }
@@ -40,5 +50,9 @@ export abstract class AutocompleteBase extends Command {
     const entry = `[${moment().format()}] ${msg}\n`
     const fd = fs.openSync(this.acLogfilePath, 'a')
     fs.write(fd, entry)
+  }
+
+  private isBashOnWindows(shell: string) {
+    return shell.endsWith('\\bash.exe')
   }
 }
