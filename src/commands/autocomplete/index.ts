@@ -1,5 +1,5 @@
 import {flags} from '@oclif/command'
-import chalk from 'chalk'
+import * as chalk from 'chalk'
 import {cli} from 'cli-ux'
 
 import {AutocompleteBase} from '../../base'

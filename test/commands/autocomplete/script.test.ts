@@ -33,12 +33,10 @@ OCLIF_EXAMPLE_AC_ZSH_SETUP_PATH=${
   .command(['autocomplete:script', 'fish'])
   .it('outputs fish profile config', ctx => {
     expect(ctx.stdout).to.contain(`
-# oclif-example autocomplete setup
 OCLIF_EXAMPLE_AC_FISH_SETUP_PATH=${
-    ctx.config.cacheDir
-  }/autocomplete/fish_setup && test -f $OCLIF_EXAMPLE_AC_FISH_SETUP_PATH && source $OCLIF_EXAMPLE_AC_FISH_SETUP_PATH;
-`
+  ctx.config.cacheDir
+}/autocomplete/fish_setup && test -f $OCLIF_EXAMPLE_AC_FISH_SETUP_PATH && source $OCLIF_EXAMPLE_AC_FISH_SETUP_PATH; # oclif-example autocomplete setup
+`,
     )
   })
-  .it('errors on unsupported shell')
 })

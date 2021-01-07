@@ -222,7 +222,7 @@ ${this.bashCommandsWithFlagsList}
     opts=$(printf "$commands" | grep "\${__COMP_WORDS}" | sed -n "s/^\${__COMP_WORDS} //p")
   fi
   _get_comp_words_by_ref -n : cur
-https://github.com/oclif/plugin-autocomplete.git  COMPREPLY=( $(compgen -W "\${opts}" -- \${cur}) )
+  COMPREPLY=( $(compgen -W "\${opts}" -- \${cur}) )
   __ltrim_colon_completions "$cur"
   return 0
 
@@ -232,10 +232,10 @@ complete -o default -F _${cliBin} ${cliBin}
 `
   }
 
-    private get fishCompletionFunction(): string {
-      const cliBin = this.cliBin
-      const completions = []
-      completions.push(`
+  private get fishCompletionFunction(): string {
+    const cliBin = this.cliBin
+    const completions = []
+    completions.push(`
 function __fish_${cliBin}_needs_command
   set cmd (commandline -opc)
   if [ (count $cmd) -eq 1 ]
@@ -270,10 +270,6 @@ end`,
       })
     }
     return completions.join('\n')
-  }
-
-  private get fishCompletionFunction(): string {
-    return 'complete -xc fish -s h -l help -d \"Show usage help\"'
   }
 
   private get zshCompletionFunction(): string {

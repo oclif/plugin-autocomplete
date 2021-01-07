@@ -101,7 +101,6 @@ complete -o default -F _oclif-example oclif-example\n`)
     it('#zshCompletionFunction', () => {
       /* eslint-disable no-useless-escape */
       expect(cmd.zshCompletionFunction).to.eq(`#compdef oclif-example
-
 _oclif-example () {
   local _command_id=\${words[2]}
   local _cur=\${words[CURRENT]}
