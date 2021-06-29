@@ -133,12 +133,15 @@ compinit;\n`
     return Object.keys(Klass.flags || {})
     .filter(flag => Klass.flags && !Klass.flags[flag].hidden)
     .map(flag => {
-      const f = (Klass.flags && Klass.flags[flag]) || {description: ''}
-      const isBoolean = f.type === 'boolean'
+      const {description = '', char, type} = Klass.flags[flag] || {}
+      const isBoolean = type === 'boolean'
       const name = isBoolean ? flag : `${flag}=-`
       const valueCmpl = isBoolean ? '' : ':'
-      const completion = `--${name}[${sanitizeDescription(f.description)}]${valueCmpl}`
-      return `"${completion}"`
+      const completionDesc = `[${sanitizeDescription(description)}]${valueCmpl}`
+
+      const completion = `"--${name}${completionDesc}"`
+      const charCompletion = char ? `"-${char}${completionDesc}"` : ''
+      return [completion, charCompletion].filter(Boolean).join('\n')
     })
     .join('\n')
   }
