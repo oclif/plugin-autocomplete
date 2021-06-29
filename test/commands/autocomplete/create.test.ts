@@ -118,6 +118,7 @@ _oclif-example () {
 autocomplete)
   _command_flags=(
     "--skip-instructions[don't show installation instructions]"
+"-s[don't show installation instructions]"
   )
 ;;
 
