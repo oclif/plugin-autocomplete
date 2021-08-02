@@ -1,4 +1,4 @@
-import {Config} from '@oclif/config'
+import {Config} from '@oclif/core'
 import {expect} from 'chai'
 import * as path from 'path'
 
