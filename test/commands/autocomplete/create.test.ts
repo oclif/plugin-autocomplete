@@ -1,6 +1,6 @@
 // import {flags} from '@oclif/command'
 import {Config, Plugin} from '@oclif/core'
-import {loadJSON} from '@oclif/config/lib/util'
+import {loadJSON} from '@oclif/core/lib/config/util'
 import {expect} from 'chai'
 import * as path from 'path'
 
