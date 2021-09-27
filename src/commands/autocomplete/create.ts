@@ -116,7 +116,7 @@ compinit;\n`
             description: sanitizeDescription(c.description || ''),
             flags: c.flags,
           })
-        } catch (error) {
+        } catch (error: any) {
           debug(`Error creating zsh flag spec for command ${c.id}`)
           debug(error.message)
           this.writeLogFile(error.message)

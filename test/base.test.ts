@@ -51,7 +51,7 @@ runtest('AutocompleteBase', () => {
   it('#errorIfNotSupportedShell', async () => {
     try {
       cmd.errorIfNotSupportedShell('fish')
-    } catch (error) {
+    } catch (error: any) {
       expect(error.message).to.eq('fish is not a supported shell for autocomplete')
     }
   })
