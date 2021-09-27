@@ -1,4 +1,4 @@
-import {flags} from '@oclif/command'
+import {Flags} from '@oclif/core'
 import * as chalk from 'chalk'
 import {cli} from 'cli-ux'
 
@@ -12,7 +12,7 @@ export default class Index extends AutocompleteBase {
   static args = [{name: 'shell', description: 'shell type', required: false}]
 
   static flags = {
-    'refresh-cache': flags.boolean({description: 'Refresh cache (ignores displaying instructions)', char: 'r'}),
+    'refresh-cache': Flags.boolean({description: 'Refresh cache (ignores displaying instructions)', char: 'r'}),
   }
 
   static examples = [
@@ -23,7 +23,7 @@ export default class Index extends AutocompleteBase {
   ]
 
   async run() {
-    const {args, flags} = this.parse(Index)
+    const {args, flags} = await this.parse(Index)
     const shell = args.shell || this.determineShell(this.config.shell)
     this.errorIfNotSupportedShell(shell)
 

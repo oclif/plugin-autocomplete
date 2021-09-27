@@ -5,8 +5,7 @@
   "author": "Philipe Navarro @RasPhilCo",
   "bugs": "https://github.com/oclif/plugin-autocomplete/issues",
   "dependencies": {
-    "@oclif/command": "^1.5.13",
-    "@oclif/config": "^1.13.0",
+    "@oclif/core": "^0.5.39",
     "chalk": "^4.1.0",
     "cli-ux": "^5.2.1",
     "debug": "^4.0.0",
@@ -14,8 +13,7 @@
     "moment": "^2.22.1"
   },
   "devDependencies": {
-    "@oclif/dev-cli": "^1.13.29",
-    "@oclif/plugin-help": "^3.1.0",
+    "@oclif/plugin-help": "^5",
     "@oclif/test": "^1",
     "@types/chai": "^4",
     "@types/fs-extra": "^9.0.1",
@@ -30,9 +28,10 @@
     "mocha": "^8.2.1",
     "nock": "^13.0.0",
     "nyc": "^15.1.0",
+    "oclif": "^2.0.0-main.5",
     "ts-node": "^9.0.0",
     "tslib": "^2.0.0",
-    "typescript": "3.8.3"
+    "typescript": "4.4.3"
   },
   "engines": {
     "node": ">=12.0.0"
@@ -59,9 +58,9 @@
     "pretest": "yarn build --noEmit && tsc -p test --noEmit",
     "test": "mocha --forbid-only \"test/**/*.test.ts\"",
     "posttest": "yarn lint",
-    "prepack": "rm -rf lib && tsc && oclif-dev manifest && oclif-dev readme",
+    "prepack": "rm -rf lib && tsc && oclif manifest && oclif readme",
     "postpack": "rm -f oclif.manifest.json",
-    "version": "oclif-dev readme && git add README.md",
+    "version": "oclif readme && git add README.md",
     "build": "rm -rf lib && tsc"
   }
 }

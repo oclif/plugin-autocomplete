@@ -1,4 +1,4 @@
-import {Config} from '@oclif/config'
+import {Config} from '@oclif/core'
 import {expect} from 'chai'
 import * as path from 'path'
 
@@ -51,7 +51,7 @@ runtest('AutocompleteBase', () => {
   it('#errorIfNotSupportedShell', async () => {
     try {
       cmd.errorIfNotSupportedShell('fish')
-    } catch (error) {
+    } catch (error: any) {
       expect(error.message).to.eq('fish is not a supported shell for autocomplete')
     }
   })
