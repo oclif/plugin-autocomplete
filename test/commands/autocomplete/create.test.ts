@@ -1,6 +1,5 @@
-// import {flags} from '@oclif/command'
-import {Config, Plugin} from '@oclif/config'
-import {loadJSON} from '@oclif/config/lib/util'
+import {Config, Plugin} from '@oclif/core'
+import {loadJSON} from '@oclif/core/lib/config/util'
 import {expect} from 'chai'
 import * as path from 'path'
 
@@ -11,16 +10,6 @@ const config = new Config({root})
 
 // autocomplete will throw error on windows ci
 const {default: skipWindows} = require('../../helpers/runtest')
-
-// const AC_PLUGIN_PATH = path.resolve(__dirname, '..', '..', '..')
-
-// class CacheBuildFlagsTest extends Create {
-//   static flags = {
-//     app: flags.string({description: 'app to use', char: 'a'}),
-//     visable: flags.string({description: 'Visable flag', char: 'v'}),
-//     hidden: flags.boolean({description: 'Hidden flag', char: 'h', hidden: true}),
-//   }
-// }
 
 skipWindows('Create', () => {
   // Unit test private methods for extra coverage
