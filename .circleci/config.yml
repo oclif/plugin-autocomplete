@@ -17,14 +17,14 @@ jobs:
       - run:
           name: Run tests
           command: yarn test
+  node-14:
+    <<: *test
+    docker:
+      - image: node:14
   node-12:
     <<: *test
     docker:
       - image: node:12
-  node-10:
-    <<: *test
-    docker:
-      - image: node:10
   release:
     <<: *test
     steps:
@@ -53,13 +53,13 @@ workflows:
   "@oclif/plugin-autocomplete":
     jobs:
       - node-latest
+      - node-14
       - node-12
-      - node-10
       - release:
           context: org-global
           filters:
             branches: {only: master}
           requires:
             - node-latest
+            - node-14
             - node-12
-            - node-10
