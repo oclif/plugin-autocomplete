@@ -25,7 +25,7 @@
     "chai": "^4",
     "eslint": "^7.3.1",
     "eslint-config-oclif": "^3.1.0",
-    "eslint-config-oclif-typescript": "^0.2.0",
+    "eslint-config-oclif-typescript": "^1.0.2",
     "globby": "^11",
     "mocha": "^8.2.1",
     "nock": "^13.0.0",
