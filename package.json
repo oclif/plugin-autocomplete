@@ -23,7 +23,7 @@
     "@types/nock": "^11.1.0",
     "@types/node": "^15.12.2",
     "chai": "^4",
-    "eslint": "^7.3.1",
+    "eslint": "^8.1.0",
     "eslint-config-oclif": "^3.1.0",
     "eslint-config-oclif-typescript": "^0.2.0",
     "globby": "^11",
