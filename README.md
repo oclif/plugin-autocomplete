@@ -4,10 +4,10 @@
 autocomplete plugin for oclif (bash & zsh)
 
 [![Version](https://img.shields.io/npm/v/@oclif/plugin-autocomplete.svg)](https://npmjs.org/package/@oclif/plugin-autocomplete)
-[![CircleCI](https://circleci.com/gh/oclif/plugin-autocomplete/tree/master.svg?style=shield)](https://circleci.com/gh/oclif/plugin-autocomplete/tree/master)
-[![Appveyor CI](https://ci.appveyor.com/api/projects/status/github/oclif/plugin-autocomplete?branch=master&svg=true)](https://ci.appveyor.com/project/oclif/plugin-autocomplete/branch/master)
+[![CircleCI](https://circleci.com/gh/oclif/plugin-autocomplete/tree/main.svg?style=shield)](https://circleci.com/gh/oclif/plugin-autocomplete/tree/main)
+[![Appveyor CI](https://ci.appveyor.com/api/projects/status/github/oclif/plugin-autocomplete?branch=main&svg=true)](https://ci.appveyor.com/project/oclif/plugin-autocomplete/branch/main)
 [![Downloads/week](https://img.shields.io/npm/dw/@oclif/plugin-autocomplete.svg)](https://npmjs.org/package/@oclif/plugin-autocomplete)
-[![License](https://img.shields.io/npm/l/@oclif/plugin-autocomplete.svg)](https://github.com/oclif/plugin-autocomplete/blob/master/package.json)
+[![License](https://img.shields.io/npm/l/@oclif/plugin-autocomplete.svg)](https://github.com/oclif/plugin-autocomplete/blob/main/package.json)
 
 <!-- toc -->
 * [Usage](#usage)
