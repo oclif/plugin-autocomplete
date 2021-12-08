@@ -2,7 +2,7 @@
   "name": "@oclif/plugin-autocomplete",
   "description": "autocomplete plugin for oclif",
   "version": "0.3.0",
-  "author": "Philipe Navarro @RasPhilCo",
+  "author": "Salesforce",
   "bugs": "https://github.com/oclif/plugin-autocomplete/issues",
   "dependencies": {
     "@oclif/core": "^0.5.39",
