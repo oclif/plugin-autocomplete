@@ -267,6 +267,7 @@ complete -F _${cliBin} ${cliBin}
 `
     } else {
       bashScript = `#!/usr/bin/env bash
+
 _${cliBin}()
 {
 
