@@ -109,12 +109,10 @@ compinit;\n`
 
     plugins.forEach(p => {
       p.commands.forEach(c => {
-        console.log(c)
         try {
           if (c.hidden) return
           cmds.push({
             id: c.id,
-            // id: c.id.replace(':', this.config.topicSeparator),
             description: sanitizeDescription(c.description || ''),
             flags: c.flags,
           })
