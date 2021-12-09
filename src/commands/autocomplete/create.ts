@@ -239,7 +239,7 @@ ${this.bashCommandsWithFlagsList}
     if [[ -z "$normalizedCommand" ]]; then
       # If there is no normalizedCommand yet the user hasn't typed in a full command
       # So we should trim all subcommands & flags from $commands so we can suggest all top level commands
-      opts=$(echo "$commands" | grep -Eo '^[a-zA-Z0-9_-]+')
+      opts=$(printf "%s " "\${commands[@]}" | grep -Eo '^[a-zA-Z0-9_-]+')
     else
       # Filter $commands to just the ones that match the $normalizedCommand and turn into an array
       commands=( $(compgen -W "$commands" -- "\${normalizedCommand}") )
@@ -257,7 +257,7 @@ ${this.bashCommandsWithFlagsList}
 
     # The line below finds the command in $commands using grep
     # Then, using sed, it removes everything from the found command before the --flags (e.g. "command:subcommand:subsubcom --flag1 --flag2" -> "--flag1 --flag2")
-    opts=$(echo "$commands" | grep "\${normalizedCommand}" | sed -n "s/^\${normalizedCommand} //p")
+    opts=$(printf "%s " "\${commands[@]}" | grep "\${normalizedCommand}" | sed -n "s/^\${normalizedCommand} //p")
   fi
 
   COMPREPLY=($(compgen -W "$opts" -- "\${cur}"))
