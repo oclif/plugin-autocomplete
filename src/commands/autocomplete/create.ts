@@ -266,7 +266,7 @@ ${this.bashCommandsWithFlagsList}
   COMPREPLY=($(compgen -W "$opts" -- \${cur}))
 }
 
-_${cliBin} ${cliBin}
+complete -F _${cliBin} ${cliBin}
 
 `
     } else {
