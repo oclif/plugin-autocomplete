@@ -196,7 +196,7 @@ function join_by { local IFS="$1"; shift; echo "$*"; }
 _${cliBin}()
 {
 
-  local cur="\${COMP_WORDS[COMP_CWORD]}" opts normalizedCommand colonPrefix IFS=$' \t\n'
+  local cur="\${COMP_WORDS[COMP_CWORD]}" opts normalizedCommand colonPrefix IFS=$' \\t\\n'
   COMPREPLY=()
 
   local commands="
