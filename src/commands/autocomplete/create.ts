@@ -3,7 +3,7 @@ import * as path from 'path'
 import * as fs from 'fs-extra'
 
 import bashAutocomplete from '../../autocomplete/bash'
-import bashAutocompleteWithSpaces from '../../autocomplete/bash_spaces'
+import bashAutocompleteWithSpaces from '../../autocomplete/bash-spaces'
 import {AutocompleteBase} from '../../base'
 
 const debug = require('debug')('autocomplete:create')
@@ -187,7 +187,7 @@ compinit;\n`
 
   private get bashCompletionFunction(): string {
     const cliBin = this.cliBin
-    let bashScript = this.config.topicSeparator === ' ' ? bashAutocompleteWithSpaces : bashAutocomplete
+    const bashScript = this.config.topicSeparator === ' ' ? bashAutocompleteWithSpaces : bashAutocomplete
     return bashScript.replace(/<CLI_BIN>/g, cliBin).replace(/<BASH_COMMANDS_WITH_FLAGS_LIST>/g, this.bashCommandsWithFlagsList)
   }
 

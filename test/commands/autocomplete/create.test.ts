@@ -53,7 +53,7 @@ compinit;
     it('#bashCompletionFunction', () => {
       expect(cmd.bashCompletionFunction).to.eq(`#!/usr/bin/env bash
 
-_oclif-example()
+_oclif-example_autocomplete()
 {
 
   local cur="\${COMP_WORDS[COMP_CWORD]}" opts IFS=$' \\t\\n'
@@ -84,7 +84,7 @@ autocomplete:foo --bar --baz --dangerous --brackets --double-quotes --multi-line
 
 }
 
-complete -o default -F _oclif-example oclif-example\n`)
+complete -o default -F _oclif-example_autocomplete oclif-example\n`)
     })
 
     it('#bashCompletionFunction with spaces', async () => {
@@ -107,7 +107,7 @@ complete -o default -F _oclif-example oclif-example\n`)
 # e.g. ARRAY=(one two three) -> join_by ":" \${ARRAY[@]} -> "one:two:three"
 function join_by { local IFS="$1"; shift; echo "$*"; }
 
-_oclif-example()
+_oclif-example_autocomplete()
 {
 
   local cur="\${COMP_WORDS[COMP_CWORD]}" opts normalizedCommand colonPrefix IFS=$' \\t\\n'
@@ -178,7 +178,7 @@ autocomplete:foo --bar --baz --dangerous --brackets --double-quotes --multi-line
   COMPREPLY=($(compgen -W "$opts" -- "\${cur}"))
 }
 
-complete -F _oclif-example oclif-example\n`)
+complete -F _oclif-example_autocomplete oclif-example\n`)
     })
 
     it('#zshCompletionFunction', () => {

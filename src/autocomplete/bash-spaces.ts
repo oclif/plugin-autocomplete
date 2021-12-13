@@ -77,4 +77,4 @@ _<CLI_BIN>_autocomplete()
 complete -F _<CLI_BIN>_autocomplete <CLI_BIN>
 `
 
-export default script;
+export default script
