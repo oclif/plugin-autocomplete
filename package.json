@@ -1,11 +1,11 @@
 {
   "name": "@oclif/plugin-autocomplete",
   "description": "autocomplete plugin for oclif",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "author": "Salesforce",
   "bugs": "https://github.com/oclif/plugin-autocomplete/issues",
   "dependencies": {
-    "@oclif/core": "^0.6.0",
+    "@oclif/core": "^1.0.10",
     "chalk": "^4.1.0",
     "cli-ux": "^5.6.6",
     "debug": "^4.0.0",

@@ -305,29 +305,6 @@
     widest-line "^3.1.0"
     wrap-ansi "^7.0.0"
 
-"@oclif/core@^0.6.0":
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/@oclif/core/-/core-0.6.0.tgz#85c341cddac0419b1b1c3172cb4f76277a87fd2a"
-  integrity sha512-pKCGuQoLdz9zY17slvVjPSvXlbyDoB0llPK+LIL4kELwpoOJ1Y52+00wIoD9B8xxPeQW9Cnavj1IHeKQes5ziw==
-  dependencies:
-    "@oclif/linewrap" "^1.0.0"
-    chalk "^4.1.0"
-    clean-stack "^3.0.0"
-    cli-ux "^5.1.0"
-    debug "^4.1.1"
-    fs-extra "^9.0.1"
-    get-package-type "^0.1.0"
-    globby "^11.0.1"
-    indent-string "^4.0.0"
-    is-wsl "^2.1.1"
-    lodash.template "^4.4.0"
-    semver "^7.3.2"
-    string-width "^4.2.0"
-    strip-ansi "^6.0.0"
-    tslib "^2.0.0"
-    widest-line "^3.1.0"
-    wrap-ansi "^7.0.0"
-
 "@oclif/errors@^1.2.2", "@oclif/errors@^1.3.3", "@oclif/errors@^1.3.5":
   version "1.3.5"
   resolved "https://registry.yarnpkg.com/@oclif/errors/-/errors-1.3.5.tgz#a1e9694dbeccab10fe2fe15acb7113991bed636c"
@@ -1180,7 +1157,7 @@ cli-ux@6.0.6:
     supports-hyperlinks "^2.1.0"
     tslib "^2.0.0"
 
-cli-ux@^5.1.0, cli-ux@^5.6.6:
+cli-ux@^5.6.6:
   version "5.6.6"
   resolved "https://registry.yarnpkg.com/cli-ux/-/cli-ux-5.6.6.tgz#1424f5a9fbddcd796ad985b867a3de7f5a452090"
   integrity sha512-4wUB34zoFklcZV0z5YiOM5IqVMMt9c3TK3QYRK3dqyk3XoRC0ybiWDWHfsMDjkKrzsVTw95rXn9NrzSHbae4pg==
@@ -3325,11 +3302,6 @@ locate-path@^6.0.0:
   dependencies:
     p-locate "^5.0.0"
 
-lodash._reinterpolate@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/lodash._reinterpolate/-/lodash._reinterpolate-3.0.0.tgz#0ccf2d89166af03b3663c796538b75ac6e114d9d"
-  integrity sha1-DM8tiRZq8Ds2Y8eWU4t1rG4RTZ0=
-
 lodash.camelcase@^4.1.1:
   version "4.3.0"
   resolved "https://registry.yarnpkg.com/lodash.camelcase/-/lodash.camelcase-4.3.0.tgz#b28aa6288a2b9fc651035c7711f65ab6190331a6"
@@ -3369,21 +3341,6 @@ lodash.snakecase@^4.0.1:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/lodash.snakecase/-/lodash.snakecase-4.1.1.tgz#39d714a35357147837aefd64b5dcbb16becd8f8d"
   integrity sha1-OdcUo1NXFHg3rv1ktdy7Fr7Nj40=
-
-lodash.template@^4.4.0:
-  version "4.5.0"
-  resolved "https://registry.yarnpkg.com/lodash.template/-/lodash.template-4.5.0.tgz#f976195cf3f347d0d5f52483569fe8031ccce8ab"
-  integrity sha512-84vYFxIkmidUiFxidA/KjjH9pAycqW+h980j7Fuz5qxRtO9pgB7MDFTdys1N7A5mcucRiDyEq4fusljItR1T/A==
-  dependencies:
-    lodash._reinterpolate "^3.0.0"
-    lodash.templatesettings "^4.0.0"
-
-lodash.templatesettings@^4.0.0:
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/lodash.templatesettings/-/lodash.templatesettings-4.2.0.tgz#e481310f049d3cf6d47e912ad09313b154f0fb33"
-  integrity sha512-stgLz+i3Aa9mZgnjr/O+v9ruKZsPsndy7qPZOchbqk2cnTU1ZaldKK+v7m54WoKIyxiuMZTKT2H81F8BeAc3ZQ==
-  dependencies:
-    lodash._reinterpolate "^3.0.0"
 
 lodash.truncate@^4.4.2:
   version "4.4.2"
