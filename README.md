@@ -25,20 +25,26 @@ display autocomplete installation instructions
 
 ```
 USAGE
-  $ oclif-example autocomplete [SHELL]
+  $ oclif-example autocomplete [SHELL] [-r]
 
 ARGUMENTS
   SHELL  shell type
 
-OPTIONS
+FLAGS
   -r, --refresh-cache  Refresh cache (ignores displaying instructions)
+
+DESCRIPTION
+  display autocomplete installation instructions
 
 EXAMPLES
   $ oclif-example autocomplete
+
   $ oclif-example autocomplete bash
+
   $ oclif-example autocomplete zsh
+
   $ oclif-example autocomplete --refresh-cache
 ```
 
-_See code: [src/commands/autocomplete/index.ts](https://github.com/oclif/plugin-autocomplete/blob/v0.3.0/src/commands/autocomplete/index.ts)_
+_See code: [src/commands/autocomplete/index.ts](https://github.com/oclif/plugin-autocomplete/blob/v1.0.0/src/commands/autocomplete/index.ts)_
 <!-- commandsstop -->

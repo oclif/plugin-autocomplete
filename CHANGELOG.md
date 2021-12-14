@@ -1,3 +1,34 @@
+# Changelog
+
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+## [1.0.0](https://github.com/oclif/plugin-autocomplete/compare/v0.3.0...v1.0.0) (2021-12-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* require node 12+ (#249)
+
+### Features
+
+* add support for commands separated by spaces (WIP) ([6b5248f](https://github.com/oclif/plugin-autocomplete/commit/6b5248fe28a80e432c8608a91232417b2a0dc073))
+* use oclif/core ([#251](https://github.com/oclif/plugin-autocomplete/issues/251)) ([f781819](https://github.com/oclif/plugin-autocomplete/commit/f781819989fa66ace0461a91a49f4cc37ff83c64))
+
+
+### Bug Fixes
+
+* add unit test ([c544ba8](https://github.com/oclif/plugin-autocomplete/commit/c544ba84a0229936f8842c95aa9c11904514f90e))
+* escape chars ([14daa6a](https://github.com/oclif/plugin-autocomplete/commit/14daa6af896fbea5807cd002445e6c32649e28fd))
+* include complete command, whoops. ([9b53a63](https://github.com/oclif/plugin-autocomplete/commit/9b53a63eb9b51d0b8e6750071c6500d42792a35d))
+* properly encapsulate expanded arrays in "" ([979be23](https://github.com/oclif/plugin-autocomplete/commit/979be23f22983e848f957fcdcfa14bce8d067ddd))
+* remove console.log ([2c6e060](https://github.com/oclif/plugin-autocomplete/commit/2c6e0603161fa68f19686e1a0cbd6b50aeb0aaf8))
+* unit tests & lint ([f0bfd35](https://github.com/oclif/plugin-autocomplete/commit/f0bfd352fa4f626a2596d5c4e9e0d9b715ea6249))
+
+
+### build
+
+* require node 12+ ([#249](https://github.com/oclif/plugin-autocomplete/issues/249)) ([249ca2b](https://github.com/oclif/plugin-autocomplete/commit/249ca2b80388f4216d7a4b9dd8034c8a646038f5))
+
 # [0.3.0](https://github.com/oclif/plugin-autocomplete/compare/v0.2.1...v0.3.0) (2020-12-17)
 
 
