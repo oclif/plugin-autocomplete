@@ -79,6 +79,6 @@ runtest('AutocompleteBase', () => {
 
     cmd.writeLogFile('testing')
     expect(fsOpenSyncStub).to.have.been.calledOnce
-    expect(fsWriteStub).to.be.been.calledWith(7, 'testing')
+    expect(fsWriteStub).to.be.been.calledWith(7)
   })
 })
