@@ -1,6 +1,5 @@
 import {Command} from '@oclif/core'
 import * as fs from 'fs-extra'
-import * as moment from 'moment'
 import * as path from 'path'
 
 export abstract class AutocompleteBase extends Command {
@@ -47,7 +46,7 @@ export abstract class AutocompleteBase extends Command {
   }
 
   writeLogFile(msg: string) {
-    const entry = `[${moment().format()}] ${msg}\n`
+    const entry = `[${(new Date()).toLocaleString()}] ${msg}\n`
     const fd = fs.openSync(this.acLogfilePath, 'a')
     fs.write(fd, entry)
   }
