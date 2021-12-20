@@ -1,8 +1,14 @@
 import {Config} from '@oclif/core'
-import {expect} from 'chai'
+import * as Chai from 'chai'
 import * as path from 'path'
+import * as fs from 'fs-extra'
+import * as Sinon from 'sinon'
+import * as SinonChai from 'sinon-chai'
 
 import {AutocompleteBase} from '../src/base'
+
+Chai.use(SinonChai)
+const expect = Chai.expect
 
 // autocomplete will throw error on windows
 const {default: runtest} = require('./helpers/runtest')
@@ -19,6 +25,14 @@ const config = new Config({root})
 const cmd = new AutocompleteTest([], config)
 
 runtest('AutocompleteBase', () => {
+  let fsWriteStub: Sinon.SinonStub
+  let fsOpenSyncStub: Sinon.SinonStub
+
+  before(() => {
+    fsWriteStub = Sinon.stub(fs, 'write')
+    fsOpenSyncStub = Sinon.stub(fs, 'openSync').returns(7)
+  })
+
   beforeEach(async () => {
     await config.load()
   })
@@ -62,5 +76,9 @@ runtest('AutocompleteBase', () => {
 
   it('#acLogfile', async () => {
     expect(cmd.acLogfilePath).to.eq(path.join(config.cacheDir, 'autocomplete.log'))
+
+    cmd.writeLogFile('testing')
+    expect(fsOpenSyncStub).to.have.been.calledOnce
+    expect(fsWriteStub).to.be.been.calledWith(7, 'testing')
   })
 })
