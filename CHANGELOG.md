@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.1.0](https://github.com/oclif/plugin-autocomplete/compare/v1.0.0...v1.1.0) (2022-01-04)
+
+
+### Features
+
+* remove moment ([79dc37b](https://github.com/oclif/plugin-autocomplete/commit/79dc37b37600f294c02e85469c1664c83849ff30))
+
+
+### Bug Fixes
+
+* test ([a9a668c](https://github.com/oclif/plugin-autocomplete/commit/a9a668c1626dc5b8f711014bc4c95dabebd949d1))
+* whoops, did not mean to include that file ([705d7db](https://github.com/oclif/plugin-autocomplete/commit/705d7db00626304ac30ad3b1824c88fc8dcd85b8))
+
 ## [1.0.0](https://github.com/oclif/plugin-autocomplete/compare/v0.3.0...v1.0.0) (2021-12-14)
 
 
