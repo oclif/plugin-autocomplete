@@ -362,12 +362,12 @@
   resolved "https://registry.yarnpkg.com/@oclif/screen/-/screen-1.0.4.tgz#b740f68609dfae8aa71c3a6cab15d816407ba493"
   integrity sha512-60CHpq+eqnTxLZQ4PGHYNwUX572hgpMHGPtTWMjdTMsAvlm69lZV/4ly6O3sAYkomo4NggGcomrDpBe34rxUqw==
 
-"@oclif/test@^1":
-  version "1.2.9"
-  resolved "https://registry.yarnpkg.com/@oclif/test/-/test-1.2.9.tgz#bfd0bd3de6d2309f779b8f445a163db2fd48e72b"
-  integrity sha512-op+ak0NTyeBKqjLVH1jfPCRGWK5befIoQpCL/xwekjucUEmMfCbUpV1Sa60f9rU8X58HEqrclwWbAH+DtQR6FQ==
+"@oclif/test@^2":
+  version "2.0.3"
+  resolved "https://registry.npmjs.org/@oclif/test/-/test-2.0.3.tgz#03801057a29f8c37b722c2894ac8161b98733e91"
+  integrity sha512-8mN/cmfrPQKc9+3I6Dj6HNgmPqRVKe4P7gU61pLUz220oFUxhuP0EHLzY3ARFx8ecUZAJZdWJwh+dne/1GfTcA==
   dependencies:
-    fancy-test "^1.4.10"
+    fancy-test "^2.0.0"
 
 "@sinonjs/commons@^1.6.0", "@sinonjs/commons@^1.7.0", "@sinonjs/commons@^1.8.3":
   version "1.8.3"
@@ -1968,10 +1968,10 @@ extract-stack@^2.0.0:
   resolved "https://registry.yarnpkg.com/extract-stack/-/extract-stack-2.0.0.tgz#11367bc865bfcd9bc0db3123e5edb57786f11f9b"
   integrity sha512-AEo4zm+TenK7zQorGK1f9mJ8L14hnTDi2ZQPR+Mub1NX8zimka1mXpV5LpH8x9HoUmFSHZCfLHqWvp0Y4FxxzQ==
 
-fancy-test@^1.4.10:
-  version "1.4.10"
-  resolved "https://registry.yarnpkg.com/fancy-test/-/fancy-test-1.4.10.tgz#310be93d4aa45d788bce56a573ae4d1b92b2e1a0"
-  integrity sha512-AaUX6wKS7D5OP2YK2q5G7c8PGx2lgoyLUD7Bbg8z323sb9aebBqzb9UN6phzI73UgO/ViihmNfOxF3kdfZLhew==
+fancy-test@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.npmjs.org/fancy-test/-/fancy-test-2.0.0.tgz#f1477ae4190820318816914aabe273c0a0dbd597"
+  integrity sha512-SFb2D/VX9SV+wNYXO1IIh1wyxUC1GS0mYCFJOWD1ia7MPj9yE2G8jaPkw4t/pg0Sj7/YJP56OzMY4nAuJSOugQ==
   dependencies:
     "@types/chai" "*"
     "@types/lodash" "*"
