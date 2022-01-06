@@ -7,13 +7,13 @@
   "dependencies": {
     "@oclif/core": "^1.0.11",
     "chalk": "^4.1.0",
-    "cli-ux": "^5.6.6",
+    "cli-ux": "^6.0.6",
     "debug": "^4.0.0",
     "fs-extra": "^9.0.1"
   },
   "devDependencies": {
     "@oclif/plugin-help": "^5",
-    "@oclif/test": "^1",
+    "@oclif/test": "^2",
     "@types/chai": "^4",
     "@types/fs-extra": "^9.0.13",
     "@types/mocha": "^8",
@@ -58,7 +58,7 @@
   "repository": "oclif/plugin-autocomplete",
   "scripts": {
     "lint": "eslint . --ext .ts --config .eslintrc",
-    "pretest": "yarn build --noEmit && tsc -p test --noEmit",
+    "pretest": "yarn build && tsc -p test",
     "test": "mocha --forbid-only \"test/**/*.test.ts\"",
     "posttest": "yarn lint",
     "prepack": "shx rm -rf lib && tsc && oclif manifest . && oclif readme",
