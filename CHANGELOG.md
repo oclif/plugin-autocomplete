@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.1](https://github.com/oclif/plugin-autocomplete/compare/v1.1.0...v1.1.1) (2022-01-06)
+
+
+### Bug Fixes
+
+* bump cli-ux ([fd07ca5](https://github.com/oclif/plugin-autocomplete/commit/fd07ca5c76c0735068e8cd0558dad2add2fdfd19))
+
 ## [1.1.0](https://github.com/oclif/plugin-autocomplete/compare/v1.0.0...v1.1.0) (2022-01-04)
 
 
