@@ -1,6 +1,5 @@
-import {Flags} from '@oclif/core'
+import {CliUx, Flags} from '@oclif/core'
 import * as chalk from 'chalk'
-import {cli} from 'cli-ux'
 
 import {AutocompleteBase} from '../../base'
 
@@ -27,9 +26,9 @@ export default class Index extends AutocompleteBase {
     const shell = args.shell || this.determineShell(this.config.shell)
     this.errorIfNotSupportedShell(shell)
 
-    cli.action.start(`${chalk.bold('Building the autocomplete cache')}`)
+    CliUx.ux.action.start(`${chalk.bold('Building the autocomplete cache')}`)
     await Create.run([], this.config)
-    cli.action.stop()
+    CliUx.ux.action.stop()
 
     if (!flags['refresh-cache']) {
       const bin = this.config.bin
