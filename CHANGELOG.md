@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0](https://github.com/oclif/plugin-autocomplete/compare/v1.1.1...v1.2.0) (2022-01-28)
+
+
+### Features
+
+* remove cli-ux ([2107bc0](https://github.com/oclif/plugin-autocomplete/commit/2107bc0f371fc185e1678e3ee33888b4968ad262))
+
 ### [1.1.1](https://github.com/oclif/plugin-autocomplete/compare/v1.1.0...v1.1.1) (2022-01-06)
 
 
