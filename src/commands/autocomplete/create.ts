@@ -114,10 +114,19 @@ compinit;\n`
       p.commands.forEach(c => {
         try {
           if (c.hidden) return
+          const description = sanitizeDescription(c.description || '')
+          const flags = c.flags
           cmds.push({
             id: c.id,
-            description: sanitizeDescription(c.description || ''),
-            flags: c.flags,
+            description,
+            flags,
+          })
+          c.aliases.forEach(a => {
+            cmds.push({
+              id: a,
+              description,
+              flags,
+            })
           })
         } catch (error: any) {
           debug(`Error creating zsh flag spec for command ${c.id}`)

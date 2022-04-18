@@ -62,6 +62,7 @@ _oclif-example_autocomplete()
   local commands="
 autocomplete --skip-instructions
 autocomplete:foo --bar --baz --dangerous --brackets --double-quotes --multi-line --json
+foo --bar --baz --dangerous --brackets --double-quotes --multi-line --json
 "
 
   if [[ "$cur" != "-"* ]]; then
@@ -116,6 +117,7 @@ _oclif-example_autocomplete()
   local commands="
 autocomplete --skip-instructions
 autocomplete:foo --bar --baz --dangerous --brackets --double-quotes --multi-line --json
+foo --bar --baz --dangerous --brackets --double-quotes --multi-line --json
 "
 
   function __trim_colon_commands()
@@ -194,6 +196,7 @@ _oclif-example () {
   local -a _all_commands=(
 "autocomplete:display autocomplete instructions"
 "autocomplete\\:foo:cmd for autocomplete testing \\\\\\\`with some potentially dangerous script\\\\\\\` and \\\\\[square brackets\\\\\] and \\\\\\\"double-quotes\\\\\\\""
+"foo:cmd for autocomplete testing \\\\\\\`with some potentially dangerous script\\\\\\\` and \\\\\[square brackets\\\\\] and \\\\\\\"double-quotes\\\\\\\""
   )
 
   _set_flags () {
@@ -205,6 +208,18 @@ autocomplete)
 ;;
 
 autocomplete:foo)
+  _command_flags=(
+    "--bar=-[bar for testing]:"
+"--baz=-[baz for testing]:"
+"--dangerous=-[\\\\\\\`with some potentially dangerous script\\\\\\\`]:"
+"--brackets=-[\\\\\[square brackets\\\\\]]:"
+"--double-quotes=-[\\\\\\\"double-quotes\\\\\\\"]:"
+"--multi-line=-[multi-]:"
+"--json[output in json format]"
+  )
+;;
+
+foo)
   _command_flags=(
     "--bar=-[bar for testing]:"
 "--baz=-[baz for testing]:"
