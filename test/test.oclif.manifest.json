@@ -33,7 +33,7 @@
       "description": "cmd for autocomplete testing `with some potentially dangerous script` and [square brackets] and \"double-quotes\"\nand a multi-line description",
       "pluginName": "@oclif/plugin-autocomplete",
       "pluginType": "core",
-      "aliases": [],
+      "aliases": ["foo"],
       "flags": {
         "bar": {
           "name": "bar",
