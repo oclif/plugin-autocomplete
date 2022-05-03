@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.0](https://github.com/oclif/plugin-autocomplete/compare/v1.2.0...v1.3.0) (2022-05-03)
+
+
+### Features
+
+* aliases support ([a0db49e](https://github.com/oclif/plugin-autocomplete/commit/a0db49e48054f6979f3bf52fe6fbdf590e865d68))
+
 ## [1.2.0](https://github.com/oclif/plugin-autocomplete/compare/v1.1.1...v1.2.0) (2022-01-28)
 
 
