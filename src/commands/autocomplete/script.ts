@@ -14,7 +14,7 @@ export default class Script extends AutocompleteBase {
     const shell = args.shell || this.config.shell
     this.errorIfNotSupportedShell(shell)
 
-    const binUpcase = this.cliBinEnvVar.replace(/\-/g, "_")
+    const binUpcase = this.cliBinEnvVar.replace(/-/g, '_')
     const shellUpcase = shell.toUpperCase()
     this.log(
       `${this.prefix}${binUpcase}_AC_${shellUpcase}_SETUP_PATH=${path.join(
