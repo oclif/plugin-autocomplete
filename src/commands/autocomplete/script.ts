@@ -11,24 +11,26 @@ export default class Script extends AutocompleteBase {
 
   async run() {
     const {args} = await this.parse(Script)
-    const shell = args.shell || this.config.shell
+    const shell = args.shell ?? this.config.shell
     this.errorIfNotSupportedShell(shell)
 
-    const binUpcase = this.cliBinEnvVar
-    const shellUpcase = shell.toUpperCase()
-    this.log(
-      `${this.prefix}${binUpcase}_AC_${shellUpcase}_SETUP_PATH=${path.join(
-        this.autocompleteCacheDir,
-        `${shell}_setup`,
-      )} && test -f $${binUpcase}_AC_${shellUpcase}_SETUP_PATH && source $${binUpcase}_AC_${shellUpcase}_SETUP_PATH;${this.suffix}`,
-    )
+    let setupScript
+    switch (shell) {
+    case 'bash':
+      setupScript = this.bashSetupScript
+      break
+    case 'zsh':
+      setupScript = this.zshSetupScript
+      break
+    case 'powershell':
+      setupScript = this.powershellSetupScript
+      break
+    }
+
+    this.log(`${this.prefix}${setupScript}`)
   }
 
   private get prefix(): string {
     return '\n'
-  }
-
-  private get suffix(): string {
-    return ` # ${this.cliBin} autocomplete setup\n`
   }
 }
