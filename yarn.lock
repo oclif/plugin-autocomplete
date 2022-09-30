@@ -466,10 +466,11 @@
   integrity sha512-S/SF/XYJeevwIgHFmVDAFRUvM3m+OjhvCAYMk78ZJQCYCQ5wS7j+LTt1ZEv2jpEEGg2tx/F6TYYWxddNAYHrFQ==
 
 "@oclif/test@^2":
-  version "2.0.3"
-  resolved "https://registry.npmjs.org/@oclif/test/-/test-2.0.3.tgz#03801057a29f8c37b722c2894ac8161b98733e91"
-  integrity sha512-8mN/cmfrPQKc9+3I6Dj6HNgmPqRVKe4P7gU61pLUz220oFUxhuP0EHLzY3ARFx8ecUZAJZdWJwh+dne/1GfTcA==
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@oclif/test/-/test-2.2.0.tgz#70b1b8b4c5a2272e9cef5108f8e52f1afab8e6b6"
+  integrity sha512-hykwoXt8Ml+J+mwr9cJ+xl+84gSKdF+S7MKCjM5cPGMg6uhXBuzXtMlVK91s4bZh0uPYUioYJWAeptAgTHfgHQ==
   dependencies:
+    "@oclif/core" "^1.16.4"
     fancy-test "^2.0.0"
 
 "@octokit/auth-token@^2.4.4":
