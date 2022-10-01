@@ -466,12 +466,12 @@
   integrity sha512-S/SF/XYJeevwIgHFmVDAFRUvM3m+OjhvCAYMk78ZJQCYCQ5wS7j+LTt1ZEv2jpEEGg2tx/F6TYYWxddNAYHrFQ==
 
 "@oclif/test@^2":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@oclif/test/-/test-2.2.0.tgz#70b1b8b4c5a2272e9cef5108f8e52f1afab8e6b6"
-  integrity sha512-hykwoXt8Ml+J+mwr9cJ+xl+84gSKdF+S7MKCjM5cPGMg6uhXBuzXtMlVK91s4bZh0uPYUioYJWAeptAgTHfgHQ==
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/@oclif/test/-/test-2.2.1.tgz#1694b0b236bff1183d0e44af063e77bf6bc60f03"
+  integrity sha512-j3PdoeK86DFCmilvUZSQFdHa0o1eejlR70c9O5UqqPLGSY3Pz/11TaXB5BrfhqISIpZTUIacDlAd1Xvybft0sg==
   dependencies:
     "@oclif/core" "^1.16.4"
-    fancy-test "^2.0.0"
+    fancy-test "^2.0.2"
 
 "@octokit/auth-token@^2.4.4":
   version "2.5.0"
@@ -2054,10 +2054,10 @@ extract-stack@^2.0.0:
   resolved "https://registry.yarnpkg.com/extract-stack/-/extract-stack-2.0.0.tgz#11367bc865bfcd9bc0db3123e5edb57786f11f9b"
   integrity sha512-AEo4zm+TenK7zQorGK1f9mJ8L14hnTDi2ZQPR+Mub1NX8zimka1mXpV5LpH8x9HoUmFSHZCfLHqWvp0Y4FxxzQ==
 
-fancy-test@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.npmjs.org/fancy-test/-/fancy-test-2.0.0.tgz#f1477ae4190820318816914aabe273c0a0dbd597"
-  integrity sha512-SFb2D/VX9SV+wNYXO1IIh1wyxUC1GS0mYCFJOWD1ia7MPj9yE2G8jaPkw4t/pg0Sj7/YJP56OzMY4nAuJSOugQ==
+fancy-test@^2.0.2:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/fancy-test/-/fancy-test-2.0.4.tgz#b7650e13598e5ad2a27f0d89ad07813bfb09d53e"
+  integrity sha512-jZbiHiJY1phazdfQkVhdBEY5aZXEydiZzFxK9VqCfrMmRw/kHPgQ6i88+nyqQwpFV3yL2mUbMe/NEfMaSfO7+g==
   dependencies:
     "@types/chai" "*"
     "@types/lodash" "*"
