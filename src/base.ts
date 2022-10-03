@@ -92,7 +92,7 @@ compinit;\n`
 
   // Returns the name of an environment variable that points to the completion function file for the given shell.
   private completionFunctionPathEnvVar(shell: string): string {
-    const binUpcase = this.cliBinEnvVar
+    const binUpcase = this.cliBinEnvVar.replace(/-/g, '_')
     const shellUpcase = shell.toUpperCase()
     return `${binUpcase}_AC_${shellUpcase}_COMPFUNC_PATH`
   }
