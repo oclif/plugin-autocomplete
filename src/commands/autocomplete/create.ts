@@ -27,7 +27,7 @@ function sanitizeDescription(description?: string): string {
 export default class Create extends AutocompleteBase {
   static hidden = true
 
-  static args = [{name: 'shell', description: 'shell type', required: false}]
+  static args = [{name: 'shell', description: 'The shell for which to create an autocomplete script', required: false}]
 
   static description = 'create autocomplete setup scripts and completion functions'
 
