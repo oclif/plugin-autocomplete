@@ -1,5 +1,3 @@
-import * as path from 'path'
-
 import {AutocompleteBase} from '../../base'
 
 export default class Script extends AutocompleteBase {
