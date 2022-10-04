@@ -1,7 +1,9 @@
+import * as path from 'path'
+
+import {expect} from 'chai'
+
 import {Config, Plugin} from '@oclif/core'
 import {loadJSON} from '@oclif/core/lib/config/util'
-import {expect} from 'chai'
-import * as path from 'path'
 
 import Create from '../../../src/commands/autocomplete/create'
 
@@ -29,25 +31,28 @@ skipWindows('Create', () => {
 
     it('file paths', () => {
       const dir = cmd.config.cacheDir
-      expect(cmd.bashSetupScriptPath).to.eq(`${dir}/autocomplete/bash_setup`)
-      expect(cmd.bashCompletionFunctionPath).to.eq(`${dir}/autocomplete/functions/bash/oclif-example.bash`)
-      expect(cmd.zshSetupScriptPath).to.eq(`${dir}/autocomplete/zsh_setup`)
-      expect(cmd.zshCompletionFunctionPath).to.eq(`${dir}/autocomplete/functions/zsh/_oclif-example`)
+      expect(cmd.bashCompletionFunctionPath).to.eq(path.join(dir, 'autocomplete', 'functions', 'bash', 'oclif-example.bash'))
+      expect(cmd.zshCompletionFunctionPath).to.eq(path.join(dir, 'autocomplete', 'functions', 'zsh', '_oclif-example'))
+      expect(cmd.powershellCompletionFunctionPath).to.eq(path.join(dir, 'autocomplete', 'functions', 'powershell', 'oclif-example.ps1'))
     })
 
     it('#bashSetupScript', () => {
-      expect(cmd.bashSetupScript).to.eq(`OCLIF_EXAMPLE_AC_BASH_COMPFUNC_PATH=${config.cacheDir}/autocomplete/functions/bash/oclif-example.bash && test -f $OCLIF_EXAMPLE_AC_BASH_COMPFUNC_PATH && source $OCLIF_EXAMPLE_AC_BASH_COMPFUNC_PATH;\n`)
+      expect(cmd.bashSetupScript).to.eq(`OCLIF_EXAMPLE_AC_BASH_COMPFUNC_PATH=${path.join(config.cacheDir, 'autocomplete', 'functions', 'bash', 'oclif-example.bash')} && test -f $OCLIF_EXAMPLE_AC_BASH_COMPFUNC_PATH && source $OCLIF_EXAMPLE_AC_BASH_COMPFUNC_PATH;`)
     })
 
     it('#zshSetupScript', () => {
       expect(cmd.zshSetupScript).to.eq(`
 fpath=(
-${config.cacheDir}/autocomplete/functions/zsh
+${path.join(config.cacheDir, 'autocomplete', 'functions', 'zsh')}
 $fpath
 );
 autoload -Uz compinit;
 compinit;
 `)
+    })
+
+    it('#powershellSetupScript', () => {
+      expect(cmd.powershellSetupScript).to.eq(`$env:OCLIF_EXAMPLE_AC_POWERSHELL_COMPFUNC_PATH="${path.join(config.cacheDir, 'autocomplete', 'functions', 'powershell', 'oclif-example.ps1')}"; .$env:OCLIF_EXAMPLE_AC_POWERSHELL_COMPFUNC_PATH`)
     })
 
     it('#bashCompletionFunction', () => {
@@ -255,6 +260,16 @@ foo)
 _oclif-example\n`)
 
       /* eslint-enable no-useless-escape */
+    })
+
+    it('#powershellCompletionFunction', () => {
+      expect(cmd.powershellCompletionFunction).to.eq(`# oclif-example Autocomplete
+Register-ArgumentCompleter -Native -CommandName oclif-example -ScriptBlock {
+  $commands = "autocomplete,autocomplete:foo,foo"
+  ($commands).Split(",") | ForEach-Object {
+    [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
+  }
+}\n`)
     })
   })
 })

@@ -35,7 +35,7 @@ export default class Index extends AutocompleteBase {
       const bin = this.config.bin
       const tabStr = shell === 'bash' ? '<TAB><TAB>' : '<TAB>'
       const instructions = shell === 'powershell' ?
-        `$ Add-Content -Path $PROFILE -Value (Invoke-Expression -Command "${bin} autocomplete:script ${shell}") && .$PROFILE` :
+        `$ Add-Content -Path $PROFILE -Value (Invoke-Expression -Command "${bin} autocomplete:script ${shell}"); .$PROFILE` :
         `$ printf "eval $(${bin} autocomplete:script ${shell})" >> ~/.${shell}rc; source ~/.${shell}rc`
 
       let note
