@@ -1,8 +1,10 @@
-import {CliUx, Flags} from '@oclif/core'
+import {EOL} from 'os'
+
 import * as chalk from 'chalk'
 
-import {AutocompleteBase} from '../../base'
+import {CliUx, Flags} from '@oclif/core'
 
+import {AutocompleteBase} from '../../base'
 import Create from './create'
 
 export default class Index extends AutocompleteBase {
@@ -39,6 +41,7 @@ export default class Index extends AutocompleteBase {
         `$ printf "eval $(${bin} autocomplete:script ${shell})" >> ~/.${shell}rc; source ~/.${shell}rc`
 
       let note
+      let codeNote
       switch (shell) {
       case 'bash':
         note = 'If your terminal starts as a login shell you may need to print the init script into ~/.bash_profile or ~/.profile.'
@@ -47,7 +50,12 @@ export default class Index extends AutocompleteBase {
         note = `After sourcing, you can run \`${chalk.cyan('$ compaudit -D')}\` to ensure no permissions conflicts are present`
         break
       case 'powershell':
-        note = 'If your terminal starts as a login shell you may need to print the init script into $PROFILE or $HOME\\Documents\\PowerShell\\Microsoft.PowerShell_profile.ps1.'
+        note = `If your terminal starts as a login shell you may need to print the init script into $PROFILE or $HOME\\Documents\\PowerShell\\Microsoft.PowerShell_profile.ps1.
+        
+If you also want a menu that you can navigate with the arrow keys to show up when using autocomplete add the following to your $PROFILE:`
+        codeNote = `
+    # Shows navigable menu of all options when hitting Tab
+    Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete`
         break
       }
 
@@ -57,7 +65,7 @@ ${chalk.bold(`Setup Instructions for ${bin.toUpperCase()} CLI Autocomplete ---`)
 1) Add the autocomplete env var to your ${shell} profile and source it
 ${chalk.cyan(instructions)}
 
-NOTE: ${note}
+NOTE: ${note} ${codeNote ? EOL + chalk.cyan(codeNote) : ''}
 
 2) Test it out, e.g.:
 ${chalk.cyan(`$ ${bin} ${tabStr}`)}                 # Command completion
