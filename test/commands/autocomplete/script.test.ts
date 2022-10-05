@@ -22,9 +22,12 @@ OCLIF_EXAMPLE_AC_BASH_COMPFUNC_PATH=${path.join(
   .command(['autocomplete:script', 'zsh'])
   .it('outputs zsh profile config', ctx => {
     expect(ctx.stdout).to.contain(`
-OCLIF_EXAMPLE_AC_ZSH_SETUP_PATH=${path.join(
-    ctx.config.cacheDir, 'autocomplete', 'zsh_setup',
-  )} && test -f $OCLIF_EXAMPLE_AC_ZSH_SETUP_PATH && source $OCLIF_EXAMPLE_AC_ZSH_SETUP_PATH;
+fpath=(
+${path.join(ctx.config.cacheDir, 'autocomplete', 'functions', 'zsh')}
+$fpath
+);
+autoload -Uz compinit;
+compinit;
 `,
     )
   })

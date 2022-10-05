@@ -57,7 +57,8 @@ ${this.autocompleteFunctionDir('zsh')}
 $fpath
 );
 autoload -Uz compinit;
-compinit;\n`
+compinit;
+`
   }
 
   public get powershellSetupScript(): string {

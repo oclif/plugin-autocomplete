@@ -52,15 +52,18 @@ export default class Create extends AutocompleteBase {
   private async createFiles(shell: string) {
     switch (shell) {
     case 'bash':
-      await fs.writeFile(this.autocompleteSetupScriptPath(shell), this.bashSetupScript)
+      // TODO: remove this commented line and other code that references a bashSetupScript, it's not needed anymore
+      // await fs.writeFile(this.autocompleteSetupScriptPath(shell), this.bashSetupScript)
       await fs.writeFile(this.bashCompletionFunctionPath, this.bashCompletionFunction)
       break
     case 'zsh':
-      await fs.writeFile(this.autocompleteSetupScriptPath(shell), this.zshSetupScript)
+      // TODO: remove this commented line and other code that references a zshSetupScript, it's not needed anymore
+      // await fs.writeFile(this.autocompleteSetupScriptPath(shell), this.zshSetupScript)
       await fs.writeFile(this.zshCompletionFunctionPath, this.zshCompletionFunction)
       break
     case 'powershell':
-      await fs.writeFile(this.autocompleteSetupScriptPath(shell), this.powershellSetupScript)
+      // TODO: remove this commented line and other code that references a powershellSetupScript, it's not needed anymore
+      // await fs.writeFile(this.autocompleteSetupScriptPath(shell), this.powershellSetupScript)
       await fs.writeFile(this.powershellCompletionFunctionPath, this.powershellCompletionFunction)
       break
     }
