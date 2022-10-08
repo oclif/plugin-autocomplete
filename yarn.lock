@@ -385,10 +385,10 @@
     supports-color "^8.1.1"
     tslib "^2"
 
-"@oclif/core@^1.0.11", "@oclif/core@^1.0.8", "@oclif/core@^1.1.1", "@oclif/core@^1.16.4":
-  version "1.16.4"
-  resolved "https://registry.yarnpkg.com/@oclif/core/-/core-1.16.4.tgz#fafa338ada0624d7f1adac036302b05a37cd96d0"
-  integrity sha512-l+xHtVMteJWeTZZ+f2yLyNjf69X0mhAH8GILXnmoAGAemXbc1DVstvloxOouarvm9xyHHhquzO1Qg5l6xa1VIw==
+"@oclif/core@^1.0.11", "@oclif/core@^1.0.8", "@oclif/core@^1.1.1", "@oclif/core@^1.16.4", "@oclif/core@^1.16.5":
+  version "1.16.5"
+  resolved "https://registry.yarnpkg.com/@oclif/core/-/core-1.16.5.tgz#248c3371b615462a6ee6826a3c316bdc54dc5193"
+  integrity sha512-Jb58K79AALkLmY0PNU1Jx4Z+/JIWtpgtRbei92PIIBx+TaAmYgVySNI1beInZFNOpGo2fhxVBp+yr3DZ38z3kQ==
   dependencies:
     "@oclif/linewrap" "^1.0.0"
     "@oclif/screen" "^3.0.2"
@@ -425,11 +425,11 @@
   integrity sha512-Ups2dShK52xXa8w6iBWLgcjPJWjais6KPJQq3gQ/88AY6BXoTX+MIGFPrWQO1KLMiQfoTpcLnUwloN4brrVUHw==
 
 "@oclif/plugin-help@^5", "@oclif/plugin-help@^5.1.10":
-  version "5.1.14"
-  resolved "https://registry.yarnpkg.com/@oclif/plugin-help/-/plugin-help-5.1.14.tgz#641e6f2c7effb4a21573d50c649af662a919bcf9"
-  integrity sha512-jhpD0a2bEp3YW93sQcUM3b15DH+svQqC9pMXNp1m1VyAPoskdaELgt5P/5SjmNuFwqws8scxpbYKlr2/lvvkGQ==
+  version "5.1.15"
+  resolved "https://registry.yarnpkg.com/@oclif/plugin-help/-/plugin-help-5.1.15.tgz#c9466d3efc694cfd0e83eaca565b8799b477549c"
+  integrity sha512-RfLo7vOTga/02w7jTAHFOi3m4X34Xbfyl20spg4Jq7NM6WduDaIj2auXrHW3w8OkEi4Zl/g0AvB4PIyLr+NYYw==
   dependencies:
-    "@oclif/core" "^1.16.4"
+    "@oclif/core" "^1.16.5"
 
 "@oclif/plugin-not-found@^2.2.3":
   version "2.2.4"
