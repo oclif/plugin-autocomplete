@@ -1,6 +1,6 @@
 {
   "name": "@oclif/plugin-autocomplete",
-  "description": "autocomplete plugin for oclif",
+  "description": "local autocomplete plugin for oclif",
   "version": "1.3.1",
   "author": "Salesforce",
   "bugs": "https://github.com/oclif/plugin-autocomplete/issues",
@@ -50,6 +50,7 @@
   "oclif": {
     "commands": "./lib/commands",
     "bin": "oclif-example",
+    "topicSeparator": " ",
     "devPlugins": [
       "@oclif/plugin-help"
     ]
