@@ -52,15 +52,13 @@ compinit;
   let ScriptCommandLogStub: sinon.SinonStub
   const sandbox = sinon.createSandbox()
 
-  beforeEach(() => {
-    ScriptCommandLogStub = sandbox.stub(ScriptCommand.prototype, 'log')
-  })
-
   afterEach(() => {
     sandbox.restore()
   })
 
   it('outputs powershell profile config', async () => {
+    ScriptCommandLogStub = sandbox.stub(ScriptCommand.prototype, 'log')
+
     const config = new Config({root: path.resolve(__dirname, '../../../package.json')})
     config.topicSeparator = ' '
     await config.load()
