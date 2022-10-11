@@ -27,7 +27,7 @@ export default class Index extends AutocompleteBase {
   async run() {
     const {args, flags} = await this.parse(Index)
     const shell = args.shell || this.determineShell(this.config.shell)
-    this.errorIfNotSupportedShell(shell)
+    this.errorIfNotSupported(shell)
 
     CliUx.ux.action.start(`${chalk.bold('Building the autocomplete cache')}`)
     await Create.run([shell], this.config)
@@ -37,7 +37,7 @@ export default class Index extends AutocompleteBase {
       const bin = this.config.bin
       const tabStr = shell === 'bash' ? '<TAB><TAB>' : '<TAB>'
       const instructions = shell === 'powershell' ?
-        `$ Add-Content -Path $PROFILE -Value (Invoke-Expression -Command "${bin} autocomplete:script ${shell}"); .$PROFILE` :
+        `> Add-Content -Path $PROFILE -Value (Invoke-Expression -Command "${bin} autocomplete:script ${shell}"); .$PROFILE` :
         `$ printf "eval $(${bin} autocomplete:script ${shell})" >> ~/.${shell}rc; source ~/.${shell}rc`
 
       let note
@@ -68,8 +68,8 @@ ${chalk.cyan(instructions)}
 NOTE: ${note} ${codeNote ? EOL + chalk.cyan(codeNote) : ''}
 
 2) Test it out, e.g.:
-${chalk.cyan(`$ ${bin} ${tabStr}`)}                 # Command completion
-${chalk.cyan(`$ ${bin} command --${tabStr}`)}       # Flag completion
+${chalk.cyan(`${shell === 'powershell' ? '>' : '$'} ${bin} ${tabStr}`)}                 # Command completion
+${chalk.cyan(`${shell === 'powershell' ? '>' : '$'} ${bin} command --${tabStr}`)}       # Flag completion
 
 Enjoy!
 `)

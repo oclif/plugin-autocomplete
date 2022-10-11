@@ -76,10 +76,19 @@ compinit;
     }
   }
 
-  public errorIfNotSupportedShell(shell: string) {
+  public errorIfNotSupported(shell: string) {
+    // Error if we don't know what shell is being used
     if (!shell) {
       this.error('Missing required argument shell')
     }
+
+    // Error if the shell is not supported with the CLI's topic separator.
+    if (this.config.topicSeparator !== ':' && shell === 'zsh') {
+      throw new Error('Autocomplete for zsh is not supported in CLIs with commands separated by spaces')
+    } else if (this.config.topicSeparator !== ' ' && shell === 'powershell') {
+      throw new Error('Autocomplete for powershell is not supported in CLIs with commands separated by colons')
+    }
+
     if (!['bash', 'zsh', 'powershell'].includes(shell)) {
       throw new Error(`${shell} is not a supported shell for autocomplete`)
     }

@@ -10,9 +10,6 @@ import {AutocompleteBase} from '../src/base'
 Chai.use(SinonChai)
 const expect = Chai.expect
 
-// autocomplete will throw error on windows
-const {default: runtest} = require('./helpers/runtest')
-
 class AutocompleteTest extends AutocompleteBase {
   async run() {
     return null
@@ -22,9 +19,13 @@ class AutocompleteTest extends AutocompleteBase {
 const root = path.resolve(__dirname, '../package.json')
 const config = new Config({root})
 
-const cmd = new AutocompleteTest([], config)
+const configWithSpaces = Object.create(config)
+configWithSpaces.topicSeparator = ' '
 
-runtest('AutocompleteBase', () => {
+const cmd = new AutocompleteTest([], config)
+const cmdWithSpaces = new AutocompleteTest([], configWithSpaces)
+
+describe('AutocompleteBase', () => {
   let fsWriteStub: Sinon.SinonStub
   let fsOpenSyncStub: Sinon.SinonStub
 
@@ -47,12 +48,34 @@ runtest('AutocompleteBase', () => {
     }).to.throw()
   })
 
-  it('#errorIfNotSupportedShell', async () => {
-    try {
-      cmd.errorIfNotSupportedShell('fish')
-    } catch (error: any) {
-      expect(error.message).to.eq('fish is not a supported shell for autocomplete')
-    }
+  describe('#errorIfNotSupported', async () => {
+    it('should throw error if shell is not supported', async () => {
+      try {
+        cmd.errorIfNotSupported('fish')
+        expect('This should throw an error but it did not').to.be.empty // If this expect statement is reached, the test fails
+      } catch (error: any) {
+        expect(error.message).to.eq('fish is not a supported shell for autocomplete')
+      }
+    })
+
+    it('should throw if powershell & topicSeparator is a colon', async () => {
+      try {
+        cmd.errorIfNotSupported('powershell')
+        expect('This should throw an error but it did not').to.be.empty // If this expect statement is reached, the test fails
+      } catch (error: any) {
+        expect(error.message).to.eq('Autocomplete for powershell is not supported in CLIs with commands separated by colons')
+      }
+    })
+
+    it('should not throw if zsh & topicSeparator is a space', async () => {
+      await configWithSpaces.load()
+      try {
+        cmdWithSpaces.errorIfNotSupported('zsh')
+        expect('This should throw an error but it did not').to.be.empty // If this expect statement is reached, the test fails
+      } catch (error: any) {
+        expect(error.message).to.eq('Autocomplete for zsh is not supported in CLIs with commands separated by spaces')
+      }
+    })
   })
 
   it('#autocompleteCacheDir', async () => {

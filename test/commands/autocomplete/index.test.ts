@@ -1,10 +1,7 @@
 /* eslint-disable no-useless-escape */
 import {expect, test} from '@oclif/test'
 
-// autocomplete will throw error on windows ci
-const {default: skipWindows} = require('../../helpers/runtest')
-
-skipWindows('autocomplete index', () => {
+describe('autocomplete index', () => {
   test
   .stdout()
   .command(['autocomplete', 'bash'])

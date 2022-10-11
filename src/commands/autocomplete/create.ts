@@ -35,7 +35,7 @@ export default class Create extends AutocompleteBase {
 
   async run() {
     const {args} = await this.parse(Create)
-    this.errorIfNotSupportedShell(args.shell ?? this.config.shell)
+    this.errorIfNotSupported(args.shell ?? this.config.shell)
     // 1. ensure needed dirs
     await this.ensureDirs(args.shell ?? this.config.shell)
     // 2. save (generated) autocomplete files

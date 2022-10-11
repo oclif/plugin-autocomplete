@@ -10,7 +10,7 @@ export default class Script extends AutocompleteBase {
   async run() {
     const {args} = await this.parse(Script)
     const shell = args.shell ?? this.config.shell
-    this.errorIfNotSupportedShell(shell)
+    this.errorIfNotSupported(shell)
 
     let setupScript
     switch (shell) {
