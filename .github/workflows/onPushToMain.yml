@@ -11,7 +11,7 @@ on:
 
 jobs:
   release:
-    uses: oclif/github-workflows/.github/workflows/githubRelease.yml@prereleases-semver
+    uses: oclif/github-workflows/.github/workflows/githubRelease.yml@main
     secrets: inherit
     with:
       prerelease: ${{ github.ref_name != 'main' }}

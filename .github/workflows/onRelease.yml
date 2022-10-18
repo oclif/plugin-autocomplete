@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.release.tag_name || inputs.tag  }}
-      - uses: oclif/github-workflows/.github/actions/getPreReleaseTag@prereleases-semver
+      - uses: oclif/github-workflows/.github/actions/getPreReleaseTag@main
         id: distTag
 
   npm:
