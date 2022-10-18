@@ -1,0 +1,9 @@
+"sf env<tab>"
+wordToComplete: env - cursorPosition: 6 - commandAst: sf env
+"sf env list<tab>"
+wordToComplete: list - cursorPosition: 11 - commandAst: sf env list
+"sf env <tab>"
+wordToComplete:  - cursorPosition: 7 - commandAst: sf env
+"sf env list <tab>"
+wordToComplete:  - cursorPosition: 12 - commandAst: sf env list
+wordToComplete:  - cursorPosition: 3 - commandAst: sf

@@ -11,6 +11,61 @@ export abstract class AutocompleteBase extends Command {
     return this.config.bin.toUpperCase().replace('-', '_')
   }
 
+  public get autocompleteCacheDir(): string {
+    return path.join(this.config.cacheDir, 'autocomplete')
+  }
+
+  public get acLogfilePath(): string {
+    return path.join(this.config.cacheDir, 'autocomplete.log')
+  }
+
+  public autocompleteSetupScriptPath(shell: string): string {
+    // <cachedir>/autocomplete/<shell>_setup
+    return path.join(this.autocompleteCacheDir, `${shell}_setup`)
+  }
+
+  public autocompleteFunctionDir(shell: string): string {
+    // <cachedir>/autocomplete/functions/<shell>
+    return path.join(this.autocompleteCacheDir, 'functions', shell)
+  }
+
+  public get bashCompletionFunctionPath(): string {
+    // <cachedir>/autocomplete/functions/bash/<bin>.bash
+    return path.join(this.autocompleteFunctionDir('bash'), `${this.cliBin}.bash`)
+  }
+
+  public get zshCompletionFunctionPath(): string {
+    // <cachedir>/autocomplete/functions/zsh/_<bin>
+    return path.join(this.autocompleteFunctionDir('zsh'), `_${this.cliBin}`)
+  }
+
+  public get powershellCompletionFunctionPath(): string {
+    // <cachedir>/autocomplete/functions/powershell/<bin>.ps1
+    return path.join(this.autocompleteFunctionDir('powershell'), `${this.cliBin}.ps1`)
+  }
+
+  public get bashSetupScript(): string {
+    const envVar = this.completionFunctionPathEnvVar('bash')
+    /* eslint-disable-next-line no-useless-escape */
+    return `${envVar}=${this.bashCompletionFunctionPath} && test -f \$${envVar} && source \$${envVar};`
+  }
+
+  public get zshSetupScript(): string {
+    return `
+fpath=(
+${this.autocompleteFunctionDir('zsh')}
+$fpath
+);
+autoload -Uz compinit;
+compinit;
+`
+  }
+
+  public get powershellSetupScript(): string {
+    const envVar = this.completionFunctionPathEnvVar('powershell')
+    return `$env:${envVar}="${this.powershellCompletionFunctionPath}"; .$env:${envVar}`
+  }
+
   public determineShell(shell: string) {
     if (!shell) {
       this.error('Missing required argument shell')
@@ -21,34 +76,35 @@ export abstract class AutocompleteBase extends Command {
     }
   }
 
-  public errorIfWindows() {
-    if (this.config.windows && !this.isBashOnWindows(this.config.shell)) {
-      throw new Error('Autocomplete is not currently supported in Windows')
-    }
-  }
-
-  public errorIfNotSupportedShell(shell: string) {
+  public errorIfNotSupported(shell: string) {
+    // Error if we don't know what shell is being used
     if (!shell) {
       this.error('Missing required argument shell')
     }
-    this.errorIfWindows()
-    if (!['bash', 'zsh'].includes(shell)) {
+
+    // Error if the shell is not supported with the CLI's topic separator.
+    if (this.config.topicSeparator !== ':' && shell === 'zsh') {
+      throw new Error('Autocomplete for zsh is not supported in CLIs with commands separated by spaces')
+    } else if (this.config.topicSeparator !== ' ' && shell === 'powershell') {
+      throw new Error('Autocomplete for powershell is not supported in CLIs with commands separated by colons')
+    }
+
+    if (!['bash', 'zsh', 'powershell'].includes(shell)) {
       throw new Error(`${shell} is not a supported shell for autocomplete`)
     }
   }
 
-  public get autocompleteCacheDir(): string {
-    return path.join(this.config.cacheDir, 'autocomplete')
-  }
-
-  public get acLogfilePath(): string {
-    return path.join(this.config.cacheDir, 'autocomplete.log')
-  }
-
-  writeLogFile(msg: string) {
+  public writeLogFile(msg: string) {
     const entry = `[${(new Date()).toISOString()}] ${msg}\n`
     const fd = fs.openSync(this.acLogfilePath, 'a')
     fs.write(fd, entry)
+  }
+
+  // Returns the name of an environment variable that points to the completion function file for the given shell.
+  private completionFunctionPathEnvVar(shell: string): string {
+    const binUpcase = this.cliBinEnvVar.replace(/-/g, '_')
+    const shellUpcase = shell.toUpperCase()
+    return `${binUpcase}_AC_${shellUpcase}_COMPFUNC_PATH`
   }
 
   private isBashOnWindows(shell: string) {

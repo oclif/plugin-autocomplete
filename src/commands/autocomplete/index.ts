@@ -1,8 +1,10 @@
-import {CliUx, Flags} from '@oclif/core'
+import {EOL} from 'os'
+
 import * as chalk from 'chalk'
 
-import {AutocompleteBase} from '../../base'
+import {CliUx, Flags} from '@oclif/core'
 
+import {AutocompleteBase} from '../../base'
 import Create from './create'
 
 export default class Index extends AutocompleteBase {
@@ -18,34 +20,56 @@ export default class Index extends AutocompleteBase {
     '$ <%= config.bin %> autocomplete',
     '$ <%= config.bin %> autocomplete bash',
     '$ <%= config.bin %> autocomplete zsh',
+    '$ <%= config.bin %> autocomplete powershell',
     '$ <%= config.bin %> autocomplete --refresh-cache',
   ]
 
   async run() {
     const {args, flags} = await this.parse(Index)
     const shell = args.shell || this.determineShell(this.config.shell)
-    this.errorIfNotSupportedShell(shell)
+    this.errorIfNotSupported(shell)
 
     CliUx.ux.action.start(`${chalk.bold('Building the autocomplete cache')}`)
-    await Create.run([], this.config)
+    await Create.run([shell], this.config)
     CliUx.ux.action.stop()
 
     if (!flags['refresh-cache']) {
       const bin = this.config.bin
       const tabStr = shell === 'bash' ? '<TAB><TAB>' : '<TAB>'
-      const note = shell === 'zsh' ? `After sourcing, you can run \`${chalk.cyan('$ compaudit -D')}\` to ensure no permissions conflicts are present` : 'If your terminal starts as a login shell you may need to print the init script into ~/.bash_profile or ~/.profile.'
+      const instructions = shell === 'powershell' ?
+        `> Add-Content -Path $PROFILE -Value (Invoke-Expression -Command "${bin} autocomplete:script ${shell}"); .$PROFILE` :
+        `$ printf "eval $(${bin} autocomplete:script ${shell})" >> ~/.${shell}rc; source ~/.${shell}rc`
+
+      let note
+      let codeNote
+      switch (shell) {
+      case 'bash':
+        note = 'If your terminal starts as a login shell you may need to print the init script into ~/.bash_profile or ~/.profile.'
+        break
+      case 'zsh':
+        note = `After sourcing, you can run \`${chalk.cyan('$ compaudit -D')}\` to ensure no permissions conflicts are present`
+        break
+      case 'powershell':
+        note = `If your terminal starts as a login shell you may need to print the init script into $PROFILE or $HOME\\Documents\\PowerShell\\Microsoft.PowerShell_profile.ps1.
+        
+If you also want a menu that you can navigate with the arrow keys to show up when using autocomplete add the following to your $PROFILE:`
+        codeNote = `
+    # Shows navigable menu of all options when hitting Tab
+    Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete`
+        break
+      }
 
       this.log(`
 ${chalk.bold(`Setup Instructions for ${bin.toUpperCase()} CLI Autocomplete ---`)}
 
 1) Add the autocomplete env var to your ${shell} profile and source it
-${chalk.cyan(`$ printf "eval $(${bin} autocomplete:script ${shell})" >> ~/.${shell}rc; source ~/.${shell}rc`)}
+${chalk.cyan(instructions)}
 
-NOTE: ${note}
+NOTE: ${note} ${codeNote ? EOL + chalk.cyan(codeNote) : ''}
 
 2) Test it out, e.g.:
-${chalk.cyan(`$ ${bin} ${tabStr}`)}                 # Command completion
-${chalk.cyan(`$ ${bin} command --${tabStr}`)}       # Flag completion
+${chalk.cyan(`${shell === 'powershell' ? '>' : '$'} ${bin} ${tabStr}`)}                 # Command completion
+${chalk.cyan(`${shell === 'powershell' ? '>' : '$'} ${bin} command --${tabStr}`)}       # Flag completion
 
 Enjoy!
 `)

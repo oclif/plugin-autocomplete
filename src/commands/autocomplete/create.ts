@@ -1,9 +1,8 @@
-import * as path from 'path'
-
 import * as fs from 'fs-extra'
 
 import bashAutocomplete from '../../autocomplete/bash'
 import bashAutocompleteWithSpaces from '../../autocomplete/bash-spaces'
+import powershellAutocomplete from '../../autocomplete/powershell'
 import {AutocompleteBase} from '../../base'
 
 const debug = require('debug')('autocomplete:create')
@@ -28,80 +27,46 @@ function sanitizeDescription(description?: string): string {
 export default class Create extends AutocompleteBase {
   static hidden = true
 
+  static args = [{name: 'shell', description: 'The shell for which to create an autocomplete script', required: false}]
+
   static description = 'create autocomplete setup scripts and completion functions'
 
   private _commands?: CommandCompletion[]
 
   async run() {
-    this.errorIfWindows()
+    const {args} = await this.parse(Create)
+    this.errorIfNotSupported(args.shell ?? this.config.shell)
     // 1. ensure needed dirs
-    await this.ensureDirs()
+    await this.ensureDirs(args.shell ?? this.config.shell)
     // 2. save (generated) autocomplete files
-    await this.createFiles()
+    await this.createFiles(args.shell ?? this.config.shell)
   }
 
-  private async ensureDirs() {
+  private async ensureDirs(shell: string) {
     // ensure autocomplete cache dir
     await fs.ensureDir(this.autocompleteCacheDir)
-    // ensure autocomplete bash function dir
-    await fs.ensureDir(this.bashFunctionsDir)
-    // ensure autocomplete zsh function dir
-    await fs.ensureDir(this.zshFunctionsDir)
+    // ensure autocomplete function dir
+    await fs.ensureDir(this.autocompleteFunctionDir(shell))
   }
 
-  private async createFiles() {
-    await fs.writeFile(this.bashSetupScriptPath, this.bashSetupScript)
-    await fs.writeFile(this.bashCompletionFunctionPath, this.bashCompletionFunction)
-    await fs.writeFile(this.zshSetupScriptPath, this.zshSetupScript)
-    await fs.writeFile(this.zshCompletionFunctionPath, this.zshCompletionFunction)
-  }
-
-  private get bashSetupScriptPath(): string {
-    // <cachedir>/autocomplete/bash_setup
-    return path.join(this.autocompleteCacheDir, 'bash_setup')
-  }
-
-  private get zshSetupScriptPath(): string {
-    // <cachedir>/autocomplete/zsh_setup
-    return path.join(this.autocompleteCacheDir, 'zsh_setup')
-  }
-
-  private get bashFunctionsDir(): string {
-    // <cachedir>/autocomplete/functions/bash
-    return path.join(this.autocompleteCacheDir, 'functions', 'bash')
-  }
-
-  private get zshFunctionsDir(): string {
-    // <cachedir>/autocomplete/functions/zsh
-    return path.join(this.autocompleteCacheDir, 'functions', 'zsh')
-  }
-
-  private get bashCompletionFunctionPath(): string {
-    // <cachedir>/autocomplete/functions/bash/<bin>.bash
-    return path.join(this.bashFunctionsDir, `${this.cliBin}.bash`)
-  }
-
-  private get zshCompletionFunctionPath(): string {
-    // <cachedir>/autocomplete/functions/zsh/_<bin>
-    return path.join(this.zshFunctionsDir, `_${this.cliBin}`)
-  }
-
-  private get bashSetupScript(): string {
-    const setup = path.join(this.bashFunctionsDir, `${this.cliBin}.bash`)
-    const bin = this.cliBinEnvVar
-    /* eslint-disable-next-line no-useless-escape */
-    return `${bin}_AC_BASH_COMPFUNC_PATH=${setup} && test -f \$${bin}_AC_BASH_COMPFUNC_PATH && source \$${bin}_AC_BASH_COMPFUNC_PATH;
-`
-  }
-
-  private get zshSetupScript(): string {
-    return `
-fpath=(
-${this.zshFunctionsDir}
-$fpath
-);
-autoload -Uz compinit;
-compinit;\n`
+  private async createFiles(shell: string) {
+    switch (shell) {
+    case 'bash':
+      // TODO: remove this commented line and other code that references a bashSetupScript, it's not needed anymore
+      // await fs.writeFile(this.autocompleteSetupScriptPath(shell), this.bashSetupScript)
+      await fs.writeFile(this.bashCompletionFunctionPath, this.bashCompletionFunction)
+      break
+    case 'zsh':
+      // TODO: remove this commented line and other code that references a zshSetupScript, it's not needed anymore
+      // await fs.writeFile(this.autocompleteSetupScriptPath(shell), this.zshSetupScript)
+      await fs.writeFile(this.zshCompletionFunctionPath, this.zshCompletionFunction)
+      break
+    case 'powershell':
+      // TODO: remove this commented line and other code that references a powershellSetupScript, it's not needed anymore
+      // await fs.writeFile(this.autocompleteSetupScriptPath(shell), this.powershellSetupScript)
+      await fs.writeFile(this.powershellCompletionFunctionPath, this.powershellCompletionFunction)
+      break
+    }
   }
 
   private get commands(): CommandCompletion[] {
@@ -141,20 +106,6 @@ compinit;\n`
     return this._commands
   }
 
-  private genZshFlagSpecs(Klass: any): string {
-    return Object.keys(Klass.flags || {})
-    .filter(flag => Klass.flags && !Klass.flags[flag].hidden)
-    .map(flag => {
-      const f = (Klass.flags && Klass.flags[flag]) || {description: ''}
-      const isBoolean = f.type === 'boolean'
-      const name = isBoolean ? flag : `${flag}=-`
-      const valueCmpl = isBoolean ? '' : ':'
-      const completion = `--${name}[${sanitizeDescription(f.description)}]${valueCmpl}`
-      return `"${completion}"`
-    })
-    .join('\n')
-  }
-
   /* eslint-disable no-useless-escape */
   private get genAllCommandsMetaString(): string {
     return this.commands.map(c => {
@@ -177,14 +128,6 @@ compinit;\n`
   )
 ;;\n`
     }).join('\n')
-  }
-
-  private genCmdPublicFlags(Command: CommandCompletion): string {
-    const Flags = Command.flags || {}
-    return Object.keys(Flags)
-    .filter(flag => !Flags[flag].hidden)
-    .map(flag => `--${flag}`)
-    .join(' ')
   }
 
   private get bashCommandsWithFlagsList(): string {
@@ -243,5 +186,37 @@ ${caseStatementForFlagsMeta}
 
 _${cliBin}
 `
+  }
+
+  private get powershellCommands(): string {
+    return this.commands.map(c => c.id.replace(/:/g, this.config.topicSeparator)).sort().join(',')
+  }
+
+  private get powershellCompletionFunction(): string {
+    const cliBin = this.cliBin
+    const powershellScript = powershellAutocomplete
+    return powershellScript.replace(/<CLI_BIN>/g, cliBin).replace(/<POWERSHELL_COMMANDS_WITH_FLAGS_LIST>/g, this.powershellCommands)
+  }
+
+  private genCmdPublicFlags(Command: CommandCompletion): string {
+    const Flags = Command.flags || {}
+    return Object.keys(Flags)
+    .filter(flag => !Flags[flag].hidden)
+    .map(flag => `--${flag}`)
+    .join(' ')
+  }
+
+  private genZshFlagSpecs(Klass: any): string {
+    return Object.keys(Klass.flags || {})
+    .filter(flag => Klass.flags && !Klass.flags[flag].hidden)
+    .map(flag => {
+      const f = (Klass.flags && Klass.flags[flag]) || {description: ''}
+      const isBoolean = f.type === 'boolean'
+      const name = isBoolean ? flag : `${flag}=-`
+      const valueCmpl = isBoolean ? '' : ':'
+      const completion = `--${name}[${sanitizeDescription(f.description)}]${valueCmpl}`
+      return `"${completion}"`
+    })
+    .join('\n')
   }
 }
