@@ -385,10 +385,10 @@
     supports-color "^8.1.1"
     tslib "^2"
 
-"@oclif/core@^1.0.11", "@oclif/core@^1.0.8", "@oclif/core@^1.1.1", "@oclif/core@^1.16.5", "@oclif/core@^1.18.0":
-  version "1.18.0"
-  resolved "https://registry.yarnpkg.com/@oclif/core/-/core-1.18.0.tgz#93c790c663c6b24a609d1ea44362f5438cb19d73"
-  integrity sha512-12SWbbDbMrhBmEuN9cOQkbN+sFUKlSTw+NlCPVVIg3uEhnmkXgx2wZJtCN4c+IBMJjC27L9lDneeoe70yQuiVg==
+"@oclif/core@^1.0.11", "@oclif/core@^1.0.8", "@oclif/core@^1.1.1", "@oclif/core@^1.16.5", "@oclif/core@^1.19.1":
+  version "1.19.1"
+  resolved "https://registry.yarnpkg.com/@oclif/core/-/core-1.19.1.tgz#6dba92cfb7f1412e43068db3e9716215786f85a3"
+  integrity sha512-+LtMYQNzfLoYUcBTsWSFQ/4mqiA70XRU6tP+lDNmQQTrB5FHzDoBbyYvdjvMeS42izg78gjlN++rLUaAUCloNw==
   dependencies:
     "@oclif/linewrap" "^1.0.0"
     "@oclif/screen" "^3.0.2"
