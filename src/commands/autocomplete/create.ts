@@ -151,7 +151,7 @@ compinit;\n`
       const name = isBoolean ? flag : `${flag}=-`
       const multiple = isOption && f.multiple ? '*' : ''
       const valueCmpl = isBoolean ? '' : ':'
-      const completion = `${multiple}--${name}[${sanitizeDescription(f.description)}]${valueCmpl}`
+      const completion = `${multiple}--${name}[${sanitizeDescription(f.summary || f.description)}]${valueCmpl}`
       return `"${completion}"`
     })
     .join('\n')
