@@ -1,10 +1,13 @@
 import * as path from 'path'
+import * as util from 'util'
 
 import * as fs from 'fs-extra'
+import * as _ from 'lodash'
 
 import bashAutocomplete from '../../autocomplete/bash'
 import bashAutocompleteWithSpaces from '../../autocomplete/bash-spaces'
 import {AutocompleteBase} from '../../base'
+import {Interfaces } from '@oclif/core'
 
 const debug = require('debug')('autocomplete:create')
 
@@ -53,7 +56,7 @@ export default class Create extends AutocompleteBase {
     await fs.writeFile(this.bashSetupScriptPath, this.bashSetupScript)
     await fs.writeFile(this.bashCompletionFunctionPath, this.bashCompletionFunction)
     await fs.writeFile(this.zshSetupScriptPath, this.zshSetupScript)
-    await fs.writeFile(this.zshCompletionFunctionPath, this.zshCompletionFunction)
+    await fs.writeFile(this.zshCompletionFunctionPath, this.zshCompletionWithSpacesFunction)
   }
 
   private get bashSetupScriptPath(): string {
@@ -141,6 +144,29 @@ compinit;\n`
     return this._commands
   }
 
+  // TODO: handle commands without flags
+  // private genZshCmdFlagsCompFun(id: string, skipFunc: boolean = false): string {
+  //   const command = this.config.findCommand(id,{must:true})
+  //
+  //   const flagNames = Object.keys(command.flags)
+  //   let flagsComp=''
+  //
+  //   for (const flagName of flagNames){
+  //     const flag = command.flags[flagName]
+  //
+  //     if (flag.char) {
+  //       flagsComp+=`    {-${flag.char},--${flagName}}'[${sanitizeDescription(flag.summary ||flag.description)}]' \\\n`
+  //     } else {
+  //       flagsComp+=`    --${flagName}'[${sanitizeDescription(flag.summary || flag.description)}]' \\\n`
+  //     }
+  //   }
+  //   if (skipFunc) {
+  //     return flagsComp
+  //   }
+  //       
+  //   return util.format(`_${this.cliBin}_${command.id.replace(/:/g,'_')}() {  \n  _arguments -S \\\n%s}`, flagsComp)
+  // }
+
   private genZshFlagSpecs(Klass: any): string {
     return Object.keys(Klass.flags || {})
     .filter(flag => Klass.flags && !Klass.flags[flag].hidden)
@@ -200,6 +226,177 @@ compinit;\n`
     return bashScript.replace(/<CLI_BIN>/g, cliBin).replace(/<BASH_COMMANDS_WITH_FLAGS_LIST>/g, this.bashCommandsWithFlagsList)
   }
 
+
+  private get zshCompletionWithSpacesFunction(): string {
+    const valueTemplate = `        "%s[%s]" \\\n`
+    const argTemplate = `        "%s")\n          %s\n        ;;\n`
+    const flagCompWithOptsTpl =
+      `            %s"[%s]:%s options:(%s)" \\\n`
+
+    // TODO:
+    // * include command aliases
+    // * ignore hidden commands
+    const commands = this.config.commands
+      .map(c=>{
+        c.description = sanitizeDescription(c.summary || c.description || '')
+        return c
+      })
+      .sort((a, b) => {
+        if (a.id < b.id) {
+          return -1;
+        }
+        if (a.id > b.id) {
+          return 1;
+        }
+        return 0;
+      });
+
+    let topics = this.config.topics.filter((topic: Interfaces.Topic) => {
+      // it is assumed a topic has a child if it has children
+      const hasChild = this.config.topics.some(subTopic => subTopic.name.includes(`${topic.name}:`))
+      return hasChild
+    })
+      .sort((a, b) => {
+        if (a.name < b.name) {
+          return -1;
+        }
+        if (a.name > b.name) {
+          return 1;
+        }
+        return 0;
+      })
+      .map(t=> {
+        return {
+          name: t.name,
+          description: sanitizeDescription(t.description)
+        }
+      })
+
+
+    const genZshTopicCompFun = (id: string): string => {
+      const underscoreSepId = id.replace(/:/g,'_')
+      const depth = id.split(':').length
+
+      let valuesBlock = ''
+      let argsBlock = ''
+
+      topics
+        .filter(t => t.name.startsWith(id + ':') && t.name.split(':').length === depth + 1)
+        .forEach(t => {
+          const subArg = t.name.split(':')[depth]
+
+          valuesBlock+=util.format(valueTemplate,subArg,t.description)
+          argsBlock+= util.format(argTemplate,subArg,`_${this.cliBin}_${underscoreSepId}_${subArg}`) 
+        })
+
+      commands
+        .filter(c => c.id.startsWith(id + ':') && c.id.split(':').length === depth + 1)
+        .forEach(c => {
+          const subArg = c.id.split(':')[depth]
+
+          // TODO: skip commands without flags
+          const flagNames = Object.keys(c.flags)
+          let flagsComp=''
+
+          for (const flagName of flagNames){
+            const flag = c.flags[flagName]
+
+            if (flag.type ==='option' && flag.options) {
+              // generate completions for `flag.options` array
+              if (flag.char) {
+                flagsComp+=util.format(
+                  flagCompWithOptsTpl,
+                  `{-${flag.char},--${flagName}}`,
+                  sanitizeDescription(flag.summary ||flag.description),
+                  flagName,
+                  flag.options.join(' ')
+                )
+              } else {
+                flagsComp+=util.format(
+                  flagCompWithOptsTpl,
+                  `--${flag.name}`,
+                  sanitizeDescription(flag.summary ||flag.description),
+                  flagName,
+                  flag.options.join(' ')
+                )
+              }
+            } else {
+              if (flag.char) {
+                flagsComp+=`            {-${flag.char},--${flagName}}"[${sanitizeDescription(flag.summary ||flag.description)}]" \\\n`
+              } else {
+                flagsComp+=`            --${flagName}"[${sanitizeDescription(flag.summary || flag.description)}]" \\\n`
+              }
+            }
+          }
+
+          valuesBlock+=util.format(valueTemplate,subArg,c.description)
+
+          const flagArgsTemplate = `        "%s")\n          _arguments -S \\\n%s\n        ;;\n`
+          argsBlock+= util.format(flagArgsTemplate,subArg,flagsComp) 
+        })
+
+      const topicCompFunc =
+`_${this.cliBin}_${underscoreSepId}() {
+  local line state
+
+  _arguments -C "1: :->cmds" "*::arg:->args"
+
+  case "$state" in
+    cmds)
+      _values "${this.cliBin} command" \\
+%s
+      ;;
+    args)
+      case $line[1] in
+%s
+      esac
+      ;;
+  esac 
+}
+`
+
+      return util.format(topicCompFunc, valuesBlock, argsBlock)
+    }
+
+    const compFunc =
+`#compdef ${this.cliBin}
+
+${topics.map(t=> {
+  if (t.name.includes('data')) {
+    return genZshTopicCompFun(t.name)
+  }
+}).join('\n')}
+
+${genZshTopicCompFun('force')}
+
+_sfdx() {
+  local line state
+
+  _arguments -C "1: :->cmds" "*::arg:->args"
+
+  case "$state" in
+      cmds)
+          _values "${this.cliBin} command" \\
+                  "force[force stuff]" \\
+                  "data[data stuff]"
+          ;;
+      args)
+          case $line[1] in
+              data)
+                  _sfdx_data
+                  ;;
+              force)
+                  _sfdx_force
+                  ;;
+          esac
+          ;;
+  esac
+}
+
+_${this.cliBin}
+`
+  return compFunc
+  }
   private get zshCompletionFunction(): string {
     const cliBin = this.cliBin
     const allCommandsMeta = this.genAllCommandsMetaString
