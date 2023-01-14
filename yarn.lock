@@ -385,13 +385,13 @@
     supports-color "^8.1.1"
     tslib "^2"
 
-"@oclif/core@^1.0.11", "@oclif/core@^1.0.8", "@oclif/core@^1.1.1", "@oclif/core@^1.23.1":
-  version "1.23.1"
-  resolved "https://registry.yarnpkg.com/@oclif/core/-/core-1.23.1.tgz#bebbbc4e02a4c1a4216d64165f892037f8a1e14a"
-  integrity sha512-nz7wVGesJ1Qg74p1KNKluZpQ3Z042mqdaRlczEI4Xwqj5s9jjdDBCDHNkiGzV4UAKzicVzipNj6qqhyUWKYnaA==
+"@oclif/core@^1.0.11", "@oclif/core@^1.0.8", "@oclif/core@^1.1.1", "@oclif/core@^1.23.1", "@oclif/core@^1.24.0":
+  version "1.24.0"
+  resolved "https://registry.yarnpkg.com/@oclif/core/-/core-1.24.0.tgz#e94e2f3a1259ebb3cc867d04b12c5bfc31c21f50"
+  integrity sha512-J41suyV4fLfLcRRySZdtgFYSjIlpYqD90SY01Fm4+ZJUMcfDh/eQAD4sogyYOsIT0bfEzYOyYCjmfHmgcoX5aA==
   dependencies:
     "@oclif/linewrap" "^1.0.0"
-    "@oclif/screen" "^3.0.3"
+    "@oclif/screen" "^3.0.4"
     ansi-escapes "^4.3.2"
     ansi-styles "^4.3.0"
     cardinal "^2.1.1"
@@ -425,11 +425,11 @@
   integrity sha512-Ups2dShK52xXa8w6iBWLgcjPJWjais6KPJQq3gQ/88AY6BXoTX+MIGFPrWQO1KLMiQfoTpcLnUwloN4brrVUHw==
 
 "@oclif/plugin-help@^5", "@oclif/plugin-help@^5.1.10":
-  version "5.1.22"
-  resolved "https://registry.yarnpkg.com/@oclif/plugin-help/-/plugin-help-5.1.22.tgz#65b78efe34af10e9427e046fb4d3524d62149226"
-  integrity sha512-gflrCqV3c7nd1UgknuZZTX6Th9CTkvVyTjL76UNHrea3kCZEpPzsMGhwP989R+j3KSGJGeZVrq2i9g2QXI9tZA==
+  version "5.1.23"
+  resolved "https://registry.yarnpkg.com/@oclif/plugin-help/-/plugin-help-5.1.23.tgz#529b193b35436ef9374fd9ba4d065e19b73b6b5a"
+  integrity sha512-8oyyu/yPz55Zhj0U58/YXGc51N65vOpVeqDalf5xby4T+VMo4naDVJMxcSpJF2YUTREXEfO2pcC0aA4PE5q8Ig==
   dependencies:
-    "@oclif/core" "^1.23.1"
+    "@oclif/core" "^1.24.0"
 
 "@oclif/plugin-not-found@^2.2.3":
   version "2.2.4"
@@ -460,10 +460,10 @@
   resolved "https://registry.yarnpkg.com/@oclif/screen/-/screen-1.0.4.tgz#b740f68609dfae8aa71c3a6cab15d816407ba493"
   integrity sha512-60CHpq+eqnTxLZQ4PGHYNwUX572hgpMHGPtTWMjdTMsAvlm69lZV/4ly6O3sAYkomo4NggGcomrDpBe34rxUqw==
 
-"@oclif/screen@^3.0.3":
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/@oclif/screen/-/screen-3.0.3.tgz#e679ad10535e31d333f809f7a71335cc9aef1e55"
-  integrity sha512-KX8gMYA9ujBPOd1HFsV9e0iEx7Uoj8AG/3YsW4TtWQTg4lJvr82qNm7o/cFQfYRIt+jw7Ew/4oL4A22zOT+IRA==
+"@oclif/screen@^3.0.4":
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/@oclif/screen/-/screen-3.0.4.tgz#663db0ecaf23f3184e7f01886ed578060e4a7f1c"
+  integrity sha512-IMsTN1dXEXaOSre27j/ywGbBjrzx0FNd1XmuhCWCB9NTPrhWI1Ifbz+YLSEcstfQfocYsrbrIessxXb2oon4lA==
 
 "@oclif/test@^2":
   version "2.2.20"
