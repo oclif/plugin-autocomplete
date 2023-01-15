@@ -232,6 +232,8 @@ compinit;\n`
     const argTemplate = `        "%s")\n          %s\n        ;;\n`
     const flagCompWithOptsTpl =
       `            "%s"%s"[%s]:%s options:(%s)" \\\n`
+    const flagCompWithCharWithOptsTpl =
+      `            %s"[%s]:%s options:(%s)" \\\n`
 
     // TODO:
     // * include command aliases
@@ -314,7 +316,7 @@ compinit;\n`
                 )
               } else {
                 flagsComp+=util.format(
-                  flagCompWithOptsTpl,
+                  flagCompWithCharWithOptsTpl,
                   `--${flag.name}`,
                   sanitizeDescription(flag.summary ||flag.description),
                   flagName,
