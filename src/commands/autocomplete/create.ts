@@ -230,10 +230,6 @@ compinit;\n`
   private get zshCompletionWithSpacesFunction(): string {
     const valueTemplate = `        "%s[%s]" \\\n`
     const argTemplate = `        "%s")\n          %s\n        ;;\n`
-    const flagCompWithOptsTpl =
-      `            "%s"%s"[%s]:%s options:(%s)" \\\n`
-    const flagCompWithCharWithOptsTpl =
-      `            %s"[%s]:%s options:(%s)" \\\n`
 
     // TODO:
     // * include command aliases
@@ -301,35 +297,50 @@ compinit;\n`
           let flagsComp=''
 
           for (const flagName of flagNames){
-            const flag = c.flags[flagName]
+            const f = c.flags[flagName]
 
-            if (flag.type ==='option' && flag.options) {
-              // generate completions for `flag.options` array
-              if (flag.char) {
-                flagsComp+=util.format(
-                  flagCompWithOptsTpl,
-                  `(-${flag.char} --${flag.name})`,
-                  `{-${flag.char},--${flagName}}`,
-                  sanitizeDescription(flag.summary ||flag.description),
-                  flagName,
-                  flag.options.join(' ')
-                )
+            let flagCompValue = '            '
+
+            // Flag.Option
+            if (f.type ==='option') {
+              if (f.char) {
+                if (f.multiple) {
+                  flagCompValue += `*{-${f.char},--${f.name}}`
+                } else {
+                  flagCompValue += `"(-${f.char} --${f.name})"{-${f.char},--${f.name}}`
+                }
+
+                flagCompValue += `"[${sanitizeDescription(f.summary || f.description)}]`
+
+                if (f.options) {
+                  flagCompValue += `:${f.name} options:(${f.options?.join(' ')})"`
+                } else {
+                  flagCompValue += ':"'
+                }
               } else {
-                flagsComp+=util.format(
-                  flagCompWithCharWithOptsTpl,
-                  `--${flag.name}`,
-                  sanitizeDescription(flag.summary ||flag.description),
-                  flagName,
-                  flag.options.join(' ')
-                )
+                if (f.multiple) {
+                  flagCompValue += '"*"'
+                }
+
+                flagCompValue += `--${f.name}"[${sanitizeDescription(f.summary || f.description)}]:`
+
+                if (f.options) {
+                  flagCompValue += `${f.name} options:(${f.options.join(' ')})"`
+                } else {
+                  flagCompValue += '"'
+                }
               }
             } else {
-              if (flag.char) {
-                flagsComp+=`            "(-${flag.char} --${flag.name})"{-${flag.char},--${flagName}}"[${sanitizeDescription(flag.summary ||flag.description)}]" \\\n`
+              // Flag.Boolean
+              if (f.char) {
+                flagCompValue += `"(-${f.char} --${f.name})"{-${f.char},--${f.name}}"[${sanitizeDescription(f.summary || f.description)}]"`
               } else {
-                flagsComp+=`            --${flagName}"[${sanitizeDescription(flag.summary || flag.description)}]" \\\n`
+                flagCompValue+=`--${f.name}"[${sanitizeDescription(f.summary || f.description)}]"`
               }
-            }
+            } 
+            
+            flagCompValue += ` \\\n`
+            flagsComp += flagCompValue
           }
 
           valuesBlock+=util.format(valueTemplate,subArg,c.description)
