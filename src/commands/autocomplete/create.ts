@@ -315,7 +315,7 @@ compinit;\n`
                 if (f.options) {
                   flagCompValue += `:${f.name} options:(${f.options?.join(' ')})"`
                 } else {
-                  flagCompValue += ':"'
+                  flagCompValue += ':file:_files"'
                 }
               } else {
                 if (f.multiple) {
