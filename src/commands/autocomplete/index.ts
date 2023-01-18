@@ -1,4 +1,4 @@
-import {CliUx, Flags} from '@oclif/core'
+import {Args, ux, Flags} from '@oclif/core'
 import * as chalk from 'chalk'
 
 import {AutocompleteBase} from '../../base'
@@ -8,7 +8,9 @@ import Create from './create'
 export default class Index extends AutocompleteBase {
   static description = 'display autocomplete installation instructions'
 
-  static args = [{name: 'shell', description: 'shell type', required: false}]
+  static args = {
+    shell: Args.string({description: 'shell type', required: false}),
+  }
 
   static flags = {
     'refresh-cache': Flags.boolean({description: 'Refresh cache (ignores displaying instructions)', char: 'r'}),
@@ -26,9 +28,9 @@ export default class Index extends AutocompleteBase {
     const shell = args.shell || this.determineShell(this.config.shell)
     this.errorIfNotSupportedShell(shell)
 
-    CliUx.ux.action.start(`${chalk.bold('Building the autocomplete cache')}`)
+    ux.action.start(`${chalk.bold('Building the autocomplete cache')}`)
     await Create.run([], this.config)
-    CliUx.ux.action.stop()
+    ux.action.stop()
 
     if (!flags['refresh-cache']) {
       const bin = this.config.bin
