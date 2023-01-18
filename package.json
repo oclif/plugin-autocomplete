@@ -5,7 +5,7 @@
   "author": "Salesforce",
   "bugs": "https://github.com/oclif/plugin-autocomplete/issues",
   "dependencies": {
-    "@oclif/core": "^1.23.1",
+    "@oclif/core": "^2.0.2-beta.6",
     "chalk": "^4.1.0",
     "debug": "^4.3.4",
     "fs-extra": "^9.0.1"
@@ -27,7 +27,7 @@
     "mocha": "^8.2.1",
     "nock": "^13.3.0",
     "nyc": "^15.1.0",
-    "oclif": "^2.3.0",
+    "oclif": "^3.4.6",
     "shx": "^0.3.3",
     "sinon": "^12.0.1",
     "sinon-chai": "^3.7.0",
