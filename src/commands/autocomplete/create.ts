@@ -327,7 +327,7 @@ compinit;\n`
                 if (f.options) {
                   flagCompValue += `${f.name} options:(${f.options.join(' ')})"`
                 } else {
-                  flagCompValue += '"'
+                  flagCompValue += 'file:_files"'
                 }
               }
             } else {
@@ -342,6 +342,7 @@ compinit;\n`
             flagCompValue += ` \\\n`
             flagsComp += flagCompValue
           }
+          flagsComp += '            "*: :_files"'
 
           valuesBlock+=util.format(valueTemplate,subArg,c.description)
 
