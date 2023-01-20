@@ -305,7 +305,7 @@ compinit;\n`
             if (f.type ==='option') {
               if (f.char) {
                 if (f.multiple) {
-                  flagCompValue += `*{-${f.char},--${f.name}}`
+                  flagCompValue += `"*"{-${f.char},--${f.name}}`
                 } else {
                   flagCompValue += `"(-${f.char} --${f.name})"{-${f.char},--${f.name}}`
                 }
