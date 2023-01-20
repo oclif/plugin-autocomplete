@@ -270,6 +270,71 @@ compinit;\n`
         }
       })
 
+    const genZshFlagArgumentsBlock = (flags?: { [name: string]: Interfaces.Command.Flag; }): string => {
+      // if a command doesn't have flags make it only complete files
+      if (!flags) return '_arguments "*: :_files"'
+
+      const flagNames = Object.keys(flags)
+
+      // `-S`:
+      // Do not complete flags after a ‘--’ appearing on the line, and ignore the ‘--’. For example, with -S, in the line:
+      // foobar -x -- -y
+      // the ‘-x’ is considered a flag, the ‘-y’ is considered an argument, and the ‘--’ is considered to be neither.
+      let argumentsBlock = '_arguments -S \\\n'
+
+      for (const flagName of flagNames){
+        const f = flags[flagName]
+        f.summary = sanitizeDescription(f.summary || f.description)
+
+        let flagSpec = ''
+
+        if (f.type ==='option') {
+          if (f.char) {
+            if (f.multiple) {
+              // this flag can be present multiple times on the line
+              flagSpec += `"*"{-${f.char},--${f.name}}`
+            } else {
+              flagSpec += `"(-${f.char} --${f.name})"{-${f.char},--${f.name}}`
+            }
+
+            flagSpec += `"[${f.summary}]`
+
+            if (f.options) {
+              flagSpec += `:${f.name} options:(${f.options?.join(' ')})"`
+            } else {
+              flagSpec += ':file:_files"'
+            }
+          } else {
+            if (f.multiple) {
+              // this flag can be present multiple times on the line
+              flagSpec += '"*"'
+            }
+
+            flagSpec += `--${f.name}"[${f.summary}]:`
+
+            if (f.options) {
+              flagSpec += `${f.name} options:(${f.options.join(' ')})"`
+            } else {
+              flagSpec += 'file:_files"'
+            }
+          }
+        } else {
+          // Flag.Boolean
+          if (f.char) {
+            flagSpec += `"(-${f.char} --${f.name})"{-${f.char},--${f.name}}"[${f.summary}]"`
+          } else {
+            flagSpec+=`--${f.name}"[${f.summary}]"`
+          }
+        }
+
+        flagSpec += ' \\\n'
+        argumentsBlock += flagSpec
+      }
+      // complete files if `-` is not present on the current line
+      argumentsBlock+='"*: :_files"'
+
+      return argumentsBlock 
+    }
 
     const genZshTopicCompFun = (id: string): string => {
       const underscoreSepId = id.replace(/:/g,'_')
@@ -292,62 +357,10 @@ compinit;\n`
         .forEach(c => {
           const subArg = c.id.split(':')[depth]
 
-          // TODO: skip commands without flags
-          const flagNames = Object.keys(c.flags)
-          let flagsComp=''
-
-          for (const flagName of flagNames){
-            const f = c.flags[flagName]
-
-            let flagCompValue = '            '
-
-            // Flag.Option
-            if (f.type ==='option') {
-              if (f.char) {
-                if (f.multiple) {
-                  flagCompValue += `"*"{-${f.char},--${f.name}}`
-                } else {
-                  flagCompValue += `"(-${f.char} --${f.name})"{-${f.char},--${f.name}}`
-                }
-
-                flagCompValue += `"[${sanitizeDescription(f.summary || f.description)}]`
-
-                if (f.options) {
-                  flagCompValue += `:${f.name} options:(${f.options?.join(' ')})"`
-                } else {
-                  flagCompValue += ':file:_files"'
-                }
-              } else {
-                if (f.multiple) {
-                  flagCompValue += '"*"'
-                }
-
-                flagCompValue += `--${f.name}"[${sanitizeDescription(f.summary || f.description)}]:`
-
-                if (f.options) {
-                  flagCompValue += `${f.name} options:(${f.options.join(' ')})"`
-                } else {
-                  flagCompValue += 'file:_files"'
-                }
-              }
-            } else {
-              // Flag.Boolean
-              if (f.char) {
-                flagCompValue += `"(-${f.char} --${f.name})"{-${f.char},--${f.name}}"[${sanitizeDescription(f.summary || f.description)}]"`
-              } else {
-                flagCompValue+=`--${f.name}"[${sanitizeDescription(f.summary || f.description)}]"`
-              }
-            } 
-            
-            flagCompValue += ` \\\n`
-            flagsComp += flagCompValue
-          }
-          flagsComp += '            "*: :_files"'
-
           valuesBlock+=util.format(valueTemplate,subArg,c.description)
 
-          const flagArgsTemplate = `        "%s")\n          _arguments -S \\\n%s\n        ;;\n`
-          argsBlock+= util.format(flagArgsTemplate,subArg,flagsComp) 
+          const flagArgsTemplate = `        "%s")\n          %s\n        ;;\n`
+          argsBlock+= util.format(flagArgsTemplate,subArg,genZshFlagArgumentsBlock(c.flags)) 
         })
 
       const topicCompFunc =
