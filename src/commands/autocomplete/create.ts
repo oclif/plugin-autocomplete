@@ -144,29 +144,6 @@ compinit;\n`
     return this._commands
   }
 
-  // TODO: handle commands without flags
-  // private genZshCmdFlagsCompFun(id: string, skipFunc: boolean = false): string {
-  //   const command = this.config.findCommand(id,{must:true})
-  //
-  //   const flagNames = Object.keys(command.flags)
-  //   let flagsComp=''
-  //
-  //   for (const flagName of flagNames){
-  //     const flag = command.flags[flagName]
-  //
-  //     if (flag.char) {
-  //       flagsComp+=`    {-${flag.char},--${flagName}}'[${sanitizeDescription(flag.summary ||flag.description)}]' \\\n`
-  //     } else {
-  //       flagsComp+=`    --${flagName}'[${sanitizeDescription(flag.summary || flag.description)}]' \\\n`
-  //     }
-  //   }
-  //   if (skipFunc) {
-  //     return flagsComp
-  //   }
-  //       
-  //   return util.format(`_${this.cliBin}_${command.id.replace(/:/g,'_')}() {  \n  _arguments -S \\\n%s}`, flagsComp)
-  // }
-
   private genZshFlagSpecs(Klass: any): string {
     return Object.keys(Klass.flags || {})
     .filter(flag => Klass.flags && !Klass.flags[flag].hidden)
