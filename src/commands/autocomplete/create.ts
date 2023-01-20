@@ -205,7 +205,6 @@ compinit;\n`
 
 
   private get zshCompletionWithSpacesFunction(): string {
-    const valueTemplate = `        "%s[%s]" \\\n`
     const argTemplate = `        "%s")\n          %s\n        ;;\n`
 
     // TODO:
@@ -246,6 +245,19 @@ compinit;\n`
           description: sanitizeDescription(t.description)
         }
       })
+
+    // alternative name: tommands
+    const cotopics=[]
+    
+    for (const cmd of commands) {
+      for (const topic of topics) {
+        if (cmd.id === topic.name) {
+          cotopics.push(cmd.id)
+        }
+      }
+    }
+    console.log(cotopics)
+
 
     const genZshFlagArgumentsBlock = (flags?: { [name: string]: Interfaces.Command.Flag; }): string => {
       // if a command doesn't have flags make it only complete files
@@ -313,19 +325,33 @@ compinit;\n`
       return argumentsBlock 
     }
 
+    const genZshValuesBlock = (subArgs: {arg: string, summary?: string}[]): string => {
+      let valuesBlock = '_values "completions" \\\n'
+
+      subArgs.forEach(subArg => {
+        valuesBlock += `"${subArg.arg}[${subArg.summary}]" \\\n`
+      })
+
+      return valuesBlock
+    }
+
     const genZshTopicCompFun = (id: string): string => {
       const underscoreSepId = id.replace(/:/g,'_')
       const depth = id.split(':').length
 
-      let valuesBlock = ''
       let argsBlock = ''
-
+      
+      const subArgs: {arg: string, summary?: string}[] = []
       topics
         .filter(t => t.name.startsWith(id + ':') && t.name.split(':').length === depth + 1)
         .forEach(t => {
           const subArg = t.name.split(':')[depth]
 
-          valuesBlock+=util.format(valueTemplate,subArg,t.description)
+          subArgs.push({
+            arg: subArg,
+            summary: t.description
+          })
+
           argsBlock+= util.format(argTemplate,subArg,`_${this.cliBin}_${underscoreSepId}_${subArg}`) 
         })
 
@@ -334,7 +360,10 @@ compinit;\n`
         .forEach(c => {
           const subArg = c.id.split(':')[depth]
 
-          valuesBlock+=util.format(valueTemplate,subArg,c.description)
+          subArgs.push({
+            arg: subArg,
+            summary: c.description
+          })
 
           const flagArgsTemplate = `        "%s")\n          %s\n        ;;\n`
           argsBlock+= util.format(flagArgsTemplate,subArg,genZshFlagArgumentsBlock(c.flags)) 
@@ -348,7 +377,6 @@ compinit;\n`
 
   case "$state" in
     cmds)
-      _values "${this.cliBin} command" \\
 %s
       ;;
     args)
@@ -360,7 +388,7 @@ compinit;\n`
 }
 `
 
-      return util.format(topicCompFunc, valuesBlock, argsBlock)
+      return util.format(topicCompFunc, genZshValuesBlock(subArgs), argsBlock)
     }
 
     const compFunc =
