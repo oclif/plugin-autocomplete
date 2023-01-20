@@ -394,15 +394,9 @@ compinit;\n`
     const compFunc =
 `#compdef ${this.cliBin}
 
-${topics.map(t=> {
-  if (t.name.includes('data')) {
-    return genZshTopicCompFun(t.name)
-  }
-}).join('\n')}
+${topics.map(t=> genZshTopicCompFun(t.name)).join('\n')}
 
-${genZshTopicCompFun('force')}
-
-_sfdx() {
+_${this.cliBin}() {
   local line state
 
   _arguments -C "1: :->cmds" "*::arg:->args"
@@ -410,16 +404,80 @@ _sfdx() {
   case "$state" in
       cmds)
           _values "${this.cliBin} command" \\
-                  "force[force stuff]" \\
-                  "data[data stuff]"
+                  "deploy[deploy]" \\
+                  "data[data]" \\
+                  "alias[alias]" \\
+                  "community[community]" \\
+                  "config[config]" \\
+                  "env[env]" \\
+                  "generate[generate]" \\
+                  "info[info]" \\
+                  "limits[limits]" \\
+                  "login[login]" \\
+                  "logout[logout]" \\
+                  "org[org]" \\
+                  "plugins[plugins]" \\
+                  "retrieve[retrieve]" \\
+                  "run[run]" \\
+                  "object[object]" \\
+                  "update[update]" \\
+                  "whoami[whoami]" \\
           ;;
       args)
           case $line[1] in
               data)
-                  _sfdx_data
+                  _sf_data
                   ;;
-              force)
-                  _sfdx_force
+              deploy)
+                  _sf_deploy
+                  ;;
+              alias)
+                  _sf_alias
+                  ;;
+              community)
+                  _sf_community
+                  ;;
+              config)
+                  _sf_config
+                  ;;
+              env)
+                  _sf_env
+                  ;;
+              generate)
+                  _sf_generate
+                  ;;
+              info)
+                  _sf_info
+                  ;;
+              limits)
+                  _sf_limits
+                  ;;
+              login)
+                  _sf_login
+                  ;;
+              logout)
+                  _sf_logout
+                  ;;
+              org)
+                  _sf_org
+                  ;;
+              plugins)
+                  _sf_plugins
+                  ;;
+              retrieve)
+                  _sf_retrieve
+                  ;;
+              run)
+                  _sf_run
+                  ;;
+              object)
+                  _sf_sobject
+                  ;;
+              update)
+                  _sf_update
+                  ;;
+              whoami)
+                  _sf_whoami
                   ;;
           esac
           ;;
