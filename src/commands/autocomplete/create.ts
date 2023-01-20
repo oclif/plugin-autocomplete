@@ -371,7 +371,8 @@ compinit;\n`
 
       const topicCompFunc =
 `_${this.cliBin}_${underscoreSepId}() {
-  local line state
+  local context state state_descr line
+  typeset -A opt_args
 
   _arguments -C "1: :->cmds" "*::arg:->args"
 
