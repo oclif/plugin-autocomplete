@@ -233,8 +233,8 @@ compinit;\n`
 
     // TODO:
     // * include command aliases
-    // * ignore hidden commands
     const commands = this.config.commands
+      .filter(c => !c.hidden)
       .map(c=>{
         c.description = sanitizeDescription(c.summary || c.description || '')
         return c
