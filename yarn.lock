@@ -385,7 +385,7 @@
     supports-color "^8.1.1"
     tslib "^2"
 
-"@oclif/core@^1.23.1", "@oclif/core@^1.24.0":
+"@oclif/core@^1.24.0":
   version "1.24.0"
   resolved "https://registry.yarnpkg.com/@oclif/core/-/core-1.24.0.tgz#e94e2f3a1259ebb3cc867d04b12c5bfc31c21f50"
   integrity sha512-J41suyV4fLfLcRRySZdtgFYSjIlpYqD90SY01Fm4+ZJUMcfDh/eQAD4sogyYOsIT0bfEzYOyYCjmfHmgcoX5aA==
@@ -494,11 +494,11 @@
   integrity sha512-IMsTN1dXEXaOSre27j/ywGbBjrzx0FNd1XmuhCWCB9NTPrhWI1Ifbz+YLSEcstfQfocYsrbrIessxXb2oon4lA==
 
 "@oclif/test@^2":
-  version "2.2.20"
-  resolved "https://registry.yarnpkg.com/@oclif/test/-/test-2.2.20.tgz#c5c76f9ab3eeb6df3c1af81a95428c95fb0065e9"
-  integrity sha512-SaSMgeB9DKcfRRIvh461eK1eEkjgV/iYHWU5XhWli8psAnqKFgxar3ESpMfQKwYjVMxKdKSjOhEFHaHMOgPJOQ==
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/@oclif/test/-/test-2.3.0.tgz#c62efef4e4fa2ec3d44a3a79b58cc9e43898413b"
+  integrity sha512-DgoEOY/Y1FvNwA1J0Sy7u6jZSHbDutw6kNOWqVizlf1wSJiHKV6Ia9DyhHsg2Nb4EZ+1AKcetC0fI7ixLxxJHw==
   dependencies:
-    "@oclif/core" "^1.23.1"
+    "@oclif/core" "^2.0.2-beta.6"
     fancy-test "^2.0.11"
 
 "@octokit/auth-token@^2.4.4":
