@@ -2,7 +2,6 @@ import * as path from 'path'
 import * as util from 'util'
 
 import * as fs from 'fs-extra'
-import * as _ from 'lodash'
 
 import bashAutocomplete from '../../autocomplete/bash'
 import bashAutocompleteWithSpaces from '../../autocomplete/bash-spaces'
