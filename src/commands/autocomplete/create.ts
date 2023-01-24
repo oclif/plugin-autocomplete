@@ -207,24 +207,6 @@ compinit;\n`
   private get zshCompletionWithSpacesFunction(): string {
     const argTemplate = `        "%s")\n          %s\n        ;;\n`
 
-    // TODO:
-    // * include command aliases
-    const commands = this.config.commands
-      .filter(c => !c.hidden)
-      .map(c=>{
-        c.description = sanitizeDescription(c.summary || c.description || '')
-        return c
-      })
-      .sort((a, b) => {
-        if (a.id < b.id) {
-          return -1;
-        }
-        if (a.id > b.id) {
-          return 1;
-        }
-        return 0;
-      });
-
     let topics = this.config.topics.filter((topic: Interfaces.Topic) => {
       // it is assumed a topic has a child if it has children
       const hasChild = this.config.topics.some(subTopic => subTopic.name.includes(`${topic.name}:`))
@@ -249,7 +231,7 @@ compinit;\n`
     const coTopics:string[]=[]
     
     for (const topic of topics) {
-      for (const cmd of commands) {
+      for (const cmd of this.commands) {
         if (topic.name === cmd.id) {
           coTopics.push(topic.name)
         }
@@ -352,7 +334,7 @@ compinit;\n`
     local context state state_descr line
     typeset -A opt_args
   
-    ${genZshFlagArgumentsBlock(commands.find(c=>c.id===id)?.flags)}
+    ${genZshFlagArgumentsBlock(this.commands.find(c=>c.id===id)?.flags)}
   }
 
   local context state state_descr line
@@ -382,7 +364,7 @@ compinit;\n`
         const subArgs: {id: string, summary?: string}[] = []
 
         let argsBlock = ''
-        commands
+        this.commands
           .filter(c => c.id === id && c.id.startsWith(id + ':') && c.id.split(':').length === depth + 1)
           .forEach(c => {
             subArgs.push({
@@ -403,7 +385,7 @@ compinit;\n`
           argsBlock+= util.format(argTemplate,subArg,`_${this.cliBin}_${underscoreSepId}_${subArg}`) 
         })
 
-      commands
+      this.commands
         .filter(c => c.id.startsWith(id + ':') && c.id.split(':').length === depth + 1)
         .forEach(c => {
           const subArg = c.id.split(':')[depth]
@@ -435,7 +417,7 @@ compinit;\n`
             argsBlock+= util.format(argTemplate,subArg,`_${this.cliBin}_${underscoreSepId}_${subArg}`) 
           })
 
-        commands
+        this.commands
           .filter(c => c.id.startsWith(id + ':') && c.id.split(':').length === depth + 1)
           .forEach(c => {
             if (isCotopic) return
@@ -481,7 +463,7 @@ compinit;\n`
         summary: t.description
       })
     })
-    commands.forEach(c => { 
+    this.commands.forEach(c => { 
       if(!firstArgs.find(a=> a.id === c.id) && !c.id.includes(':')) firstArgs.push({
         id: c.id,
         summary: c.description
@@ -493,7 +475,7 @@ compinit;\n`
 
       for (const arg of firstArgs) {
         if (!coTopics.includes(arg.id)) {
-          const cmd = commands.find(c=>c.id===arg.id)
+          const cmd = this.commands.find(c=>c.id===arg.id)
           if (cmd) {
             caseBlock += `${arg.id})\n ${genZshFlagArgumentsBlock(cmd.flags)} ;; \n`
           }
