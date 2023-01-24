@@ -320,6 +320,8 @@ compinit;\n`
     }
 
     const genZshTopicCompFun = (id: string): string => {
+      const flagArgsTemplate = `        "%s")\n          %s\n        ;;\n`
+
       const underscoreSepId = id.replace(/:/g,'_')
       const depth = id.split(':').length
 
@@ -364,14 +366,7 @@ compinit;\n`
         const subArgs: {id: string, summary?: string}[] = []
 
         let argsBlock = ''
-        this.commands
-          .filter(c => c.id === id && c.id.startsWith(id + ':') && c.id.split(':').length === depth + 1)
-          .forEach(c => {
-            subArgs.push({
-              id: c.id.split(':')[depth],
-              summary: c.description
-            })
-          })
+
         topics
           .filter(t => t.name.startsWith(id + ':') && t.name.split(':').length === depth + 1)
           .forEach(t => {
@@ -385,19 +380,18 @@ compinit;\n`
           argsBlock+= util.format(argTemplate,subArg,`_${this.cliBin}_${underscoreSepId}_${subArg}`) 
         })
 
-      this.commands
-        .filter(c => c.id.startsWith(id + ':') && c.id.split(':').length === depth + 1)
-        .forEach(c => {
-          const subArg = c.id.split(':')[depth]
+        this.commands
+          .filter(c => c.id.startsWith(id + ':') && c.id.split(':').length === depth + 1)
+          .forEach(c => {
+            const subArg = c.id.split(':')[depth]
 
-            subArgs.push({
-              id: subArg,
-              summary: c.description
+              subArgs.push({
+                id: subArg,
+                summary: c.description
+              })
+
+              argsBlock+= util.format(flagArgsTemplate,subArg,genZshFlagArgumentsBlock(c.flags)) 
             })
-
-            const flagArgsTemplate = `        "%s")\n          %s\n        ;;\n`
-            argsBlock+= util.format(flagArgsTemplate,subArg,genZshFlagArgumentsBlock(c.flags)) 
-          })
 
         return util.format(coTopicCompFunc, genZshValuesBlock(subArgs), argsBlock)
       } else {
@@ -428,7 +422,6 @@ compinit;\n`
               summary: c.description
             })
 
-            const flagArgsTemplate = `        "%s")\n          %s\n        ;;\n`
             argsBlock+= util.format(flagArgsTemplate,subArg,genZshFlagArgumentsBlock(c.flags)) 
           })
 
@@ -470,7 +463,7 @@ compinit;\n`
       })
     })
 
-    const mainCaseBlock = () => {
+    const mainArgsCaseBlock = () => {
       let caseBlock = 'case $line[1] in\n'
 
       for (const arg of firstArgs) {
@@ -508,7 +501,7 @@ _${this.cliBin}() {
         ${genZshValuesBlock(firstArgs)} 
           ;;
       args)
-        ${mainCaseBlock()}
+        ${mainArgsCaseBlock()}
   esac
 }
 
