@@ -485,11 +485,18 @@ compinit;\n`
     })
 
     const mainCaseBlock = () => {
-      // case $line[1] in
-      //   ${mainCaseBlock()}
-      // esac
-      // ;;
       let caseBlock = 'case $line[1] in\n'
+
+      for (const arg of firstArgs) {
+        if (!coTopics.includes(arg.id)) {
+          const cmd = commands.find(c=>c.id===arg.id)
+          if (cmd) {
+            caseBlock += `${arg.id})\n ${genZshFlagArgumentsBlock(cmd.flags)} ;; \n`
+          }
+        } else {
+          caseBlock +=`${arg.id})\n  _${this.cliBin}_${arg.id} \n  ;;\n`
+        }
+      }
 
       firstArgs.forEach(arg=>{
         caseBlock +=`${arg.id})\n  _${this.cliBin}_${arg.id} \n  ;;\n`
