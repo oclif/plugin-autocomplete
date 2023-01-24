@@ -271,6 +271,10 @@ compinit;\n`
 
       for (const flagName of flagNames){
         const f = flags[flagName]
+
+        // skip hidden flags
+        if (f.hidden) continue
+
         f.summary = sanitizeDescription(f.summary || f.description)
 
         let flagSpec = ''
