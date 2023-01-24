@@ -117,7 +117,7 @@ compinit;\n`
       p.commands.forEach(c => {
         try {
           if (c.hidden) return
-          const description = sanitizeDescription(c.description || '')
+          const description = sanitizeDescription(c.summary || c.description || '')
           const flags = c.flags
           cmds.push({
             id: c.id,
