@@ -246,17 +246,15 @@ compinit;\n`
         }
       })
 
-    // alternative name: tommands
-    const cotopics=[]
+    const coTopics:string[]=[]
     
-    for (const cmd of commands) {
-      for (const topic of topics) {
-        if (cmd.id === topic.name) {
-          cotopics.push(cmd.id)
+    for (const topic of topics) {
+      for (const cmd of commands) {
+        if (topic.name === cmd.id) {
+          coTopics.push(topic.name)
         }
       }
     }
-    console.log(cotopics)
 
 
     const genZshFlagArgumentsBlock = (flags?: { [name: string]: Interfaces.Command.Flag; }): string => {
@@ -325,11 +323,11 @@ compinit;\n`
       return argumentsBlock 
     }
 
-    const genZshValuesBlock = (subArgs: {arg: string, summary?: string}[]): string => {
+    const genZshValuesBlock = (subArgs: {id: string, summary?: string}[]): string => {
       let valuesBlock = '_values "completions" \\\n'
 
       subArgs.forEach(subArg => {
-        valuesBlock += `"${subArg.arg}[${subArg.summary}]" \\\n`
+        valuesBlock += `"${subArg.id}[${subArg.summary}]" \\\n`
       })
 
       return valuesBlock
@@ -339,18 +337,64 @@ compinit;\n`
       const underscoreSepId = id.replace(/:/g,'_')
       const depth = id.split(':').length
 
-      let argsBlock = ''
-      
-      const subArgs: {arg: string, summary?: string}[] = []
-      topics
-        .filter(t => t.name.startsWith(id + ':') && t.name.split(':').length === depth + 1)
-        .forEach(t => {
-          const subArg = t.name.split(':')[depth]
+      const isCotopic = coTopics.includes(id)
 
-          subArgs.push({
-            arg: subArg,
-            summary: t.description
+      if (isCotopic) {
+        const compFuncName = `${this.cliBin}_${underscoreSepId}`
+
+        const coTopicCompFunc =
+`_${compFuncName}() {
+  _${compFuncName}_flags() {
+    local context state state_descr line
+    typeset -A opt_args
+  
+    ${genZshFlagArgumentsBlock(commands.find(c=>c.id===id)?.flags)}
+  }
+
+  local context state state_descr line
+  typeset -A opt_args
+
+  _arguments -C "1: :->cmds" "*: :->args"
+
+  case "$state" in
+    cmds)
+      if [[ "\${words[CURRENT]}" == -* ]]; then
+        _${compFuncName}_flags
+      else
+%s
+      fi
+      ;;
+    args)
+      case $line[1] in
+%s
+      *)
+        _${compFuncName}_flags
+      ;;
+      esac
+      ;;
+  esac 
+}
+`
+        const subArgs: {id: string, summary?: string}[] = []
+
+        let argsBlock = ''
+        commands
+          .filter(c => c.id === id && c.id.startsWith(id + ':') && c.id.split(':').length === depth + 1)
+          .forEach(c => {
+            subArgs.push({
+              id: c.id.split(':')[depth],
+              summary: c.description
+            })
           })
+        topics
+          .filter(t => t.name.startsWith(id + ':') && t.name.split(':').length === depth + 1)
+          .forEach(t => {
+            const subArg = t.name.split(':')[depth]
+
+            subArgs.push({
+              id: subArg,
+              summary: t.description
+            })
 
           argsBlock+= util.format(argTemplate,subArg,`_${this.cliBin}_${underscoreSepId}_${subArg}`) 
         })
@@ -360,16 +404,49 @@ compinit;\n`
         .forEach(c => {
           const subArg = c.id.split(':')[depth]
 
-          subArgs.push({
-            arg: subArg,
-            summary: c.description
+            subArgs.push({
+              id: subArg,
+              summary: c.description
+            })
+
+            const flagArgsTemplate = `        "%s")\n          %s\n        ;;\n`
+            argsBlock+= util.format(flagArgsTemplate,subArg,genZshFlagArgumentsBlock(c.flags)) 
           })
 
-          const flagArgsTemplate = `        "%s")\n          %s\n        ;;\n`
-          argsBlock+= util.format(flagArgsTemplate,subArg,genZshFlagArgumentsBlock(c.flags)) 
-        })
+        return util.format(coTopicCompFunc, genZshValuesBlock(subArgs), argsBlock)
+      } else {
+        let argsBlock = ''
+        
+        const subArgs: {id: string, summary?: string}[] = []
+        topics
+          .filter(t => t.name.startsWith(id + ':') && t.name.split(':').length === depth + 1)
+          .forEach(t => {
+            const subArg = t.name.split(':')[depth]
 
-      const topicCompFunc =
+            subArgs.push({
+              id: subArg,
+              summary: t.description
+            })
+
+            argsBlock+= util.format(argTemplate,subArg,`_${this.cliBin}_${underscoreSepId}_${subArg}`) 
+          })
+
+        commands
+          .filter(c => c.id.startsWith(id + ':') && c.id.split(':').length === depth + 1)
+          .forEach(c => {
+            if (isCotopic) return
+            const subArg = c.id.split(':')[depth]
+
+            subArgs.push({
+              id: subArg,
+              summary: c.description
+            })
+
+            const flagArgsTemplate = `        "%s")\n          %s\n        ;;\n`
+            argsBlock+= util.format(flagArgsTemplate,subArg,genZshFlagArgumentsBlock(c.flags)) 
+          })
+
+        const topicCompFunc =
 `_${this.cliBin}_${underscoreSepId}() {
   local context state state_descr line
   typeset -A opt_args
@@ -388,8 +465,39 @@ compinit;\n`
   esac 
 }
 `
+        return util.format(topicCompFunc, genZshValuesBlock(subArgs), argsBlock)
+      }
+    }
 
-      return util.format(topicCompFunc, genZshValuesBlock(subArgs), argsBlock)
+    const firstArgs: {id: string, summary?: string}[] = []
+
+    topics.forEach(t=>{
+      if(!t.name.includes(':')) firstArgs.push({
+        id: t.name,
+        summary: t.description
+      })
+    })
+    commands.forEach(c => { 
+      if(!firstArgs.find(a=> a.id === c.id) && !c.id.includes(':')) firstArgs.push({
+        id: c.id,
+        summary: c.description
+      })
+    })
+
+    const mainCaseBlock = () => {
+      // case $line[1] in
+      //   ${mainCaseBlock()}
+      // esac
+      // ;;
+      let caseBlock = 'case $line[1] in\n'
+
+      firstArgs.forEach(arg=>{
+        caseBlock +=`${arg.id})\n  _${this.cliBin}_${arg.id} \n  ;;\n`
+      })
+
+      caseBlock+='esac\n;;'
+
+      return caseBlock
     }
 
     const compFunc =
@@ -404,84 +512,10 @@ _${this.cliBin}() {
 
   case "$state" in
       cmds)
-          _values "${this.cliBin} command" \\
-                  "deploy[deploy]" \\
-                  "data[data]" \\
-                  "alias[alias]" \\
-                  "community[community]" \\
-                  "config[config]" \\
-                  "env[env]" \\
-                  "generate[generate]" \\
-                  "info[info]" \\
-                  "limits[limits]" \\
-                  "login[login]" \\
-                  "logout[logout]" \\
-                  "org[org]" \\
-                  "plugins[plugins]" \\
-                  "retrieve[retrieve]" \\
-                  "run[run]" \\
-                  "object[object]" \\
-                  "update[update]" \\
-                  "whoami[whoami]" \\
+        ${genZshValuesBlock(firstArgs)} 
           ;;
       args)
-          case $line[1] in
-              data)
-                  _sf_data
-                  ;;
-              deploy)
-                  _sf_deploy
-                  ;;
-              alias)
-                  _sf_alias
-                  ;;
-              community)
-                  _sf_community
-                  ;;
-              config)
-                  _sf_config
-                  ;;
-              env)
-                  _sf_env
-                  ;;
-              generate)
-                  _sf_generate
-                  ;;
-              info)
-                  _sf_info
-                  ;;
-              limits)
-                  _sf_limits
-                  ;;
-              login)
-                  _sf_login
-                  ;;
-              logout)
-                  _sf_logout
-                  ;;
-              org)
-                  _sf_org
-                  ;;
-              plugins)
-                  _sf_plugins
-                  ;;
-              retrieve)
-                  _sf_retrieve
-                  ;;
-              run)
-                  _sf_run
-                  ;;
-              object)
-                  _sf_sobject
-                  ;;
-              update)
-                  _sf_update
-                  ;;
-              whoami)
-                  _sf_whoami
-                  ;;
-          esac
-          ;;
+        ${mainCaseBlock()}
   esac
 }
 
