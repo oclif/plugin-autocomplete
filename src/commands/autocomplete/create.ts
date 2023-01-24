@@ -14,7 +14,7 @@ const debug = require('debug')('autocomplete:create')
 type CommandCompletion = {
   id: string;
   description: string;
-  flags: any;
+  flags?: any;
 }
 
 function sanitizeDescription(description?: string): string {
@@ -467,19 +467,21 @@ compinit;\n`
       let caseBlock = 'case $line[1] in\n'
 
       for (const arg of firstArgs) {
-        if (!coTopics.includes(arg.id)) {
-          const cmd = this.commands.find(c=>c.id===arg.id)
-          if (cmd) {
-            caseBlock += `${arg.id})\n ${genZshFlagArgumentsBlock(cmd.flags)} ;; \n`
-          }
-        } else {
+        if (coTopics.includes(arg.id)) {
+          // coTopics already have a completion function.
           caseBlock +=`${arg.id})\n  _${this.cliBin}_${arg.id} \n  ;;\n`
+        } else {
+          const cmd = this.commands.find(c=>c.id===arg.id)
+
+          // if it's a command and has flags, inline flag completion statement.
+          if (cmd && Object.keys(cmd.flags).length > 0) {
+            caseBlock += `${arg.id})\n${genZshFlagArgumentsBlock(cmd.flags)} ;; \n`
+          } else {
+            // it's a topic, redirect to its completion function.
+            caseBlock +=`${arg.id})\n  _${this.cliBin}_${arg.id} \n  ;;\n`
+          }
         }
       }
-
-      firstArgs.forEach(arg=>{
-        caseBlock +=`${arg.id})\n  _${this.cliBin}_${arg.id} \n  ;;\n`
-      })
 
       caseBlock+='esac\n;;'
 
