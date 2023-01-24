@@ -382,6 +382,7 @@ compinit;\n`
         this.commands
           .filter(c => c.id.startsWith(id + ':') && c.id.split(':').length === depth + 1)
           .forEach(c => {
+            if (coTopics.includes(c.id)) return
             const subArg = c.id.split(':')[depth]
 
               subArgs.push({
@@ -413,7 +414,7 @@ compinit;\n`
         this.commands
           .filter(c => c.id.startsWith(id + ':') && c.id.split(':').length === depth + 1)
           .forEach(c => {
-            if (isCotopic) return
+            if (coTopics.includes(c.id)) return
             const subArg = c.id.split(':')[depth]
 
             subArgs.push({
