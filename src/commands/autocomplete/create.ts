@@ -1,5 +1,4 @@
 import * as path from 'path'
-import * as util from 'util'
 
 import * as fs from 'fs-extra'
 
@@ -7,7 +6,6 @@ import bashAutocomplete from '../../autocomplete/bash'
 import ZshCompWithSpaces from '../../autocomplete/zsh'
 import bashAutocompleteWithSpaces from '../../autocomplete/bash-spaces'
 import {AutocompleteBase} from '../../base'
-import {Interfaces } from '@oclif/core'
 
 const debug = require('debug')('autocomplete:create')
 
@@ -58,7 +56,7 @@ export default class Create extends AutocompleteBase {
     await fs.writeFile(this.zshSetupScriptPath, this.zshSetupScript)
 
     // zsh
-    if (this.config.topicSeparator === ":") {
+    if (this.config.topicSeparator === ':') {
       await fs.writeFile(this.zshCompletionFunctionPath, this.zshCompletionFunction)
     } else {
       const zshCompWithSpaces = new ZshCompWithSpaces(this.config)
