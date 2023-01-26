@@ -64,7 +64,7 @@ export default class ZshCompWithSpaces {
       for (const arg of firstArgs) {
         if (this.coTopics.includes(arg.id)) {
           // coTopics already have a completion function.
-          caseBlock += `${arg.id})\n  _${this.config.bin}_${arg.id} \n  ;;\n`
+          caseBlock += `${arg.id})\n  _${this.config.bin}_${arg.id}\n  ;;\n`
         } else {
           const cmd = this.commands.find(c => c.id === arg.id)
 
@@ -73,7 +73,7 @@ export default class ZshCompWithSpaces {
             caseBlock += `${arg.id})\n${this.genZshFlagArgumentsBlock(cmd.flags)} ;; \n`
           } else {
             // it's a topic, redirect to its completion function.
-            caseBlock += `${arg.id})\n  _${this.config.bin}_${arg.id} \n  ;;\n`
+            caseBlock += `${arg.id})\n  _${this.config.bin}_${arg.id}\n  ;;\n`
           }
         }
       }
@@ -239,7 +239,7 @@ _${this.config.bin}
       ;;
       esac
       ;;
-  esac 
+  esac
 }
 `
       const subArgs: {id: string; summary?: string}[] = []
