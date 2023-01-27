@@ -175,7 +175,7 @@ _test-cli_deploy() {
   local context state state_descr line
   typeset -A opt_args
 
-  _arguments -C "1: :->cmds" "*::arg:->args"
+  _arguments -C "1: :->cmds" "*: :->args"
 
   case "$state" in
     cmds)
