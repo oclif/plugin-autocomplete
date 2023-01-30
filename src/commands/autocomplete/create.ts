@@ -189,13 +189,13 @@ _${cliBin}
   }
 
   private get powershellCommands(): string {
-    return this.commands.map(c => c.id.replace(/:/g, this.config.topicSeparator)).sort().join(',')
+    return this.commands.map(c => c.id.replace(/:/g, this.config.topicSeparator)).sort().join('","')
   }
 
   private get powershellCompletionFunction(): string {
     const cliBin = this.cliBin
     const powershellScript = powershellAutocomplete
-    return powershellScript.replace(/<CLI_BIN>/g, cliBin).replace(/<POWERSHELL_COMMANDS_WITH_FLAGS_LIST>/g, this.powershellCommands)
+    return powershellScript.replace(/<CLI_BIN>/g, cliBin).replace(/<POWERSHELL_COMMANDS_WITH_FLAGS_LIST>/g, `"${this.powershellCommands}"`)
   }
 
   private genCmdPublicFlags(Command: CommandCompletion): string {
