@@ -114,7 +114,7 @@ compinit;\n`
       p.commands.forEach(c => {
         try {
           if (c.hidden) return
-          const description = sanitizeDescription(c.description || '')
+          const description = sanitizeDescription(c.summary || c.description || '')
           const flags = c.flags
           cmds.push({
             id: c.id,
@@ -147,9 +147,11 @@ compinit;\n`
     .map(flag => {
       const f = (Klass.flags && Klass.flags[flag]) || {description: ''}
       const isBoolean = f.type === 'boolean'
+      const isOption = f.type === 'option'
       const name = isBoolean ? flag : `${flag}=-`
+      const multiple = isOption && f.multiple ? '*' : ''
       const valueCmpl = isBoolean ? '' : ':'
-      const completion = `--${name}[${sanitizeDescription(f.description)}]${valueCmpl}`
+      const completion = `${multiple}--${name}[${sanitizeDescription(f.summary || f.description)}]${valueCmpl}`
       return `"${completion}"`
     })
     .join('\n')
