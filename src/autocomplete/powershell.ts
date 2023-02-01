@@ -6,19 +6,31 @@ Register-ArgumentCompleter -Native -CommandName ("<CLI_BIN>", "<CLI_BIN>.cmd", "
   $rootCommand = $commandAst.CommandElements[0]
   $fullCommand = $commandAst.CommandElements[1..($commandAst.CommandElements.Count-1)]
 
-  $commandList = @(<POWERSHELL_COMMANDS_WITH_FLAGS_LIST>)
+  $commandList = @(<POWERSHELL_COMMAND_LIST>)
+  $commandSummaries = @{
+<POWERSHELL_COMMAND_SUMMARIES>
+  }
 
-  foreach ($command in $commandList) {
-		if ($command.StartsWith($fullCommand)) {
-			$matchingCommands += $command
-		}
+  if (-Not $topLevelTopic -And $fullCommand -eq $rootCommand) {
+  	$matchingCommands = $commandList
+  } else {
+	  foreach ($command in $commandList) {
+			if ($command.StartsWith($fullCommand)) {
+				$matchingCommands += $command
+			}
+	  }
   }
 
   foreach ($command in $matchingCommands) {
-  	$summary = 'This is the summary for "' + $command + '".'
-
   	$rootCmdLength = $rootCommand.ToString().Length + 1
   	$suggestionIndex = $cursorPosition - $rootCmdLength
+    
+    # This check is needed because [System.Management.Automation.CompletionResult] will error out if you pass in an empty string for the summary.
+    if ($commandSummaries[$command]) {
+			$summary = $commandSummaries[$command]
+  	} else {
+  		$summary = ' '
+  	}
 
   	if ($suggestionIndex -le $command.Length) {
   		$suggestion = $wordToComplete + $command.Substring($suggestionIndex)

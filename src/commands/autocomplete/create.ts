@@ -1,4 +1,5 @@
 import * as fs from 'fs-extra'
+import {EOL} from 'os'
 
 import bashAutocomplete from '../../autocomplete/bash'
 import bashAutocompleteWithSpaces from '../../autocomplete/bash-spaces'
@@ -9,11 +10,12 @@ const debug = require('debug')('autocomplete:create')
 
 type CommandCompletion = {
   id: string;
+  summary: string;
   description: string;
   flags: any;
 }
 
-function sanitizeDescription(description?: string): string {
+function sanitize(description?: string): string {
   if (description === undefined) {
     return ''
   }
@@ -79,16 +81,19 @@ export default class Create extends AutocompleteBase {
       p.commands.forEach(c => {
         try {
           if (c.hidden) return
-          const description = sanitizeDescription(c.description || '')
+          const summary = sanitize(c.summary || '')
+          const description = sanitize(c.description || '')
           const flags = c.flags
           cmds.push({
             id: c.id,
+            summary,
             description,
             flags,
           })
           c.aliases.forEach(a => {
             cmds.push({
               id: a,
+              summary,
               description,
               flags,
             })
@@ -192,10 +197,17 @@ _${cliBin}
     return this.commands.map(c => c.id.replace(/:/g, this.config.topicSeparator)).sort().join('","')
   }
 
+  private get powershellCommandSummaries(): string {
+    return this.commands.map(c => `    "${c.id.replace(/:/g, this.config.topicSeparator)}" = "${(c.summary ? c.summary : c.description).replace('<%= config.bin %>', this.config.bin)}"`).join(EOL)
+  }
+
   private get powershellCompletionFunction(): string {
     const cliBin = this.cliBin
     const powershellScript = powershellAutocomplete
-    return powershellScript.replace(/<CLI_BIN>/g, cliBin).replace(/<POWERSHELL_COMMANDS_WITH_FLAGS_LIST>/g, `"${this.powershellCommands}"`)
+    return powershellScript
+    .replace(/<CLI_BIN>/g, cliBin)
+    .replace(/<POWERSHELL_COMMAND_LIST>/g, `"${this.powershellCommands}"`)
+    .replace(/<POWERSHELL_COMMAND_SUMMARIES>/g, this.powershellCommandSummaries)
   }
 
   private genCmdPublicFlags(Command: CommandCompletion): string {
@@ -214,7 +226,7 @@ _${cliBin}
       const isBoolean = f.type === 'boolean'
       const name = isBoolean ? flag : `${flag}=-`
       const valueCmpl = isBoolean ? '' : ':'
-      const completion = `--${name}[${sanitizeDescription(f.description)}]${valueCmpl}`
+      const completion = `--${name}[${sanitize(f.description)}]${valueCmpl}`
       return `"${completion}"`
     })
     .join('\n')
