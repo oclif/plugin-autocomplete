@@ -32,14 +32,16 @@ type Topic = {
 export default class ZshCompWithSpaces {
   protected config: Config;
 
-  private _topics?: Topic[]
+  private topics: Topic[]
 
-  private _commands?: CommandCompletion[]
+  private commands: CommandCompletion[]
 
   private _coTopics?: string[]
 
   constructor(config: Config) {
     this.config = config
+    this.topics = this.getTopics()
+    this.commands = this.getCommands()
   }
 
   public generate(): string {
@@ -345,9 +347,7 @@ _${this.config.bin}
     return this._coTopics
   }
 
-  private get topics(): Topic[] {
-    if (this._topics) return this._topics
-
+  private getTopics(): Topic[] {
     const topics = this.config.topics.filter((topic: Interfaces.Topic) => {
       // it is assumed a topic has a child if it has children
       const hasChild = this.config.topics.some(subTopic => subTopic.name.includes(`${topic.name}:`))
@@ -369,14 +369,10 @@ _${this.config.bin}
       }
     })
 
-    this._topics = topics
-
-    return this._topics
+    return topics
   }
 
-  private get commands(): CommandCompletion[] {
-    if (this._commands) return this._commands
-
+  private getCommands(): CommandCompletion[] {
     const cmds: CommandCompletion[] = []
 
     this.config.plugins.forEach(p => {
@@ -389,12 +385,34 @@ _${this.config.bin}
           summary,
           flags,
         })
+
+        c.aliases.forEach(a=>{
+          cmds.push({
+            id: a,
+            summary,
+            flags
+          })
+          
+          const split = a.split(':')
+
+          let words = split[0]
+
+          for (let i = 1; i < split.length; words += `:${split[i]}`) {
+            if(this.topics.find(t=> t.name === words) === undefined) {
+              console.log(words);
+              this.topics.push({
+                name: words,
+                description: ''
+              })
+            }
+            i++;
+          }
+
+        })
       })
     })
 
-    this._commands = cmds
-
-    return this._commands
+    return cmds
   }
 }
 
