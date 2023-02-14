@@ -110,6 +110,21 @@ const commandPluginC: ICommand.Loadable = {
   pluginAlias: '@My/pluginc',
 }
 
+const commandPluginD: ICommand.Loadable = {
+  strict: false,
+  aliases: [],
+  args: [],
+  flags: {},
+  hidden: false,
+  id: 'app:execute:code',
+  summary: 'execute code',
+  async load(): Promise<ICommand.Class> {
+    return new MyCommandClass() as unknown as ICommand.Class
+  },
+  pluginType: 'core',
+  pluginAlias: '@My/plugind',
+}
+
 const pluginA: IPlugin = {
   load: async (): Promise<void> => {},
   findCommand: async (): Promise<ICommand.Class> => {
@@ -117,7 +132,7 @@ const pluginA: IPlugin = {
   },
   name: '@My/plugina',
   alias: '@My/plugina',
-  commands: [commandPluginA, commandPluginB, commandPluginC],
+  commands: [commandPluginA, commandPluginB, commandPluginC, commandPluginD],
   _base: '',
   pjson: {} as any,
   commandIDs: ['deploy'],
@@ -158,6 +173,53 @@ skipWindows('zsh comp', () => {
       config.bin = 'test-cli'
       const zshCompWithSpaces = new ZshCompWithSpaces(config as Config)
       expect(zshCompWithSpaces.generate()).to.equal(`#compdef test-cli
+
+_test-cli_app() {
+  local context state state_descr line
+  typeset -A opt_args
+
+  _arguments -C "1: :->cmds" "*::arg:->args"
+
+  case "$state" in
+    cmds)
+_values "completions" \\
+"execute[execute code]" \\
+
+      ;;
+    args)
+      case $line[1] in
+        "execute")
+          _test-cli_app_execute
+        ;;
+
+      esac
+      ;;
+  esac 
+}
+
+_test-cli_app_execute() {
+  local context state state_descr line
+  typeset -A opt_args
+
+  _arguments -C "1: :->cmds" "*::arg:->args"
+
+  case "$state" in
+    cmds)
+_values "completions" \\
+"code[execute code]" \\
+
+      ;;
+    args)
+      case $line[1] in
+        "code")
+          _arguments -S \\
+"*: :_files"
+        ;;
+
+      esac
+      ;;
+  esac 
+}
 
 _test-cli_deploy() {
   _test-cli_deploy_flags() {
@@ -213,12 +275,16 @@ _test-cli() {
   case "$state" in
     cmds)
       _values "completions" \\
+"app[execute code]" \\
 "deploy[Deploy a project]" \\
 "search[Search for a command]" \\
  
     ;;
     args)
       case $line[1] in
+app)
+  _test-cli_app
+  ;;
 deploy)
   _test-cli_deploy
   ;;
