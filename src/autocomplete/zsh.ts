@@ -395,7 +395,7 @@ _${this.config.bin}
 
           const split = a.split(':')
 
-          let words = split[0]
+          let topic = split[0]
 
           // Completion funcs are generated from topics:
           // `force` -> `force:org` -> `force:org:open|list`
@@ -403,13 +403,13 @@ _${this.config.bin}
           // but aliases aren't guaranteed to follow the plugin command tree
           // so we need to add any missing topic between the starting point and the alias.
           for (let i = 0; i < split.length - 1; i++) {
-            if (!this.topics.find(t => t.name === words)) {
+            if (!this.topics.find(t => t.name === topic)) {
               this.topics.push({
-                name: words,
-                description: '',
+                name: topic,
+                description: `${topic.replace(/:/g, ' ')} commands`,
               })
             }
-            words += `:${split[i + 1]}`
+            topic += `:${split[i + 1]}`
           }
         })
       })
