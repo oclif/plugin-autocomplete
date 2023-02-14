@@ -116,7 +116,8 @@ _${this.config.bin}
 
   private genZshFlagArgumentsBlock(flags?: CommandFlags): string {
     // if a command doesn't have flags make it only complete files
-    if (!flags) return '_arguments "*: :_files"'
+    // also add comp for the global `--help` flag.
+    if (!flags) return '_arguments -S \\\n --help"[Show help for command]" "*: :_files'
 
     const flagNames = Object.keys(flags)
 
@@ -177,6 +178,8 @@ _${this.config.bin}
       flagSpec += ' \\\n'
       argumentsBlock += flagSpec
     }
+    // add global `--help` flag
+    argumentsBlock += '--help"[Show help for command]" \\\n'
     // complete files if `-` is not present on the current line
     argumentsBlock += '"*: :_files"'
 

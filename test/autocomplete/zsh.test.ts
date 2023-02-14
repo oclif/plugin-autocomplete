@@ -213,6 +213,7 @@ _values "completions" \\
       case $line[1] in
         "code")
           _arguments -S \\
+--help"[Show help for command]" \\
 "*: :_files"
         ;;
 
@@ -231,6 +232,7 @@ _test-cli_deploy() {
 "(-a --api-version)"{-a,--api-version}"[]:file:_files" \\
 --json"[Format output as json.]" \\
 "(-i --ignore-errors)"{-i,--ignore-errors}"[Ignore errors.]" \\
+--help"[Show help for command]" \\
 "*: :_files"
   }
 
@@ -254,6 +256,7 @@ _values "completions" \\
         "functions")
           _arguments -S \\
 "(-b --branch)"{-b,--branch}"[]:file:_files" \\
+--help"[Show help for command]" \\
 "*: :_files"
         ;;
 
