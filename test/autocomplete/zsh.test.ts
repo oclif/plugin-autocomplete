@@ -222,9 +222,6 @@ _test-cli() {
 deploy)
   _test-cli_deploy
   ;;
-search)
-  _test-cli_search
-  ;;
 esac
 
     ;;
