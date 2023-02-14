@@ -207,7 +207,6 @@ compinit;\n`
   private get bashCompletionFunction(): string {
     const cliBin = this.cliBin
     const supportSpaces = this.config.topicSeparator === ' '
-    console.log(`supportSpaces: ${supportSpaces}`)
     const bashScript = (process.env.OCLIF_AUTOCOMPLETE_TOPIC_SEPARATOR === 'colon' || !supportSpaces) ? bashAutocomplete : bashAutocompleteWithSpaces
     return bashScript.replace(/<CLI_BIN>/g, cliBin).replace(/<BASH_COMMANDS_WITH_FLAGS_LIST>/g, this.bashCommandsWithFlagsList)
   }
