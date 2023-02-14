@@ -70,9 +70,12 @@ export default class ZshCompWithSpaces {
         } else {
           const cmd = this.commands.find(c => c.id === arg.id)
 
-          // if it's a command and has flags, inline flag completion statement.
-          if (cmd && Object.keys(cmd.flags).length > 0) {
-            caseBlock += `${arg.id})\n${this.genZshFlagArgumentsBlock(cmd.flags)} ;; \n`
+          if (cmd) {
+            // if it's a command and has flags, inline flag completion statement.
+            // skip it from the args statement if it doesn't accept any flag.
+            if (Object.keys(cmd.flags).length > 0) {
+              caseBlock += `${arg.id})\n${this.genZshFlagArgumentsBlock(cmd.flags)} ;; \n`
+            }
           } else {
             // it's a topic, redirect to its completion function.
             caseBlock += `${arg.id})\n  _${this.config.bin}_${arg.id}\n  ;;\n`
