@@ -363,9 +363,11 @@ _${this.config.bin}
       return 0
     })
     .map(t => {
+      const description = t.description ? sanitizeSummary(t.description) : `${t.name.replace(/:/g, ' ')} commands`
+
       return {
         name: t.name,
-        description: sanitizeSummary(t.description),
+        description,
       }
     })
 
