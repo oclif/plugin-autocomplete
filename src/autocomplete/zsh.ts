@@ -1,5 +1,5 @@
 import * as util from 'util'
-import {Config, Interfaces} from '@oclif/core'
+import {Config, Interfaces, Command} from '@oclif/core'
 
 function sanitizeSummary(description?: string): string {
   if (description === undefined) {
@@ -21,7 +21,7 @@ type CommandCompletion = {
 }
 
 type CommandFlags = {
-  [name: string]: Interfaces.Command.Flag;
+  [name: string]: Command.Flag.Cached;
 }
 
 type Topic = {
