@@ -3,6 +3,7 @@ import * as path from 'path'
 import * as fs from 'fs-extra'
 
 import bashAutocomplete from '../../autocomplete/bash'
+import ZshCompWithSpaces from '../../autocomplete/zsh'
 import bashAutocompleteWithSpaces from '../../autocomplete/bash-spaces'
 import {AutocompleteBase} from '../../base'
 
@@ -11,7 +12,7 @@ const debug = require('debug')('autocomplete:create')
 type CommandCompletion = {
   id: string;
   description: string;
-  flags: any;
+  flags?: any;
 }
 
 function sanitizeDescription(description?: string): string {
@@ -53,7 +54,16 @@ export default class Create extends AutocompleteBase {
     await fs.writeFile(this.bashSetupScriptPath, this.bashSetupScript)
     await fs.writeFile(this.bashCompletionFunctionPath, this.bashCompletionFunction)
     await fs.writeFile(this.zshSetupScriptPath, this.zshSetupScript)
-    await fs.writeFile(this.zshCompletionFunctionPath, this.zshCompletionFunction)
+
+    // zsh
+    const supportSpaces = this.config.topicSeparator === ' '
+
+    if (process.env.OCLIF_AUTOCOMPLETE_TOPIC_SEPARATOR === 'colon' || !supportSpaces) {
+      await fs.writeFile(this.zshCompletionFunctionPath, this.zshCompletionFunction)
+    } else {
+      const zshCompWithSpaces = new ZshCompWithSpaces(this.config)
+      await fs.writeFile(this.zshCompletionFunctionPath, zshCompWithSpaces.generate())
+    }
   }
 
   private get bashSetupScriptPath(): string {
@@ -198,7 +208,8 @@ compinit;\n`
 
   private get bashCompletionFunction(): string {
     const cliBin = this.cliBin
-    const bashScript = this.config.topicSeparator === ' ' ? bashAutocompleteWithSpaces : bashAutocomplete
+    const supportSpaces = this.config.topicSeparator === ' '
+    const bashScript = (process.env.OCLIF_AUTOCOMPLETE_TOPIC_SEPARATOR === 'colon' || !supportSpaces) ? bashAutocomplete : bashAutocompleteWithSpaces
     return bashScript.replace(/<CLI_BIN>/g, cliBin).replace(/<BASH_COMMANDS_WITH_FLAGS_LIST>/g, this.bashCommandsWithFlagsList)
   }
 

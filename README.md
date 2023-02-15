@@ -4,8 +4,6 @@
 autocomplete plugin for oclif (bash & zsh)
 
 [![Version](https://img.shields.io/npm/v/@oclif/plugin-autocomplete.svg)](https://npmjs.org/package/@oclif/plugin-autocomplete)
-[![CircleCI](https://circleci.com/gh/oclif/plugin-autocomplete/tree/main.svg?style=shield)](https://circleci.com/gh/oclif/plugin-autocomplete/tree/main)
-[![Appveyor CI](https://ci.appveyor.com/api/projects/status/github/oclif/plugin-autocomplete?branch=main&svg=true)](https://ci.appveyor.com/project/oclif/plugin-autocomplete/branch/main)
 [![Downloads/week](https://img.shields.io/npm/dw/@oclif/plugin-autocomplete.svg)](https://npmjs.org/package/@oclif/plugin-autocomplete)
 [![License](https://img.shields.io/npm/l/@oclif/plugin-autocomplete.svg)](https://github.com/oclif/plugin-autocomplete/blob/main/package.json)
 
@@ -14,7 +12,18 @@ autocomplete plugin for oclif (bash & zsh)
 * [Commands](#commands)
 <!-- tocstop -->
 # Usage
-See https://oclif.io/docs/plugins.html
+
+Run `<cli> autocomplete` to generate the autocomplete files for your current shell.
+
+## Topic separator
+Since oclif v2 it's possible to use spaces as a topic separator in addition to colons.
+
+For bash and zsh each topic separator has different autocomplete implementations, if the CLI supports using a space as the separator, plugin-autocomplete will generate completion for that topic.
+
+If you still want to use the colon-separated autocomplete you can set `OCLIF_AUTOCOMPLETE_TOPIC_SEPARATOR` to `colon` and re-generate the autocomplete files.
+
+Docs: https://oclif.io/docs/topic_separator
+
 # Commands
 <!-- commands -->
 * [`oclif-example autocomplete [SHELL]`](#oclif-example-autocomplete-shell)
