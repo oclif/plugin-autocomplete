@@ -1,4 +1,4 @@
-import {Config, Command as ICommand} from '@oclif/core'
+import {Config, Command} from '@oclif/core'
 import * as path from 'path'
 import {Plugin as IPlugin} from '@oclif/core/lib/interfaces'
 import {expect} from 'chai'
@@ -7,10 +7,10 @@ import ZshCompWithSpaces from '../../src/autocomplete/zsh'
 // autocomplete will throw error on windows ci
 const {default: skipWindows} = require('../helpers/runtest')
 
-class MyCommandClass implements ICommand.Cached {
+class MyCommandClass implements Command.Cached {
   [key: string]: unknown;
 
-  args: {[name: string]: ICommand.Arg.Cached} = {}
+  args: {[name: string]: Command.Arg.Cached} = {}
 
   _base = ''
 
@@ -22,8 +22,8 @@ class MyCommandClass implements ICommand.Cached {
 
   flags = {}
 
-  new(): ICommand.Cached {
-    // @ts-ignore
+  new(): Command.Cached {
+    // @ts-expect-error this is not the full interface but enough for testing
     return {
       _run(): Promise<any> {
         return Promise.resolve()
@@ -35,7 +35,7 @@ class MyCommandClass implements ICommand.Cached {
   }
 }
 
-const commandPluginA: ICommand.Loadable = {
+const commandPluginA: Command.Loadable = {
   strict: false,
   aliases: [],
   args: {},
@@ -69,14 +69,14 @@ const commandPluginA: ICommand.Loadable = {
   hidden: false,
   id: 'deploy',
   summary: 'Deploy a project',
-  async load(): Promise<ICommand.Class> {
-    return new MyCommandClass() as unknown as ICommand.Class
+  async load(): Promise<Command.Class> {
+    return new MyCommandClass() as unknown as Command.Class
   },
   pluginType: 'core',
   pluginAlias: '@My/plugina',
 }
 
-const commandPluginB: ICommand.Loadable = {
+const commandPluginB: Command.Loadable = {
   strict: false,
   aliases: [],
   args: {},
@@ -91,14 +91,14 @@ const commandPluginB: ICommand.Loadable = {
   hidden: false,
   id: 'deploy:functions',
   summary: 'Deploy a function.',
-  async load(): Promise<ICommand.Class> {
-    return new MyCommandClass() as unknown as ICommand.Class
+  async load(): Promise<Command.Class> {
+    return new MyCommandClass() as unknown as Command.Class
   },
   pluginType: 'core',
   pluginAlias: '@My/pluginb',
 }
 
-const commandPluginC: ICommand.Loadable = {
+const commandPluginC: Command.Loadable = {
   strict: false,
   aliases: [],
   args: {},
@@ -106,14 +106,14 @@ const commandPluginC: ICommand.Loadable = {
   hidden: false,
   id: 'search',
   summary: 'Search for a command',
-  async load(): Promise<ICommand.Class> {
-    return new MyCommandClass() as unknown as ICommand.Class
+  async load(): Promise<Command.Class> {
+    return new MyCommandClass() as unknown as Command.Class
   },
   pluginType: 'core',
   pluginAlias: '@My/pluginc',
 }
 
-const commandPluginD: ICommand.Loadable = {
+const commandPluginD: Command.Loadable = {
   strict: false,
   aliases: [],
   args: {},
@@ -121,8 +121,8 @@ const commandPluginD: ICommand.Loadable = {
   hidden: false,
   id: 'app:execute:code',
   summary: 'execute code',
-  async load(): Promise<ICommand.Class> {
-    return new MyCommandClass() as unknown as ICommand.Class
+  async load(): Promise<Command.Class> {
+    return new MyCommandClass() as unknown as Command.Class
   },
   pluginType: 'core',
   pluginAlias: '@My/plugind',
@@ -130,8 +130,8 @@ const commandPluginD: ICommand.Loadable = {
 
 const pluginA: IPlugin = {
   load: async (): Promise<void> => {},
-  findCommand: async (): Promise<ICommand.Class> => {
-    return new MyCommandClass() as unknown as ICommand.Class
+  findCommand: async (): Promise<Command.Class> => {
+    return new MyCommandClass() as unknown as Command.Class
   },
   name: '@My/plugina',
   alias: '@My/plugina',
