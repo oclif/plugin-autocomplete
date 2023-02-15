@@ -1,15 +1,17 @@
-import {Config} from '@oclif/core'
+import {Config, Command as ICommand} from '@oclif/core'
 import * as path from 'path'
 import {Plugin as IPlugin} from '@oclif/core/lib/interfaces'
 import {expect} from 'chai'
-import {Command as ICommand} from '@oclif/core/lib/interfaces'
 import ZshCompWithSpaces from '../../src/autocomplete/zsh'
 
 // autocomplete will throw error on windows ci
 const {default: skipWindows} = require('../helpers/runtest')
 
-// @ts-expect-error
-class MyCommandClass implements ICommand.Class {
+class MyCommandClass implements ICommand.Cached {
+  [key: string]: unknown;
+
+  args: {[name: string]: ICommand.Arg.Cached} = {}
+
   _base = ''
 
   aliases: string[] = []
@@ -20,7 +22,8 @@ class MyCommandClass implements ICommand.Class {
 
   flags = {}
 
-  new(): ICommand.Instance {
+  new(): ICommand.Cached {
+    // @ts-ignore
     return {
       _run(): Promise<any> {
         return Promise.resolve()
@@ -35,7 +38,7 @@ class MyCommandClass implements ICommand.Class {
 const commandPluginA: ICommand.Loadable = {
   strict: false,
   aliases: [],
-  args: [],
+  args: {},
   flags: {
     metadata: {
       name: 'metadata',
@@ -76,7 +79,7 @@ const commandPluginA: ICommand.Loadable = {
 const commandPluginB: ICommand.Loadable = {
   strict: false,
   aliases: [],
-  args: [],
+  args: {},
   flags: {
     branch: {
       name: 'branch',
@@ -98,7 +101,7 @@ const commandPluginB: ICommand.Loadable = {
 const commandPluginC: ICommand.Loadable = {
   strict: false,
   aliases: [],
-  args: [],
+  args: {},
   flags: {},
   hidden: false,
   id: 'search',
@@ -113,7 +116,7 @@ const commandPluginC: ICommand.Loadable = {
 const commandPluginD: ICommand.Loadable = {
   strict: false,
   aliases: [],
-  args: [],
+  args: {},
   flags: {},
   hidden: false,
   id: 'app:execute:code',
