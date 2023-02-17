@@ -8,7 +8,7 @@ export abstract class AutocompleteBase extends Command {
   }
 
   public get cliBinEnvVar() {
-    return this.config.bin.toUpperCase().replace('-', '_')
+    return this.config.bin.toUpperCase().replace(/-/g, '_')
   }
 
   public determineShell(shell: string) {
