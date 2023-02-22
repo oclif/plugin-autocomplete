@@ -39,10 +39,10 @@ skipWindows('Create', () => {
       expect(cmd.bashSetupScript).to.eq(`OCLIF_EXAMPLE_AC_BASH_COMPFUNC_PATH=${config.cacheDir}/autocomplete/functions/bash/oclif-example.bash && test -f $OCLIF_EXAMPLE_AC_BASH_COMPFUNC_PATH && source $OCLIF_EXAMPLE_AC_BASH_COMPFUNC_PATH;\n`)
     })
 
-    it('#bashSetupScript wiht more tahn one dash', async () => {
-      const rootWithDash = path.resolve(__dirname, '../../assets/package.json')
-      const confitWithDash = new Config({root:rootWithDash})
+    it('#bashSetupScript wiht more than one dash', async () => {
+      const confitWithDash = new Config({root})
       await confitWithDash.load()
+      confitWithDash.bin = 'oclif-cli-example'
       const cmdWithDash: any = new Create([], confitWithDash)
       expect(cmdWithDash.bashSetupScript).to.eq(`OCLIF_CLI_EXAMPLE_AC_BASH_COMPFUNC_PATH=${config.cacheDir}/autocomplete/functions/bash/oclif-cli-example.bash && test -f $OCLIF_CLI_EXAMPLE_AC_BASH_COMPFUNC_PATH && source $OCLIF_CLI_EXAMPLE_AC_BASH_COMPFUNC_PATH;\n`)
     })
