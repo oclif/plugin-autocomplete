@@ -5,14 +5,14 @@ function sanitizeSummary(description?: string): string {
   if (description === undefined) {
     return ''
   }
-  return description
-  .replace(/([`"])/g, '\\\\\\$1') // backticks and double-quotes require triple-backslashes
-  // eslint-disable-next-line no-useless-escape
-  .replace(/([\[\]])/g, '\\\\$1') // square brackets require double-backslashes
-  .split('\n')[0] // only use the first line
+  return (
+    description
+    .replace(/([`"])/g, '\\\\\\$1') // backticks and double-quotes require triple-backslashes
+    // eslint-disable-next-line no-useless-escape
+    .replace(/([\[\]])/g, '\\\\$1') // square brackets require double-backslashes
+    .split('\n')[0]
+  ) // only use the first line
 }
-
-const argTemplate = '        "%s")\n          %s\n        ;;\n'
 
 type CommandCompletion = {
   id: string;
@@ -30,34 +30,37 @@ type Topic = {
 }
 
 export default class ZshCompWithSpaces {
-  protected config: Config;
+  protected config: Config
 
   private topics: Topic[]
 
   private commands: CommandCompletion[]
 
-  private _coTopics?: string[]
+  private coTopics: string[]
 
   constructor(config: Config) {
     this.config = config
     this.topics = this.getTopics()
     this.commands = this.getCommands()
+    this.coTopics = this.getCoTopics()
   }
 
   public generate(): string {
     const firstArgs: {id: string; summary?: string}[] = []
 
     this.topics.forEach(t => {
-      if (!t.name.includes(':')) firstArgs.push({
-        id: t.name,
-        summary: t.description,
-      })
+      if (!t.name.includes(':'))
+        firstArgs.push({
+          id: t.name,
+          summary: t.description,
+        })
     })
     this.commands.forEach(c => {
-      if (!firstArgs.find(a => a.id === c.id) && !c.id.includes(':')) firstArgs.push({
-        id: c.id,
-        summary: c.summary,
-      })
+      if (!firstArgs.find(a => a.id === c.id) && !c.id.includes(':'))
+        firstArgs.push({
+          id: c.id,
+          summary: c.summary,
+        })
     })
 
     const mainArgsCaseBlock = () => {
@@ -66,7 +69,7 @@ export default class ZshCompWithSpaces {
       for (const arg of firstArgs) {
         if (this.coTopics.includes(arg.id)) {
           // coTopics already have a completion function.
-          caseBlock += `${arg.id})\n  _${this.config.bin}_${arg.id}\n  ;;\n`
+          caseBlock += `        ${arg.id})\n          _${this.config.bin}_${arg.id}\n          ;;\n`
         } else {
           const cmd = this.commands.find(c => c.id === arg.id)
 
@@ -74,16 +77,16 @@ export default class ZshCompWithSpaces {
             // if it's a command and has flags, inline flag completion statement.
             // skip it from the args statement if it doesn't accept any flag.
             if (Object.keys(cmd.flags).length > 0) {
-              caseBlock += `${arg.id})\n${this.genZshFlagArgumentsBlock(cmd.flags)} ;; \n`
+              caseBlock += `        ${arg.id})\n          ${this.genZshFlagArgumentsBlock(cmd.flags)}         ;; \n`
             }
           } else {
             // it's a topic, redirect to its completion function.
-            caseBlock += `${arg.id})\n  _${this.config.bin}_${arg.id}\n  ;;\n`
+            caseBlock += `        ${arg.id})\n          _${this.config.bin}_${arg.id}\n          ;;\n`
           }
         }
       }
 
-      caseBlock += 'esac\n'
+      caseBlock += '      esac'
 
       return caseBlock
     }
@@ -92,7 +95,6 @@ export default class ZshCompWithSpaces {
 `#compdef ${this.config.bin}
 
 ${this.topics.map(t => this.genZshTopicCompFun(t.name)).join('\n')}
-
 _${this.config.bin}() {
   local context state state_descr line
   typeset -A opt_args
@@ -101,11 +103,11 @@ _${this.config.bin}() {
 
   case "$state" in
     cmds)
-      ${this.genZshValuesBlock(firstArgs)} 
-    ;;
+      ${this.genZshValuesBlock({subArgs: firstArgs})}
+      ;;
     args)
       ${mainArgsCaseBlock()}
-    ;;
+      ;;
   esac
 }
 
@@ -114,10 +116,10 @@ _${this.config.bin}
     return compFunc
   }
 
-  private genZshFlagArgumentsBlock(flags?: CommandFlags): string {
+  private genZshFlagArguments(flags?: CommandFlags): string {
     // if a command doesn't have flags make it only complete files
     // also add comp for the global `--help` flag.
-    if (!flags) return '_arguments -S \\\n --help"[Show help for command]" "*: :_files'
+    if (!flags) return '--help"[Show help for command]" "*: :_files'
 
     const flagNames = Object.keys(flags)
 
@@ -125,7 +127,7 @@ _${this.config.bin}
     // Do not complete flags after a ‘--’ appearing on the line, and ignore the ‘--’. For example, with -S, in the line:
     // foobar -x -- -y
     // the ‘-x’ is considered a flag, the ‘-y’ is considered an argument, and the ‘--’ is considered to be neither.
-    let argumentsBlock = '_arguments -S \\\n'
+    let argumentsBlock = ''
 
     for (const flagName of flagNames) {
       const f = flags[flagName]
@@ -145,27 +147,11 @@ _${this.config.bin}
           } else {
             flagSpec += `"(-${f.char} --${f.name})"{-${f.char},--${f.name}}`
           }
-
-          flagSpec += `"[${f.summary}]`
-
-          if (f.options) {
-            flagSpec += `:${f.name} options:(${f.options?.join(' ')})"`
-          } else {
-            flagSpec += ':file:_files"'
-          }
+        } else if (f.multiple) {
+          // this flag can be present multiple times on the line
+          flagSpec += `"*"--${f.name}`
         } else {
-          if (f.multiple) {
-            // this flag can be present multiple times on the line
-            flagSpec += '"*"'
-          }
-
-          flagSpec += `--${f.name}"[${f.summary}]:`
-
-          if (f.options) {
-            flagSpec += `${f.name} options:(${f.options.join(' ')})"`
-          } else {
-            flagSpec += 'file:_files"'
-          }
+          flagSpec += `--${f.name}`
         }
       } else if (f.char) {
         // Flag.Boolean
@@ -173,6 +159,16 @@ _${this.config.bin}
       } else {
         // Flag.Boolean
         flagSpec += `--${f.name}"[${f.summary}]"`
+      }
+
+      if (f.type === 'option') {
+        flagSpec += `"[${f.summary}]`
+
+        if (f.options) {
+          flagSpec += `:${f.name} options:(${f.options?.join(' ')})"`
+        } else {
+          flagSpec += ':file:_files"'
+        }
       }
 
       flagSpec += ' \\\n'
@@ -186,65 +182,78 @@ _${this.config.bin}
     return argumentsBlock
   }
 
-  private genZshValuesBlock(subArgs: {id: string; summary?: string}[]): string {
-    let valuesBlock = '_values "completions" \\\n'
+  private genZshFlagArgumentsBlock(flags?: CommandFlags): string {
+    let argumentsBlock = '_arguments -S \\'
+    this.genZshFlagArguments(flags)
+    .split('\n')
+    .forEach(f => {
+      argumentsBlock += `\n                     ${f}`
+    })
+
+    return argumentsBlock
+  }
+
+  private genZshValuesBlock(options: {id?: string; subArgs: Array<{id: string; summary?: string}>}): string {
+    let valuesBlock = '_values "completions"'
+    const {id, subArgs} = options
 
     subArgs.forEach(subArg => {
-      valuesBlock += `"${subArg.id}[${subArg.summary}]" \\\n`
+      valuesBlock += ` \\\n              "${subArg.id}[${subArg.summary}]"`
     })
+
+    if (id) {
+      const cflags = this.commands.find(c => c.id === id)?.flags
+
+      if (cflags) {
+        // eslint-disable-next-line no-template-curly-in-string
+        valuesBlock += ' \\\n              "${flags[@]}"'
+      }
+    }
 
     return valuesBlock
   }
 
   private genZshTopicCompFun(id: string): string {
-    const coTopics: string[] = []
-
-    for (const topic of this.topics) {
-      for (const cmd of this.commands) {
-        if (topic.name === cmd.id) {
-          coTopics.push(topic.name)
-        }
-      }
-    }
-
-    const flagArgsTemplate = '        "%s")\n          %s\n        ;;\n'
-
     const underscoreSepId = id.replace(/:/g, '_')
     const depth = id.split(':').length
 
-    const isCotopic = coTopics.includes(id)
+    const isCotopic = this.coTopics.includes(id)
+
+    let flags = ''
+
+    if (id) {
+      const cflags = this.commands.find(c => c.id === id)?.flags
+
+      if (cflags) {
+        flags += '\n'
+        this.genZshFlagArguments(cflags)
+        .split('\n')
+        .forEach(f => {
+          flags += `    ${f}\n`
+        })
+        flags += '  '
+      }
+    }
 
     if (isCotopic) {
-      const compFuncName = `${this.config.bin}_${underscoreSepId}`
-
-      const coTopicCompFunc =
-`_${compFuncName}() {
-  _${compFuncName}_flags() {
-    local context state state_descr line
-    typeset -A opt_args
-
-    ${this.genZshFlagArgumentsBlock(this.commands.find(c => c.id === id)?.flags)}
-  }
-
+      const coTopicCompFunc = `_${this.config.bin}_${underscoreSepId}() {
   local context state state_descr line
   typeset -A opt_args
+
+  local -a flags=(%s)
 
   _arguments -C "1: :->cmds" "*: :->args"
 
   case "$state" in
     cmds)
-      if [[ "\${words[CURRENT]}" == -* ]]; then
-        _${compFuncName}_flags
-      else
-%s
-      fi
+      %s
       ;;
     args)
-      case $line[1] in
-%s
-      *)
-        _${compFuncName}_flags
-      ;;
+      case $line[1] in%s
+        *)
+          _arguments -S \\
+                     "\${flags[@]}"
+          ;;
       esac
       ;;
   esac
@@ -264,13 +273,13 @@ _${this.config.bin}
           summary: t.description,
         })
 
-        argsBlock += util.format(argTemplate, subArg, `_${this.config.bin}_${underscoreSepId}_${subArg}`)
+        argsBlock += util.format('\n        "%s")\n          %s\n        ;;', subArg, `_${this.config.bin}_${underscoreSepId}_${subArg}`)
       })
 
       this.commands
       .filter(c => c.id.startsWith(id + ':') && c.id.split(':').length === depth + 1)
       .forEach(c => {
-        if (coTopics.includes(c.id)) return
+        if (this.coTopics.includes(c.id)) return
         const subArg = c.id.split(':')[depth]
 
         subArgs.push({
@@ -278,10 +287,10 @@ _${this.config.bin}
           summary: c.summary,
         })
 
-        argsBlock += util.format(flagArgsTemplate, subArg, this.genZshFlagArgumentsBlock(c.flags))
+        argsBlock += util.format('\n        "%s")\n          _arguments -C "*::arg:->args"\n          %s\n          ;;', subArg, this.genZshFlagArgumentsBlock(c.flags))
       })
 
-      return util.format(coTopicCompFunc, this.genZshValuesBlock(subArgs), argsBlock)
+      return util.format(coTopicCompFunc, flags, this.genZshValuesBlock({id, subArgs}), argsBlock)
     }
     let argsBlock = ''
 
@@ -296,13 +305,13 @@ _${this.config.bin}
         summary: t.description,
       })
 
-      argsBlock += util.format(argTemplate, subArg, `_${this.config.bin}_${underscoreSepId}_${subArg}`)
+      argsBlock += util.format('\n        "%s")\n          %s\n        ;;', subArg, `_${this.config.bin}_${underscoreSepId}_${subArg}`)
     })
 
     this.commands
     .filter(c => c.id.startsWith(id + ':') && c.id.split(':').length === depth + 1)
     .forEach(c => {
-      if (coTopics.includes(c.id)) return
+      if (this.coTopics.includes(c.id)) return
       const subArg = c.id.split(':')[depth]
 
       subArgs.push({
@@ -310,7 +319,7 @@ _${this.config.bin}
         summary: c.summary,
       })
 
-      argsBlock += util.format(flagArgsTemplate, subArg, this.genZshFlagArgumentsBlock(c.flags))
+      argsBlock += util.format(`\n        "%s")${flags ? '\n          _arguments -C "*::arg:->args"' : ''}\n          %s\n          ;;`, subArg, this.genZshFlagArgumentsBlock(c.flags))
     })
 
     const topicCompFunc =
@@ -322,22 +331,19 @@ _${this.config.bin}
 
   case "$state" in
     cmds)
-%s
+      %s
       ;;
     args)
-      case $line[1] in
-%s
+      case $line[1] in%s
       esac
       ;;
-  esac 
+  esac
 }
 `
-    return util.format(topicCompFunc, this.genZshValuesBlock(subArgs), argsBlock)
+    return util.format(topicCompFunc, this.genZshValuesBlock({subArgs}), argsBlock)
   }
 
-  private get coTopics(): string [] {
-    if (this._coTopics) return this._coTopics
-
+  private getCoTopics(): string[] {
     const coTopics: string[] = []
 
     for (const topic of this.topics) {
@@ -348,9 +354,7 @@ _${this.config.bin}
       }
     }
 
-    this._coTopics = coTopics
-
-    return this._coTopics
+    return coTopics
   }
 
   private getTopics(): Topic[] {

@@ -185,19 +185,17 @@ _test-cli_app() {
 
   case "$state" in
     cmds)
-_values "completions" \\
-"execute[execute code]" \\
-
+      _values "completions" \\
+              "execute[execute code]"
       ;;
     args)
       case $line[1] in
         "execute")
           _test-cli_app_execute
         ;;
-
       esac
       ;;
-  esac 
+  esac
 }
 
 _test-cli_app_execute() {
@@ -208,69 +206,59 @@ _test-cli_app_execute() {
 
   case "$state" in
     cmds)
-_values "completions" \\
-"code[execute code]" \\
-
+      _values "completions" \\
+              "code[execute code]"
       ;;
     args)
       case $line[1] in
         "code")
           _arguments -S \\
---help"[Show help for command]" \\
-"*: :_files"
-        ;;
-
-      esac
-      ;;
-  esac 
-}
-
-_test-cli_deploy() {
-  _test-cli_deploy_flags() {
-    local context state state_descr line
-    typeset -A opt_args
-
-    _arguments -S \\
-"*"{-m,--metadata}"[]:file:_files" \\
-"(-a --api-version)"{-a,--api-version}"[]:file:_files" \\
---json"[Format output as json.]" \\
-"(-i --ignore-errors)"{-i,--ignore-errors}"[Ignore errors.]" \\
---help"[Show help for command]" \\
-"*: :_files"
-  }
-
-  local context state state_descr line
-  typeset -A opt_args
-
-  _arguments -C "1: :->cmds" "*: :->args"
-
-  case "$state" in
-    cmds)
-      if [[ "\${words[CURRENT]}" == -* ]]; then
-        _test-cli_deploy_flags
-      else
-_values "completions" \\
-"functions[Deploy a function.]" \\
-
-      fi
-      ;;
-    args)
-      case $line[1] in
-        "functions")
-          _arguments -S \\
-"(-b --branch)"{-b,--branch}"[]:file:_files" \\
---help"[Show help for command]" \\
-"*: :_files"
-        ;;
-
-      *)
-        _test-cli_deploy_flags
-      ;;
+                     --help"[Show help for command]" \\
+                     "*: :_files"
+          ;;
       esac
       ;;
   esac
 }
 
+_test-cli_deploy() {
+  local context state state_descr line
+  typeset -A opt_args
+
+  local -a flags=(
+    "*"{-m,--metadata}"[]:file:_files" \\
+    "(-a --api-version)"{-a,--api-version}"[]:file:_files" \\
+    --json"[Format output as json.]" \\
+    "(-i --ignore-errors)"{-i,--ignore-errors}"[Ignore errors.]" \\
+    --help"[Show help for command]" \\
+    "*: :_files"
+  )
+
+  _arguments -C "1: :->cmds" "*: :->args"
+
+  case "$state" in
+    cmds)
+      _values "completions" \\
+              "functions[Deploy a function.]" \\
+              "\${flags[@]}"
+      ;;
+    args)
+      case $line[1] in
+        "functions")
+          _arguments -C "*::arg:->args"
+          _arguments -S \\
+                     "(-b --branch)"{-b,--branch}"[]:file:_files" \\
+                     --help"[Show help for command]" \\
+                     "*: :_files"
+          ;;
+        *)
+          _arguments -S \\
+                     "\${flags[@]}"
+          ;;
+      esac
+      ;;
+  esac
+}
 
 _test-cli() {
   local context state state_descr line
@@ -281,22 +269,20 @@ _test-cli() {
   case "$state" in
     cmds)
       _values "completions" \\
-"app[execute code]" \\
-"deploy[Deploy a project]" \\
-"search[Search for a command]" \\
- 
-    ;;
+              "app[execute code]" \\
+              "deploy[Deploy a project]" \\
+              "search[Search for a command]"
+      ;;
     args)
       case $line[1] in
-app)
-  _test-cli_app
-  ;;
-deploy)
-  _test-cli_deploy
-  ;;
-esac
-
-    ;;
+        app)
+          _test-cli_app
+          ;;
+        deploy)
+          _test-cli_deploy
+          ;;
+      esac
+      ;;
   esac
 }
 
