@@ -181,18 +181,29 @@ _test-cli_app() {
   local context state state_descr line
   typeset -A opt_args
 
-  _arguments -C "1: :->cmds" "*::arg:->args"
+  local -a flags=(
+    --help"[Show help for command]" \\
+    "*: :_files"
+  )
+
+  _arguments -C "1: :->cmds" "*: :->args"
 
   case "$state" in
     cmds)
       _values "completions" \\
-              "execute[execute code]"
+              "execute[execute code]" \\
+              "\${flags[@]}"
       ;;
     args)
       case $line[1] in
         "execute")
+          _arguments -C "*::arg:->args"
           _test-cli_app_execute
         ;;
+        *)
+          _arguments -S \\
+                     "\${flags[@]}"
+          ;;
       esac
       ;;
   esac
@@ -202,19 +213,30 @@ _test-cli_app_execute() {
   local context state state_descr line
   typeset -A opt_args
 
-  _arguments -C "1: :->cmds" "*::arg:->args"
+  local -a flags=(
+    --help"[Show help for command]" \\
+    "*: :_files"
+  )
+
+  _arguments -C "1: :->cmds" "*: :->args"
 
   case "$state" in
     cmds)
       _values "completions" \\
-              "code[execute code]"
+              "code[execute code]" \\
+              "\${flags[@]}"
       ;;
     args)
       case $line[1] in
         "code")
+          _arguments -C "*::arg:->args"
           _arguments -S \\
                      --help"[Show help for command]" \\
                      "*: :_files"
+          ;;
+        *)
+          _arguments -S \\
+                     "\${flags[@]}"
           ;;
       esac
       ;;
@@ -264,22 +286,34 @@ _test-cli() {
   local context state state_descr line
   typeset -A opt_args
 
-  _arguments -C "1: :->cmds" "*::arg:->args"
+  local -a flags=(
+    --help"[Show help]" \\
+    --version"[Show version]"
+  )
+
+  _arguments -C "1: :->cmds" "*: :->args"
 
   case "$state" in
     cmds)
       _values "completions" \\
               "app[execute code]" \\
               "deploy[Deploy a project]" \\
-              "search[Search for a command]"
+              "search[Search for a command]" \\
+              "\${flags[@]}"
       ;;
     args)
       case $line[1] in
         app)
+          _arguments -C "*::arg:->args"
           _test-cli_app
           ;;
         deploy)
+          _arguments -C "*::arg:->args"
           _test-cli_deploy
+          ;;
+        *)
+          _arguments -S \\
+                     "\${flags[@]}"
           ;;
       esac
       ;;
