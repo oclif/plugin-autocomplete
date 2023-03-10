@@ -3,7 +3,8 @@ import * as path from 'path'
 import * as fs from 'fs-extra'
 
 import bashAutocomplete from '../../autocomplete/bash'
-import ZshCompWithSpaces from '../../autocomplete/zsh'
+import ZshCompWithSpaces from '../../autocomplete/powershell'
+import PowerShellComp from '../../autocomplete/powershell'
 import bashAutocompleteWithSpaces from '../../autocomplete/bash-spaces'
 import {AutocompleteBase} from '../../base'
 
@@ -51,9 +52,11 @@ export default class Create extends AutocompleteBase {
   }
 
   private async createFiles() {
-    await fs.writeFile(this.bashSetupScriptPath, this.bashSetupScript)
-    await fs.writeFile(this.bashCompletionFunctionPath, this.bashCompletionFunction)
-    await fs.writeFile(this.zshSetupScriptPath, this.zshSetupScript)
+    const pw = new PowerShellComp(this.config)
+    await fs.writeFile('./sf.ps1', pw.generate())
+    // await fs.writeFile(this.bashSetupScriptPath, this.bashSetupScript)
+    // await fs.writeFile(this.bashCompletionFunctionPath, this.bashCompletionFunction)
+    // await fs.writeFile(this.zshSetupScriptPath, this.zshSetupScript)
 
     // zsh
     const supportSpaces = this.config.topicSeparator === ' '
