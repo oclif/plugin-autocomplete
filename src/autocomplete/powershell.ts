@@ -1,5 +1,5 @@
 import * as util from 'util'
-import { EOL } from 'os'
+import {EOL} from 'os'
 import {Config, Interfaces, Command} from '@oclif/core'
 
 function sanitizeSummary(description?: string): string {
@@ -41,7 +41,7 @@ export default class PowerShellComp {
     this.commands = this.getCommands()
   }
 
-  private genCmdHashtable(cmd: CommandCompletion ): string {
+  private genCmdHashtable(cmd: CommandCompletion): string {
     const flaghHashtables: string[] = []
 
     const flagNames = Object.keys(cmd.flags)
@@ -50,9 +50,9 @@ export default class PowerShellComp {
         // skip hidden flags
         if (cmd.flags[f].hidden) continue
         // FIX: powershell fails if there's no summary
-        const flagSummary = cmd.flags[f].summary ?? "no summary"
+        const flagSummary = cmd.flags[f].summary ?? 'no summary'
         flaghHashtables.push(
-          `    "${f}" = @{ "summary" = "${sanitizeSummary(flagSummary)}" }`
+          `    "${f}" = @{ "summary" = "${sanitizeSummary(flagSummary)}" }`,
         )
       }
     }
@@ -65,33 +65,33 @@ ${flaghHashtables.join(EOL)}
   }
 }
 `
-  return cmdHashtable
+    return cmdHashtable
   }
 
-  private genHashtable(key: string,node: Record<string, any>, leafTpl?: string): string {
+  private genHashtable(key: string, node: Record<string, any>, leafTpl?: string): string {
     if (!leafTpl) {
-      leafTpl = 
+      leafTpl =
 `
 "${key}" = @{
 %s
 }
 `
     }
-    
-    const nodeKeys=Object.keys(node[key])
+
+    const nodeKeys = Object.keys(node[key])
 
     // this is a topic
-    if (nodeKeys.includes("_summary")) {
-      let childTpl = `"_summary" = "${node[key]["_summary"]}"\n%s`
+    if (nodeKeys.includes('_summary')) {
+      let childTpl = `"_summary" = "${node[key]._summary}"\n%s`
 
-      const newKeys = nodeKeys.filter(k=>k!=="_summary")
-      if (newKeys.length>0) {
-        const childNodes:string[]=[]
+      const newKeys = nodeKeys.filter(k => k !== '_summary')
+      if (newKeys.length > 0) {
+        const childNodes: string[] = []
 
         for (const newKey of newKeys) {
           childNodes.push(this.genHashtable(newKey, node[key]))
         }
-        childTpl = util.format(childTpl, childNodes.join(`\n`))
+        childTpl = util.format(childTpl, childNodes.join('\n'))
 
         return util.format(leafTpl, childTpl)
       }
@@ -100,47 +100,46 @@ ${flaghHashtables.join(EOL)}
     }
 
     for (const k of nodeKeys) {
-      if (k==="_command") {
-        const cmd = this.commands.find(c=>c.id===node[key][k])
+      if (k === '_command') {
+        const cmd = this.commands.find(c => c.id === node[key][k])
         if (!cmd) throw new Error('no command')
 
-        return util.format(leafTpl,`"_command" = ${this.genCmdHashtable(cmd)}`)
-      } else {
-        const childTpl = `"summary" = "${node[k]["_summary"]}"\n"${k}" = @{ \n    %s\n   }`
-        return this.genHashtable(key,node[key], util.format(leafTpl, childTpl))
+        return util.format(leafTpl, `"_command" = ${this.genCmdHashtable(cmd)}`)
       }
+      const childTpl = `"summary" = "${node[k]._summary}"\n"${k}" = @{ \n    %s\n   }`
+      return this.genHashtable(key, node[key], util.format(leafTpl, childTpl))
     }
 
     return leafTpl
   }
 
   public generate(): string {
-    const genNode=(partialId:string): Record<string,any>=>{
-      const node:Record<string,any> = {}
+    const genNode = (partialId: string): Record<string, any> => {
+      const node: Record<string, any> = {}
 
-      const nextArgs:string[]=[]
+      const nextArgs: string[] = []
 
       const depth = partialId.split(':').length
 
       for (const t of this.topics) {
-        const topicNameSplit=t.name.split(':')
+        const topicNameSplit = t.name.split(':')
 
-        if (t.name.startsWith(partialId+':') && topicNameSplit.length===depth+1){
+        if (t.name.startsWith(partialId + ':') && topicNameSplit.length === depth + 1) {
           nextArgs.push(topicNameSplit[depth])
 
-          node[topicNameSplit[depth]]={
+          node[topicNameSplit[depth]] = {
             _summary: t.description,
-            ...genNode(`${partialId}:${topicNameSplit[depth]}`)
+            ...genNode(`${partialId}:${topicNameSplit[depth]}`),
           }
         }
       }
 
       for (const c of this.commands) {
-        const cmdIdSplit=c.id.split(':')
+        const cmdIdSplit = c.id.split(':')
 
-        if (c.id.startsWith(partialId+':') && cmdIdSplit.length===depth+1 && !nextArgs.includes(cmdIdSplit[depth])){
-          node[cmdIdSplit[depth]]={
-            _command: c.id
+        if (c.id.startsWith(partialId + ':') && cmdIdSplit.length === depth + 1 && !nextArgs.includes(cmdIdSplit[depth])) {
+          node[cmdIdSplit[depth]] = {
+            _command: c.id,
           }
         }
       }
@@ -153,17 +152,17 @@ ${flaghHashtables.join(EOL)}
       if (!t.name.includes(':')) {
         commandTree[t.name] = {
           _summary: t.description,
-          ...genNode(t.name)
+          ...genNode(t.name),
         }
       }
     })
 
-    const hashtables:string[]=[]
+    const hashtables: string[] = []
 
     for (const topLevelArg of Object.keys(commandTree)) {
       hashtables.push(this.genHashtable(topLevelArg, commandTree))
     }
-    
+
     const commandsHashtable =
 `
 @{
@@ -171,7 +170,7 @@ ${hashtables.join(EOL)}
 }
 `
 
-const compRegister =
+    const compRegister =
 `
 using namespace System.Management.Automation
 using namespace System.Management.Automation.Language
@@ -269,7 +268,7 @@ $scriptblock = {
 Register-ArgumentCompleter -Native -CommandName ${this.config.bin} -ScriptBlock $scriptblock
 `
 
-  return compRegister
+    return compRegister
   }
 
   private getTopics(): Topic[] {
