@@ -3,7 +3,7 @@ import * as path from 'path'
 import * as fs from 'fs-extra'
 
 import bashAutocomplete from '../../autocomplete/bash'
-import ZshCompWithSpaces from '../../autocomplete/powershell'
+import ZshCompWithSpaces from '../../autocomplete/zsh'
 import PowerShellComp from '../../autocomplete/powershell'
 import bashAutocompleteWithSpaces from '../../autocomplete/bash-spaces'
 import {AutocompleteBase} from '../../base'

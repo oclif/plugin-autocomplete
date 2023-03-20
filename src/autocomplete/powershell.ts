@@ -35,8 +35,6 @@ export default class PowerShellComp {
 
   private commands: CommandCompletion[]
 
-  private _coTopics?: string[]
-
   constructor(config: Config) {
     this.config = config
     this.topics = this.getTopics()
@@ -70,96 +68,100 @@ ${flaghHashtables.join(EOL)}
   return cmdHashtable
   }
 
-  public generate(): string {
-    let commandsObj: Record<string, any> = {
-      org: {
-        "_summary": "org commands",
-        create: {
-          "_summary": "org create commands",
-          scratch: {
-            "_command": 'org:create:scratch',
-          },
-          sandbox: {
-            "_command": 'org:create:sandbox',
-          }
+  private genHashtable(key: string,node: Record<string, any>, leafTpl?: string): string {
+    if (!leafTpl) {
+      leafTpl = 
+`
+"${key}" = @{
+%s
+}
+`
+    }
+    
+    const nodeKeys=Object.keys(node[key])
+
+    // this is a topic
+    if (nodeKeys.includes("_summary")) {
+      let childTpl = `"_summary" = "${node[key]["_summary"]}"\n%s`
+
+      const newKeys = nodeKeys.filter(k=>k!=="_summary")
+      if (newKeys.length>0) {
+        const childNodes:string[]=[]
+
+        for (const newKey of newKeys) {
+          childNodes.push(this.genHashtable(newKey, node[key]))
         }
-      },
-      data: {
-        "_summary": "data commands",
-        query: {
-          "_command": "data:query",
-          resume: {
-            "_command": "data:query:resume",
-          }
-        }
+        childTpl = util.format(childTpl, childNodes.join(`\n`))
+
+        return util.format(leafTpl, childTpl)
+      }
+      // last node
+      return util.format(leafTpl, childTpl)
+    }
+
+    for (const k of nodeKeys) {
+      if (k==="_command") {
+        const cmd = this.commands.find(c=>c.id===node[key][k])
+        if (!cmd) throw new Error('no command')
+
+        return util.format(leafTpl,`"_command" = ${this.genCmdHashtable(cmd)}`)
+      } else {
+        const childTpl = `"summary" = "${node[k]["_summary"]}"\n"${k}" = @{ \n    %s\n   }`
+        return this.genHashtable(key,node[key], util.format(leafTpl, childTpl))
       }
     }
 
-    const commandObj:Record<string,any>={}
+    return leafTpl
+  }
 
-    this.commands.forEach(c => {
-      const cmdKeys=Object.keys(commandObj)
+  public generate(): string {
+    const genNode=(partialId:string): Record<string,any>=>{
+      const node:Record<string,any> = {}
 
-      if(!cmdKeys.includes(c.id)) {
-        const split = c.id.split(':')
-        if (split[0] ==="visualforce"){
-          commandObj[split[0]] = {
-            "_command": c.id
+      const nextArgs:string[]=[]
+
+      const depth = partialId.split(':').length
+
+      for (const t of this.topics) {
+        const topicNameSplit=t.name.split(':')
+
+        if (t.name.startsWith(partialId+':') && topicNameSplit.length===depth+1){
+          nextArgs.push(topicNameSplit[depth])
+
+          node[topicNameSplit[depth]]={
+            _summary: t.description,
+            ...genNode(`${partialId}:${topicNameSplit[depth]}`)
           }
+        }
+      }
+
+      for (const c of this.commands) {
+        const cmdIdSplit=c.id.split(':')
+
+        if (c.id.startsWith(partialId+':') && cmdIdSplit.length===depth+1 && !nextArgs.includes(cmdIdSplit[depth])){
+          node[cmdIdSplit[depth]]={
+            _command: c.id
+          }
+        }
+      }
+      return node
+    }
+
+    const commandTree: Record<string, any> = {}
+
+    this.topics.forEach(t => {
+      if (!t.name.includes(':')) {
+        commandTree[t.name] = {
+          _summary: t.description,
+          ...genNode(t.name)
         }
       }
     })
 
     const hashtables:string[]=[]
 
-    const genHashtable = (key: string,node: Record<string, any>, leafTpl?: string): string=>{
-      if (!leafTpl) {
-        leafTpl = 
-`
-"${key}" = @{
-  %s
-}
-`
-      }
-      
-      const nodeKeys=Object.keys(node[key])
-
-      // this is a topic
-      if (nodeKeys.includes("_summary")) {
-        let childTpl = `"_summary" = "${node[key]["_summary"]}"\n%s`
-
-        const newKeys = nodeKeys.filter(k=>k!=="_summary")
-        if (newKeys.length>0) {
-          const childNodes:string[]=[]
-
-          for (const newKey of newKeys) {
-            childNodes.push(genHashtable(newKey, node[key]))
-          }
-          childTpl = util.format(childTpl, childNodes.join(`\n`))
-
-          return util.format(leafTpl, childTpl)
-        }
-        // last node
-        return util.format(leafTpl, childTpl)
-      }
-
-      for (const k of nodeKeys) {
-        if (k==="_command") {
-          const cmd = this.commands.find(c=>c.id===node[key][k])
-          if (!cmd) throw new Error('no command')
-
-          return util.format(leafTpl,`"_command" = ${this.genCmdHashtable(cmd)}`)
-        } else {
-          const childTpl = `"summary" = "${node[k]["_summary"]}"\n"${k}" = @{ \n    %s\n   }`
-          return genHashtable(key,node[key], util.format(leafTpl, childTpl))
-        }
-      }
-
-      return leafTpl
-    }
-
-    for (const topLevelArg of Object.keys(commandObj)) {
-      hashtables.push(genHashtable(topLevelArg, commandObj))
+    for (const topLevelArg of Object.keys(commandTree)) {
+      hashtables.push(this.genHashtable(topLevelArg, commandTree))
     }
     
     const commandsHashtable =
@@ -268,24 +270,6 @@ Register-ArgumentCompleter -Native -CommandName ${this.config.bin} -ScriptBlock 
 `
 
   return compRegister
-  }
-
-  private get coTopics(): string [] {
-    if (this._coTopics) return this._coTopics
-
-    const coTopics: string[] = []
-
-    for (const topic of this.topics) {
-      for (const cmd of this.commands) {
-        if (topic.name === cmd.id) {
-          coTopics.push(topic.name)
-        }
-      }
-    }
-
-    this._coTopics = coTopics
-
-    return this._coTopics
   }
 
   private getTopics(): Topic[] {
