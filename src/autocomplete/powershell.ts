@@ -4,7 +4,9 @@ import {Config, Interfaces, Command} from '@oclif/core'
 
 function sanitizeSummary(description?: string): string {
   if (description === undefined) {
-    return ''
+    // PowerShell:
+    // [System.Management.Automation.CompletionResult] will error out if will error out if you pass in an empty string for the summary.
+    return ' '
   }
   return description
   .replace(/"/g, '`') // double-quotes require backticks in PowerShell
