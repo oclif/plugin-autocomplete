@@ -15,28 +15,48 @@ type CommandCompletion = {
   id: string;
   summary: string;
   flags: CommandFlags;
-}
+};
 
 type CommandFlags = {
   [name: string]: Command.Flag.Cached;
-}
+};
 
 type Topic = {
   name: string;
   description: string;
-}
+};
 
 export default class PowerShellComp {
   protected config: Config;
 
-  private topics: Topic[]
+  private topics: Topic[];
 
-  private commands: CommandCompletion[]
+  private _coTopics?: string[];
+
+  private commands: CommandCompletion[];
 
   constructor(config: Config) {
     this.config = config
     this.topics = this.getTopics()
     this.commands = this.getCommands()
+  }
+
+  private get coTopics(): string[] {
+    if (this._coTopics) return this._coTopics
+
+    const coTopics: string[] = []
+
+    for (const topic of this.topics) {
+      for (const cmd of this.commands) {
+        if (topic.name === cmd.id) {
+          coTopics.push(topic.name)
+        }
+      }
+    }
+
+    this._coTopics = coTopics
+
+    return this._coTopics
   }
 
   private genCmdHashtable(cmd: CommandCompletion): string {
@@ -55,8 +75,7 @@ export default class PowerShellComp {
       }
     }
 
-    const cmdHashtable =
-`@{
+    const cmdHashtable = `@{
   "summary" = "${cmd.summary}"
   "flags" = @{
 ${flaghHashtables.join(EOL)}
@@ -66,10 +85,13 @@ ${flaghHashtables.join(EOL)}
     return cmdHashtable
   }
 
-  private genHashtable(key: string, node: Record<string, any>, leafTpl?: string): string {
+  private genHashtable(
+    key: string,
+    node: Record<string, any>,
+    leafTpl?: string,
+  ): string {
     if (!leafTpl) {
-      leafTpl =
-`
+      leafTpl = `
 "${key}" = @{
 %s
 }
@@ -97,15 +119,31 @@ ${flaghHashtables.join(EOL)}
       return util.format(leafTpl, childTpl)
     }
 
+    const childNodes: string[] = []
     for (const k of nodeKeys) {
       if (k === '_command') {
         const cmd = this.commands.find(c => c.id === node[key][k])
         if (!cmd) throw new Error('no command')
 
-        return util.format(leafTpl, `"_command" = ${this.genCmdHashtable(cmd)}`)
+        childNodes.push(
+          util.format('"_command" = %s', this.genCmdHashtable(cmd)),
+        )
+      } else if (node[key][k]._command) {
+        const cmd = this.commands.find(c => c.id === node[key][k]._command)
+        if (!cmd) throw new Error('no command')
+
+        childNodes.push(
+          util.format(`"${k}" = @{\n"_command" = %s\n}`, this.genCmdHashtable(cmd)),
+        )
+      } else {
+        const childTpl = `"summary" = "${node[key][k]._summary}"\n"${k}" = @{ \n    %s\n   }`
+        childNodes.push(
+          this.genHashtable(k, node[key], childTpl),
+        )
       }
-      const childTpl = `"summary" = "${node[k]._summary}"\n"${k}" = @{ \n    %s\n   }`
-      return this.genHashtable(key, node[key], util.format(leafTpl, childTpl))
+    }
+    if (childNodes.length >= 1) {
+      return util.format(leafTpl, childNodes.join('\n'))
     }
 
     return leafTpl
@@ -122,12 +160,21 @@ ${flaghHashtables.join(EOL)}
       for (const t of this.topics) {
         const topicNameSplit = t.name.split(':')
 
-        if (t.name.startsWith(partialId + ':') && topicNameSplit.length === depth + 1) {
+        if (
+          t.name.startsWith(partialId + ':') &&
+          topicNameSplit.length === depth + 1
+        ) {
           nextArgs.push(topicNameSplit[depth])
 
-          node[topicNameSplit[depth]] = {
-            _summary: t.description,
-            ...genNode(`${partialId}:${topicNameSplit[depth]}`),
+          if (this.coTopics.includes(t.name)) {
+            node[topicNameSplit[depth]] = {
+              ...genNode(`${partialId}:${topicNameSplit[depth]}`),
+            }
+          } else {
+            node[topicNameSplit[depth]] = {
+              _summary: t.description,
+              ...genNode(`${partialId}:${topicNameSplit[depth]}`),
+            }
           }
         }
       }
@@ -135,7 +182,15 @@ ${flaghHashtables.join(EOL)}
       for (const c of this.commands) {
         const cmdIdSplit = c.id.split(':')
 
-        if (c.id.startsWith(partialId + ':') && cmdIdSplit.length === depth + 1 && !nextArgs.includes(cmdIdSplit[depth])) {
+        if (partialId === c.id && this.coTopics.includes(c.id)) {
+          node._command = c.id
+        }
+
+        if (
+          c.id.startsWith(partialId + ':') &&
+          cmdIdSplit.length === depth + 1 &&
+          !nextArgs.includes(cmdIdSplit[depth])
+        ) {
           node[cmdIdSplit[depth]] = {
             _command: c.id,
           }
@@ -148,9 +203,15 @@ ${flaghHashtables.join(EOL)}
 
     this.topics.forEach(t => {
       if (!t.name.includes(':')) {
-        commandTree[t.name] = {
-          _summary: t.description,
-          ...genNode(t.name),
+        if (this.coTopics.includes(t.name)) {
+          commandTree[t.name] = {
+            ...genNode(t.name),
+          }
+        } else {
+          commandTree[t.name] = {
+            _summary: t.description,
+            ...genNode(t.name),
+          }
         }
       }
     })
@@ -161,15 +222,13 @@ ${flaghHashtables.join(EOL)}
       hashtables.push(this.genHashtable(topLevelArg, commandTree))
     }
 
-    const commandsHashtable =
-`
+    const commandsHashtable = `
 @{
 ${hashtables.join(EOL)}
 }
 `
 
-    const compRegister =
-`
+    const compRegister = `
 using namespace System.Management.Automation
 using namespace System.Management.Automation.Language
 
@@ -270,9 +329,12 @@ Register-ArgumentCompleter -Native -CommandName ${this.config.bin} -ScriptBlock 
   }
 
   private getTopics(): Topic[] {
-    const topics = this.config.topics.filter((topic: Interfaces.Topic) => {
+    const topics = this.config.topics
+    .filter((topic: Interfaces.Topic) => {
       // it is assumed a topic has a child if it has children
-      const hasChild = this.config.topics.some(subTopic => subTopic.name.includes(`${topic.name}:`))
+      const hasChild = this.config.topics.some(subTopic =>
+        subTopic.name.includes(`${topic.name}:`),
+      )
       return hasChild
     })
     .sort((a, b) => {
@@ -285,7 +347,9 @@ Register-ArgumentCompleter -Native -CommandName ${this.config.bin} -ScriptBlock 
       return 0
     })
     .map(t => {
-      const description = t.description ? sanitizeSummary(t.description) : `${t.name.replace(/:/g, ' ')} commands`
+      const description = t.description ?
+        sanitizeSummary(t.description) :
+        `${t.name.replace(/:/g, ' ')} commands`
 
       return {
         name: t.name,
@@ -342,4 +406,3 @@ Register-ArgumentCompleter -Native -CommandName ${this.config.bin} -ScriptBlock 
     return cmds
   }
 }
-
