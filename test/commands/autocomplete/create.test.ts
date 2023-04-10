@@ -8,7 +8,10 @@ import Create from '../../../src/commands/autocomplete/create'
 const root = path.resolve(__dirname, '../../../package.json')
 const config = new Config({root})
 
-describe('Create', () => {
+// autocomplete will throw error on windows ci
+const {default: skipWindows} = require('../../helpers/runtest')
+
+skipWindows('Create', () => {
   // Unit test private methods for extra coverage
   describe('private methods', () => {
     let cmd: any

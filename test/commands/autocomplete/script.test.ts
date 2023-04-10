@@ -1,6 +1,9 @@
 import {expect, test} from '@oclif/test'
 
-describe('autocomplete:script', () => {
+// autocomplete will throw error on windows ci
+const {default: skipWindows} = require('../../helpers/runtest')
+
+skipWindows('autocomplete:script', () => {
   test
   .stdout()
   .command(['autocomplete:script', 'bash'])

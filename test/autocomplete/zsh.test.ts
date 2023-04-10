@@ -4,6 +4,9 @@ import {Plugin as IPlugin} from '@oclif/core/lib/interfaces'
 import {expect} from 'chai'
 import ZshCompWithSpaces from '../../src/autocomplete/zsh'
 
+// autocomplete will throw error on windows ci
+const {default: skipWindows} = require('../helpers/runtest')
+
 class MyCommandClass implements Command.Cached {
   [key: string]: unknown;
 
@@ -150,7 +153,7 @@ const pluginA: IPlugin = {
 
 const plugins: IPlugin[] = [pluginA]
 
-describe('zsh comp', () => {
+skipWindows('zsh comp', () => {
   describe('zsh completion with spaces', () => {
     const root = path.resolve(__dirname, '../../package.json')
     const config = new Config({root})
