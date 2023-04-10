@@ -66,13 +66,22 @@ export default class PowerShellComp {
 
     const flagNames = Object.keys(cmd.flags)
     if (flagNames.length > 0) {
-      for (const f of flagNames) {
+      for (const flagName of flagNames) {
+        const f = cmd.flags[flagName]
         // skip hidden flags
-        if (cmd.flags[f].hidden) continue
-        const flagSummary = cmd.flags[f].summary
-        flaghHashtables.push(
-          `    "${f}" = @{ "summary" = "${sanitizeSummary(flagSummary)}" }`,
-        )
+        if (f.hidden) continue
+        if (f.type === 'option' && f.multiple) {
+          flaghHashtables.push(
+            `    "${f.name}" = @{
+      "summary" = "${sanitizeSummary(f.summary)}"
+      "multiple" = $true
+}`,
+          )
+        } else {
+          flaghHashtables.push(
+            `    "${f.name}" = @{ "summary" = "${sanitizeSummary(f.summary)}" }`,
+          )
+        }
       }
     }
 

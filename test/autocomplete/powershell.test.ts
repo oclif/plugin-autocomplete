@@ -206,7 +206,10 @@ $scriptblock = {
 "_command" = @{
   "summary" = "Deploy a project"
   "flags" = @{
-    "metadata" = @{ "summary" = " " }
+    "metadata" = @{
+      "summary" = " "
+      "multiple" = $true
+}
     "api-version" = @{ "summary" = " " }
     "json" = @{ "summary" = "Format output as json." }
     "ignore-errors" = @{ "summary" = "Ignore errors." }
