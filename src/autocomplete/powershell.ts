@@ -80,7 +80,7 @@ export default class PowerShellComp {
     const cmdHashtable = `@{
   "summary" = "${cmd.summary}"
   "flags" = @{
-${flaghHashtables.join(EOL)}
+${flaghHashtables.join('\n')}
   }
 }
 `
@@ -104,7 +104,7 @@ ${flaghHashtables.join(EOL)}
 
     // this is a topic
     if (nodeKeys.includes('_summary')) {
-      let childTpl = `"_summary" = "${node[key]._summary}"${EOL}%s`
+      let childTpl = `"_summary" = "${node[key]._summary}"\n%s`
 
       const newKeys = nodeKeys.filter(k => k !== '_summary')
       if (newKeys.length > 0) {
@@ -113,7 +113,7 @@ ${flaghHashtables.join(EOL)}
         for (const newKey of newKeys) {
           childNodes.push(this.genHashtable(newKey, node[key]))
         }
-        childTpl = util.format(childTpl, childNodes.join(EOL))
+        childTpl = util.format(childTpl, childNodes.join('\n'))
 
         return util.format(leafTpl, childTpl)
       }
@@ -135,17 +135,17 @@ ${flaghHashtables.join(EOL)}
         if (!cmd) throw new Error('no command')
 
         childNodes.push(
-          util.format(`"${k}" = @{${EOL}"_command" = %s${EOL}}`, this.genCmdHashtable(cmd)),
+          util.format(`"${k}" = @{\n"_command" = %s\n}`, this.genCmdHashtable(cmd)),
         )
       } else {
-        const childTpl = `"summary" = "${node[key][k]._summary}"${EOL}"${k}" = @{ ${EOL}    %s${EOL}   }`
+        const childTpl = `"summary" = "${node[key][k]._summary}"\n"${k}" = @{ \n    %s\n   }`
         childNodes.push(
           this.genHashtable(k, node[key], childTpl),
         )
       }
     }
     if (childNodes.length >= 1) {
-      return util.format(leafTpl, childNodes.join(EOL))
+      return util.format(leafTpl, childNodes.join('\n'))
     }
 
     return leafTpl
@@ -226,7 +226,7 @@ ${flaghHashtables.join(EOL)}
 
     const commandsHashtable = `
 @{
-${hashtables.join(EOL)}
+${hashtables.join('\n')}
 }
 `
 
