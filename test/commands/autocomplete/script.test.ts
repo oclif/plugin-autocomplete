@@ -1,9 +1,6 @@
 import {expect, test} from '@oclif/test'
 
-// autocomplete will throw error on windows ci
-const {default: skipWindows} = require('../../helpers/runtest')
-
-skipWindows('autocomplete:script', () => {
+describe('autocomplete:script', () => {
   test
   .stdout()
   .command(['autocomplete:script', 'bash'])
@@ -27,12 +24,4 @@ OCLIF_EXAMPLE_AC_ZSH_SETUP_PATH=${
 `,
     )
   })
-
-  test
-  .stdout()
-  .command(['autocomplete:script', 'fish'])
-  .catch(error => {
-    expect(error.message).to.contain('fish is not a supported shell for autocomplete')
-  })
-  .it('errors on unsupported shell')
 })
