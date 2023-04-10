@@ -69,8 +69,7 @@ export default class PowerShellComp {
       for (const f of flagNames) {
         // skip hidden flags
         if (cmd.flags[f].hidden) continue
-        // FIX: powershell fails if there's no summary
-        const flagSummary = cmd.flags[f].summary ?? 'no summary'
+        const flagSummary = cmd.flags[f].summary
         flaghHashtables.push(
           `    "${f}" = @{ "summary" = "${sanitizeSummary(flagSummary)}" }`,
         )

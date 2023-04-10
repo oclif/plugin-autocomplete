@@ -206,8 +206,8 @@ $scriptblock = {
 "_command" = @{
   "summary" = "Deploy a project"
   "flags" = @{
-    "metadata" = @{ "summary" = "no summary" }
-    "api-version" = @{ "summary" = "no summary" }
+    "metadata" = @{ "summary" = " " }
+    "api-version" = @{ "summary" = " " }
     "json" = @{ "summary" = "Format output as json." }
     "ignore-errors" = @{ "summary" = "Ignore errors." }
   }
@@ -217,7 +217,7 @@ $scriptblock = {
 "_command" = @{
   "summary" = "Deploy a function."
   "flags" = @{
-    "branch" = @{ "summary" = "no summary" }
+    "branch" = @{ "summary" = " " }
   }
 }
 
