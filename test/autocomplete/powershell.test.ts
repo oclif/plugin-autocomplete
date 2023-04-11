@@ -230,10 +230,22 @@ $scriptblock = {
 }
 
 
+    $currentLine1 = $commandAst.CommandElements -split " "
+
     # everything after <cli>.
     # \`sf deploy --json\`
     # $currentLine = [deploy, json]
     $currentLine = $commandAst.CommandElements[1..$($commandAst.CommandElements.Count - 1)]
+
+    $flags = $currentLine1 | Where-Object {
+      $_ -Match "^-{1,2}(\\w+)"
+    } | ForEach-Object {
+      $_.trim("-")
+    }
+    # set $flags to an empty hashtable if there are no flags in the current line.
+    if ($flags -eq $null) {
+      $flags = @{}
+    }
 
     # top-level args
     $nextSuggestions = $commands.GetEnumerator()
@@ -278,8 +290,10 @@ $scriptblock = {
         if ($hashIndex._command -ne $null) {
             # \`sf org -<tab>\` start completing flags
             if ($wordToComplete -like '-*') {
-                $hashIndex._command.flags.GetEnumerator() | ForEach-Object {
-                   New-Object -Type CompletionResult -ArgumentList \`
+                $hashIndex._command.flags.GetEnumerator() | Where-Object {
+                  $_.value.multiple -eq $true -or !$flags.Contains($_.key)
+                } | ForEach-Object {
+                  New-Object -Type CompletionResult -ArgumentList \`
                     "--$($_.key) ",
                     $_.key,
                     "ParameterValue",
