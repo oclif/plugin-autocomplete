@@ -44,21 +44,6 @@ describe('AutocompleteBase', () => {
     }).to.throw()
   })
 
-  it('#errorIfWindows', async () => {
-    cmd.config.windows = true
-    expect(() => {
-      cmd.errorIfWindows()
-    }).to.throw('Autocomplete is not currently supported in Windows')
-  })
-
-  it('#errorIfWindows no error with bash on windows', async () => {
-    cmd.config.windows = true
-    cmd.config.shell = 'C:\\bin\\bash.exe'
-    expect(() => {
-      cmd.errorIfWindows()
-    }).to.not.throw('Autocomplete is not currently supported in Windows')
-  })
-
   it('#autocompleteCacheDir', async () => {
     expect(cmd.autocompleteCacheDir).to.eq(path.join(config.cacheDir, 'autocomplete'))
   })

@@ -35,7 +35,6 @@ export default class Create extends AutocompleteBase {
   private _commands?: CommandCompletion[]
 
   async run() {
-    this.errorIfWindows()
     // 1. ensure needed dirs
     await this.ensureDirs()
     // 2. save (generated) autocomplete files

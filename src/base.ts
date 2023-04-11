@@ -21,12 +21,6 @@ export abstract class AutocompleteBase extends Command {
     }
   }
 
-  public errorIfWindows() {
-    if (this.config.windows && !this.isBashOnWindows(this.config.shell)) {
-      throw new Error('Autocomplete is not currently supported in Windows')
-    }
-  }
-
   public get autocompleteCacheDir(): string {
     return path.join(this.config.cacheDir, 'autocomplete')
   }
