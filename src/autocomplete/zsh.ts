@@ -133,7 +133,7 @@ _${this.config.bin}
       // skip hidden flags
       if (f.hidden) continue
 
-      f.summary = sanitizeSummary(f.summary || f.description)
+      const flagSummary = sanitizeSummary(f.summary || f.description)
 
       let flagSpec = ''
 
@@ -146,7 +146,7 @@ _${this.config.bin}
             flagSpec += `"(-${f.char} --${f.name})"{-${f.char},--${f.name}}`
           }
 
-          flagSpec += `"[${f.summary}]`
+          flagSpec += `"[${flagSummary}]`
 
           if (f.options) {
             flagSpec += `:${f.name} options:(${f.options?.join(' ')})"`
@@ -159,7 +159,7 @@ _${this.config.bin}
             flagSpec += '"*"'
           }
 
-          flagSpec += `--${f.name}"[${f.summary}]:`
+          flagSpec += `--${f.name}"[${flagSummary}]:`
 
           if (f.options) {
             flagSpec += `${f.name} options:(${f.options.join(' ')})"`
@@ -169,10 +169,10 @@ _${this.config.bin}
         }
       } else if (f.char) {
         // Flag.Boolean
-        flagSpec += `"(-${f.char} --${f.name})"{-${f.char},--${f.name}}"[${f.summary}]"`
+        flagSpec += `"(-${f.char} --${f.name})"{-${f.char},--${f.name}}"[${flagSummary}]"`
       } else {
         // Flag.Boolean
-        flagSpec += `--${f.name}"[${f.summary}]"`
+        flagSpec += `--${f.name}"[${flagSummary}]"`
       }
 
       flagSpec += ' \\\n'
