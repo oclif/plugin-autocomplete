@@ -9,7 +9,7 @@ function sanitizeSummary(description?: string): string {
     return ' '
   }
   return description
-  .replace(/"/g, '`') // double-quotes require backticks in PowerShell
+  .replace(/"/g, '""') // escape double quotes.
   .split(EOL)[0] // only use the first line
 }
 
@@ -70,16 +70,19 @@ export default class PowerShellComp {
         const f = cmd.flags[flagName]
         // skip hidden flags
         if (f.hidden) continue
+
+        const flagSummary = sanitizeSummary(f.summary || f.description)
+
         if (f.type === 'option' && f.multiple) {
           flaghHashtables.push(
             `    "${f.name}" = @{
-      "summary" = "${sanitizeSummary(f.summary)}"
+      "summary" = "${flagSummary}"
       "multiple" = $true
 }`,
           )
         } else {
           flaghHashtables.push(
-            `    "${f.name}" = @{ "summary" = "${sanitizeSummary(f.summary)}" }`,
+            `    "${f.name}" = @{ "summary" = "${flagSummary}" }`,
           )
         }
       }

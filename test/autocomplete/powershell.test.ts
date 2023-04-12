@@ -52,7 +52,7 @@ const commandPluginA: Command.Loadable = {
     json: {
       name: 'json',
       type: 'boolean',
-      summary: 'Format output as json.',
+      summary: 'Format output as "json".',
       allowNo: false,
     },
     'ignore-errors': {
@@ -211,7 +211,7 @@ $scriptblock = {
       "multiple" = $true
 }
     "api-version" = @{ "summary" = " " }
-    "json" = @{ "summary" = "Format output as json." }
+    "json" = @{ "summary" = "Format output as ""json""." }
     "ignore-errors" = @{ "summary" = "Ignore errors." }
   }
 }
