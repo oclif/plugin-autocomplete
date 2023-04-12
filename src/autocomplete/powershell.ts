@@ -10,6 +10,7 @@ function sanitizeSummary(description?: string): string {
   }
   return description
   .replace(/"/g, '""') // escape double quotes.
+  .replace(/`/g, '``') // escape backticks.
   .split(EOL)[0] // only use the first line
 }
 
