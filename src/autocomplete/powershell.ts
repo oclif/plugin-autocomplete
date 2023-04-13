@@ -251,14 +251,9 @@ $scriptblock = {
 
     $commands = ${commandsHashtable}
 
-    $currentLine1 = $commandAst.CommandElements -split " "
+    $currentLine = $commandAst.CommandElements[1..$($commandAst.CommandElements.Count - 1)] -split " "
 
-    # everything after <cli>.
-    # \`sf deploy --json\`
-    # $currentLine = [deploy, json]
-    $currentLine = $commandAst.CommandElements[1..$($commandAst.CommandElements.Count - 1)]
-
-    $flags = $currentLine1 | Where-Object {
+    $flags = $currentLine | Where-Object {
       $_ -Match "^-{1,2}(\\w+)"
     } | ForEach-Object {
       $_.trim("-")
@@ -282,28 +277,27 @@ $scriptblock = {
                 "$($commands[$_.Key]._summary ?? $commands[$_.Key]._command.summary ?? " ")"
         }
     } else {
-        # remove flag elements from current line
-        # TODO: this should be done at the start of completion.
+        # Remove flags from $currentLine
         if ($wordToComplete -like '-*') {
-            $currentLine = @(
-                for ($i = 0; $i -lt $currentLine.Count; $i++) {
-                    $element = $currentLine[$i]
-                    if ($element -isnot [StringConstantExpressionAst] -or
-                        $element.StringConstantType -ne [StringConstantType]::BareWord -or
-                        $element.Value.StartsWith('-')) {
-                        break
-                    }
-                    $element
-                }
-            )
+            $currentLine = $currentLine | Where-Object {
+              !$_.StartsWith('-')
+            }
         }
 
         $prevNode = $null
 
         # go to the next hashtable
         $currentLine | ForEach-Object {
-            $hashIndex = $hashIndex -eq $null ? $commands["$($_.value)"] : $prevNode["$($_.value)"]
-            
+            if ($hashIndex -eq $null) {
+              $hashIndex = $commands[$_]
+            } elseif ($prevNode["$($_)"] -ne $null) {
+              $hashIndex = $prevNode[$_]
+            } elseif ($_.StartsWith('-')) {
+              break
+            } else {
+              $hashIndex = $prevNode
+            }
+
             $prevNode = $hashIndex
         }
 
