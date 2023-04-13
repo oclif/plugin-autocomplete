@@ -264,7 +264,7 @@ $scriptblock = {
     }
 
     # top-level args
-    $nextSuggestions = $commands.GetEnumerator()
+    $nextSuggestions = $commands.GetEnumerator() | Sort-Object -Property key
 
 
     # top-level args
@@ -305,7 +305,7 @@ $scriptblock = {
         if ($hashIndex._command -ne $null) {
             # \`sf org -<tab>\` start completing flags
             if ($wordToComplete -like '-*') {
-                $hashIndex._command.flags.GetEnumerator() | Where-Object {
+                $hashIndex._command.flags.GetEnumerator() | Sort-Object -Property key | Where-Object {
                   $_.value.multiple -eq $true -or !$flags.Contains($_.key)
                 } | ForEach-Object {
                   New-Object -Type CompletionResult -ArgumentList \`
@@ -319,7 +319,7 @@ $scriptblock = {
                 $hashIndex.remove("_command")
 
                 if ($hashIndex.keys -gt 0) {
-                    $hashIndex.GetEnumerator() | ForEach-Object {
+                    $hashIndex.GetEnumerator() | Sort-Object -Property key | ForEach-Object {
                         New-Object -Type CompletionResult -ArgumentList \`
                             "$($_.key) ",
                             $_.key,
@@ -334,7 +334,7 @@ $scriptblock = {
             # remove topic["_summary"] key
             $hashIndex.remove("_summary")
 
-            $hashIndex.GetEnumerator() | ForEach-Object {
+            $hashIndex.GetEnumerator() | Sort-Object -Property key | ForEach-Object {
                 New-Object -Type CompletionResult -ArgumentList \`
                     "$($_.key) ",
                     $_.key,
