@@ -251,7 +251,7 @@ $scriptblock = {
 
     $commands = ${commandsHashtable}
 
-    $currentLine = $commandAst.CommandElements[1..$($commandAst.CommandElements.Count - 1)] -split " "
+    $currentLine = $commandAst.CommandElements[1..$commandAst.CommandElements.Count] -split " "
 
     $flags = $currentLine | Where-Object {
       $_ -Match "^-{1,2}(\\w+)"
@@ -268,7 +268,7 @@ $scriptblock = {
 
 
     # top-level args
-    if ($commandAst.CommandElements.Count -eq 1) {
+    if ($currentLine.Count -eq 0) {
         $nextSuggestions | ForEach-Object {
             New-Object -Type CompletionResult -ArgumentList \`
                 "$($_.Key) ",
