@@ -227,6 +227,17 @@ $scriptblock = {
 }
 }
 
+
+"search" = @{
+"_command" = @{
+  "summary" = "Search for a command"
+  "flags" = @{
+
+  }
+}
+
+}
+
 }
 
 

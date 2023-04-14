@@ -215,6 +215,8 @@ ${flaghHashtables.join('\n')}
 
     const commandTree: Record<string, any> = {}
 
+    const topLevelArgs: string[] = []
+
     this.topics.forEach(t => {
       if (!t.name.includes(':')) {
         if (this.coTopics.includes(t.name)) {
@@ -227,12 +229,23 @@ ${flaghHashtables.join('\n')}
             ...genNode(t.name),
           }
         }
+
+        topLevelArgs.push(t.name)
+      }
+    })
+    this.commands.forEach(c => {
+      if (!c.id.includes(':') && !this.coTopics.includes(c.id)) {
+        commandTree[c.id] = {
+          _command: c.id,
+        }
+
+        topLevelArgs.push(c.id)
       }
     })
 
     const hashtables: string[] = []
 
-    for (const topLevelArg of Object.keys(commandTree)) {
+    for (const topLevelArg of topLevelArgs) {
       hashtables.push(this.genHashtable(topLevelArg, commandTree))
     }
 
