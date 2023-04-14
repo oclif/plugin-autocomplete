@@ -230,14 +230,9 @@ $scriptblock = {
 }
 
 
-    $currentLine1 = $commandAst.CommandElements -split " "
+    $currentLine = $commandAst.CommandElements[1..$commandAst.CommandElements.Count] -split " "
 
-    # everything after <cli>.
-    # \`sf deploy --json\`
-    # $currentLine = [deploy, json]
-    $currentLine = $commandAst.CommandElements[1..$($commandAst.CommandElements.Count - 1)]
-
-    $flags = $currentLine1 | Where-Object {
+    $flags = $currentLine | Where-Object {
       $_ -Match "^-{1,2}(\\w+)"
     } | ForEach-Object {
       $_.trim("-")
@@ -248,11 +243,11 @@ $scriptblock = {
     }
 
     # top-level args
-    $nextSuggestions = $commands.GetEnumerator()
+    $nextSuggestions = $commands.GetEnumerator() | Sort-Object -Property key
 
 
     # top-level args
-    if ($commandAst.CommandElements.Count -eq 1) {
+    if ($currentLine.Count -eq 0) {
         $nextSuggestions | ForEach-Object {
             New-Object -Type CompletionResult -ArgumentList \`
                 "$($_.Key) ",
@@ -261,28 +256,27 @@ $scriptblock = {
                 "$($commands[$_.Key]._summary ?? $commands[$_.Key]._command.summary ?? " ")"
         }
     } else {
-        # remove flag elements from current line
-        # TODO: this should be done at the start of completion.
+        # Remove flags from $currentLine
         if ($wordToComplete -like '-*') {
-            $currentLine = @(
-                for ($i = 0; $i -lt $currentLine.Count; $i++) {
-                    $element = $currentLine[$i]
-                    if ($element -isnot [StringConstantExpressionAst] -or
-                        $element.StringConstantType -ne [StringConstantType]::BareWord -or
-                        $element.Value.StartsWith('-')) {
-                        break
-                    }
-                    $element
-                }
-            )
+            $currentLine = $currentLine | Where-Object {
+              !$_.StartsWith('-')
+            }
         }
 
         $prevNode = $null
 
         # go to the next hashtable
         $currentLine | ForEach-Object {
-            $hashIndex = $hashIndex -eq $null ? $commands["$($_.value)"] : $prevNode["$($_.value)"]
-            
+            if ($hashIndex -eq $null) {
+              $hashIndex = $commands[$_]
+            } elseif ($prevNode["$($_)"] -ne $null) {
+              $hashIndex = $prevNode[$_]
+            } elseif ($_.StartsWith('-')) {
+              break
+            } else {
+              $hashIndex = $prevNode
+            }
+
             $prevNode = $hashIndex
         }
 
@@ -290,7 +284,7 @@ $scriptblock = {
         if ($hashIndex._command -ne $null) {
             # \`sf org -<tab>\` start completing flags
             if ($wordToComplete -like '-*') {
-                $hashIndex._command.flags.GetEnumerator() | Where-Object {
+                $hashIndex._command.flags.GetEnumerator() | Sort-Object -Property key | Where-Object {
                   $_.value.multiple -eq $true -or !$flags.Contains($_.key)
                 } | ForEach-Object {
                   New-Object -Type CompletionResult -ArgumentList \`
@@ -304,7 +298,7 @@ $scriptblock = {
                 $hashIndex.remove("_command")
 
                 if ($hashIndex.keys -gt 0) {
-                    $hashIndex.GetEnumerator() | ForEach-Object {
+                    $hashIndex.GetEnumerator() | Sort-Object -Property key | ForEach-Object {
                         New-Object -Type CompletionResult -ArgumentList \`
                             "$($_.key) ",
                             $_.key,
@@ -319,7 +313,7 @@ $scriptblock = {
             # remove topic["_summary"] key
             $hashIndex.remove("_summary")
 
-            $hashIndex.GetEnumerator() | ForEach-Object {
+            $hashIndex.GetEnumerator() | Sort-Object -Property key | ForEach-Object {
                 New-Object -Type CompletionResult -ArgumentList \`
                     "$($_.key) ",
                     $_.key,
