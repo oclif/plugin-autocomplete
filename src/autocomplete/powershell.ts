@@ -66,6 +66,12 @@ export default class PowerShellComp {
     const flaghHashtables: string[] = []
 
     const flagNames = Object.keys(cmd.flags)
+
+    // Add comp for the global `--help` flag.
+    if (!flagNames.includes('help')) {
+      flaghHashtables.push('    "help" = @{ "summary" = "Show help for command" }')
+    }
+
     if (flagNames.length > 0) {
       for (const flagName of flagNames) {
         const f = cmd.flags[flagName]

@@ -188,7 +188,7 @@ $scriptblock = {
 "_command" = @{
   "summary" = "execute code"
   "flags" = @{
-
+    "help" = @{ "summary" = "Show help for command" }
   }
 }
 }
@@ -201,6 +201,7 @@ $scriptblock = {
 "_command" = @{
   "summary" = "Deploy a project"
   "flags" = @{
+    "help" = @{ "summary" = "Show help for command" }
     "metadata" = @{
       "summary" = " "
       "multiple" = $true
@@ -214,6 +215,7 @@ $scriptblock = {
 "_command" = @{
   "summary" = "Deploy a function."
   "flags" = @{
+    "help" = @{ "summary" = "Show help for command" }
     "branch" = @{ "summary" = " " }
   }
 }
@@ -224,7 +226,7 @@ $scriptblock = {
 "_command" = @{
   "summary" = "Search for a command"
   "flags" = @{
-
+    "help" = @{ "summary" = "Show help for command" }
   }
 }
 }
