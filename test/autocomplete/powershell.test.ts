@@ -180,13 +180,10 @@ $scriptblock = {
 
     $Commands = 
 @{
-
 "app" = @{
 "_summary" = "execute code"
-
 "execute" = @{
 "_summary" = "execute code"
-
 "code" = @{
 "_command" = @{
   "summary" = "execute code"
@@ -194,13 +191,11 @@ $scriptblock = {
 
   }
 }
-
 }
 
 }
 
 }
-
 
 "deploy" = @{
 "_command" = @{
@@ -215,7 +210,6 @@ $scriptblock = {
     "ignore-errors" = @{ "summary" = "Ignore errors." }
   }
 }
-
 "functions" = @{
 "_command" = @{
   "summary" = "Deploy a function."
@@ -223,10 +217,8 @@ $scriptblock = {
     "branch" = @{ "summary" = " " }
   }
 }
-
 }
 }
-
 
 "search" = @{
 "_command" = @{
@@ -235,7 +227,6 @@ $scriptblock = {
 
   }
 }
-
 }
 
 }

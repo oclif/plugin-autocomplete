@@ -94,8 +94,7 @@ export default class PowerShellComp {
   "flags" = @{
 ${flaghHashtables.join('\n')}
   }
-}
-`
+}`
     return cmdHashtable
   }
 
@@ -105,8 +104,7 @@ ${flaghHashtables.join('\n')}
     leafTpl?: string,
   ): string {
     if (!leafTpl) {
-      leafTpl = `
-"${key}" = @{
+      leafTpl = `"${key}" = @{
 %s
 }
 `
@@ -217,6 +215,7 @@ ${flaghHashtables.join('\n')}
 
     const topLevelArgs: string[] = []
 
+    // Collect top-level topics and generate a cmd tree node for each one of them.
     this.topics.forEach(t => {
       if (!t.name.includes(':')) {
         if (this.coTopics.includes(t.name)) {
@@ -233,6 +232,8 @@ ${flaghHashtables.join('\n')}
         topLevelArgs.push(t.name)
       }
     })
+
+    // Collect top-level commands and add a cmd tree node with the command ID.
     this.commands.forEach(c => {
       if (!c.id.includes(':') && !this.coTopics.includes(c.id)) {
         commandTree[c.id] = {
@@ -246,14 +247,14 @@ ${flaghHashtables.join('\n')}
     const hashtables: string[] = []
 
     for (const topLevelArg of topLevelArgs) {
+      // Generate all the hashtables for each child node of a top-level arg.
       hashtables.push(this.genHashtable(topLevelArg, commandTree))
     }
 
     const commandsHashtable = `
 @{
 ${hashtables.join('\n')}
-}
-`
+}`
 
     const compRegister = `
 using namespace System.Management.Automation
@@ -263,6 +264,7 @@ $scriptblock = {
     param($WordToComplete, $CommandAst, $CursorPosition)
 
     $Commands = ${commandsHashtable}
+
     # Get the current mode
     $Mode = (Get-PSReadLineKeyHandler | Where-Object {$_.Key -eq "Tab" }).Function
 
