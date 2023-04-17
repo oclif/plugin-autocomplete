@@ -240,6 +240,8 @@ $scriptblock = {
 
 }
 
+    # Get the current mode
+    $Mode = (Get-PSReadLineKeyHandler | Where-Object {$_.Key -eq "Tab" }).Function
 
     # Everything in the current line except the CLI executable name.
     $CurrentLine = $commandAst.CommandElements[1..$commandAst.CommandElements.Count] -split " "
@@ -259,7 +261,7 @@ $scriptblock = {
     if ($CurrentLine.Count -eq 0) {
         $Commands.GetEnumerator() | Sort-Object -Property key | ForEach-Object {
           New-Object -Type CompletionResult -ArgumentList \`
-              "$($_.Key) ",
+              $($Mode -eq "MenuComplete" ? "$($_.Key) " : "$($_.Key)"),
               $_.Key,
               "ParameterValue",
               "$($_.Value._summary ?? $_.Value._command.summary ?? " ")"
@@ -297,7 +299,7 @@ $scriptblock = {
                   } 
                   | ForEach-Object {
                       New-Object -Type CompletionResult -ArgumentList \`
-                          "--$($_.Key) ",
+                          $($Mode -eq "MenuComplete" ? "--$($_.Key) " : "--$($_.Key)"),
                           $_.Key,
                           "ParameterValue",
                           "$($NextArg._command.flags[$_.Key].summary ?? " ")"
@@ -310,7 +312,7 @@ $scriptblock = {
               if ($NextArg.keys -gt 0) {
                   $NextArg.GetEnumerator() | Sort-Object -Property key | ForEach-Object {
                     New-Object -Type CompletionResult -ArgumentList \`
-                      "$($_.Key) ",
+                      $($Mode -eq "MenuComplete" ? "$($_.Key) " : "$($_.Key)"),
                       $_.Key,
                       "ParameterValue",
                       "$($NextArg[$_.Key]._summary ?? " ")"
@@ -328,7 +330,7 @@ $scriptblock = {
 
           $NextArg.GetEnumerator() | Sort-Object -Property key | ForEach-Object {
               New-Object -Type CompletionResult -ArgumentList \`
-                  "$($_.Key) ",
+                  $($Mode -eq "MenuComplete" ? "$($_.Key) " : "$($_.Key)"),
                   $_.Key,
                   "ParameterValue",
                   "$($NextArg[$_.Key]._summary ?? $NextArg[$_.Key]._command.summary ?? " ")"
