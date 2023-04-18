@@ -55,8 +55,7 @@ Add-Content -Path $PROFILE -Value (Invoke-Expression -Command "${bin} autocomple
         note = 'If your terminal starts as a login shell you may need to print the init script into ~/.bash_profile or ~/.profile.'
         break
       case 'powershell':
-        note = 'hehe'
-        break
+        note = `Use the \`MenuComplete\` mode to get matching completions printed below the command line:\n${chalk.cyan('Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete')}`
       }
 
       this.log(`
@@ -66,7 +65,7 @@ ${chalk.bold(`Setup Instructions for ${bin.toUpperCase()} CLI Autocomplete ---`)
 
 ${chalk.cyan(instructions)}
 
-NOTE: ${note}
+${chalk.bold('NOTE')}: ${note}
 
 2) Test it out, e.g.:
 ${chalk.cyan(`$ ${bin} ${tabStr}`)}                 # Command completion
