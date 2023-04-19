@@ -61,7 +61,7 @@ Add-Content -Path $PROFILE -Value (Invoke-Expression -Command "${bin} autocomple
       this.log(`
 ${chalk.bold(`Setup Instructions for ${bin.toUpperCase()} CLI Autocomplete ---`)}
 
-1) Add the autocomplete env var to your ${shell} profile and source it
+1) Add the autocomplete ${shell === 'powershell' ? 'file' : 'env var'} to your ${shell} profile and source it
 
 ${chalk.cyan(instructions)}
 
