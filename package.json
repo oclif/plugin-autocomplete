@@ -25,7 +25,7 @@
     "eslint-config-oclif-typescript": "^0.2.0",
     "globby": "^11",
     "mocha": "^8.2.1",
-    "nock": "^13.3.0",
+    "nock": "^13.3.1",
     "nyc": "^15.1.0",
     "oclif": "^3.8.2",
     "shx": "^0.3.3",
