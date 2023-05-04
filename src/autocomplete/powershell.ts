@@ -277,6 +277,15 @@ $scriptblock = {
     # Everything in the current line except the CLI executable name.
     $CurrentLine = $commandAst.CommandElements[1..$commandAst.CommandElements.Count] -split " "
 
+    # Remove $WordToComplete from the current line.
+    if ($WordToComplete -ne "") {
+      if ($CurrentLine.Count -eq 1) {
+        $CurrentLine = @()
+      } else {
+        $CurrentLine = $CurrentLine[0..$CurrentLine.Count]
+      }
+    }
+
     # Save flags in current line without the \`--\` prefix.
     $Flags = $CurrentLine | Where-Object {
       $_ -Match "^-{1,2}(\\w+)"
@@ -290,7 +299,9 @@ $scriptblock = {
 
     # No command in the current line, suggest top-level args.
     if ($CurrentLine.Count -eq 0) {
-        $Commands.GetEnumerator() | Sort-Object -Property key | ForEach-Object {
+        $Commands.GetEnumerator() | Where-Object {
+            $_.Key.StartsWith("$WordToComplete")
+          } | Sort-Object -Property key | ForEach-Object {
           New-Object -Type CompletionResult -ArgumentList \`
               $($Mode -eq "MenuComplete" ? "$($_.Key) " : "$($_.Key)"),
               $_.Key,
@@ -326,7 +337,7 @@ $scriptblock = {
               $NextArg._command.flags.GetEnumerator() | Sort-Object -Property key 
                   | Where-Object {
                       # Filter out already used flags (unless \`flag.multiple = true\`).
-                      $_.Value.multiple -eq $true -or !$flags.Contains($_.Key)
+                      $_.Key.StartsWith("$($WordToComplete.Trim("-"))") -and ($_.Value.multiple -eq $true -or !$flags.Contains($_.Key))
                   } 
                   | ForEach-Object {
                       New-Object -Type CompletionResult -ArgumentList \`
@@ -341,7 +352,9 @@ $scriptblock = {
               $NextArg.remove("_command")
 
               if ($NextArg.keys -gt 0) {
-                  $NextArg.GetEnumerator() | Sort-Object -Property key | ForEach-Object {
+                  $NextArg.GetEnumerator() | Where-Object {
+                      $_.Key.StartsWith("$WordToComplete")
+                    } | Sort-Object -Property key | ForEach-Object {
                     New-Object -Type CompletionResult -ArgumentList \`
                       $($Mode -eq "MenuComplete" ? "$($_.Key) " : "$($_.Key)"),
                       $_.Key,
@@ -359,7 +372,9 @@ $scriptblock = {
 
           $NextArg.remove("_summary")
 
-          $NextArg.GetEnumerator() | Sort-Object -Property key | ForEach-Object {
+          $NextArg.GetEnumerator() | Where-Object {
+                $_.Key.StartsWith("$WordToComplete")
+              } | Sort-Object -Property key | ForEach-Object {
               New-Object -Type CompletionResult -ArgumentList \`
                   $($Mode -eq "MenuComplete" ? "$($_.Key) " : "$($_.Key)"),
                   $_.Key,
