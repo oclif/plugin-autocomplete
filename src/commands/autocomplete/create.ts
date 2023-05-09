@@ -4,6 +4,7 @@ import * as fs from 'fs-extra'
 
 import bashAutocomplete from '../../autocomplete/bash'
 import ZshCompWithSpaces from '../../autocomplete/zsh'
+import PowerShellComp from '../../autocomplete/powershell'
 import bashAutocompleteWithSpaces from '../../autocomplete/bash-spaces'
 import {AutocompleteBase} from '../../base'
 
@@ -34,7 +35,6 @@ export default class Create extends AutocompleteBase {
   private _commands?: CommandCompletion[]
 
   async run() {
-    this.errorIfWindows()
     // 1. ensure needed dirs
     await this.ensureDirs()
     // 2. save (generated) autocomplete files
@@ -48,6 +48,8 @@ export default class Create extends AutocompleteBase {
     await fs.ensureDir(this.bashFunctionsDir)
     // ensure autocomplete zsh function dir
     await fs.ensureDir(this.zshFunctionsDir)
+    // ensure autocomplete powershell function dir
+    await fs.ensureDir(this.pwshFunctionsDir)
   }
 
   private async createFiles() {
@@ -63,6 +65,8 @@ export default class Create extends AutocompleteBase {
     } else {
       const zshCompWithSpaces = new ZshCompWithSpaces(this.config)
       await fs.writeFile(this.zshCompletionFunctionPath, zshCompWithSpaces.generate())
+      const pwshComp = new PowerShellComp(this.config)
+      await fs.writeFile(this.pwshCompletionFunctionPath, pwshComp.generate())
     }
   }
 
@@ -76,6 +80,11 @@ export default class Create extends AutocompleteBase {
     return path.join(this.autocompleteCacheDir, 'zsh_setup')
   }
 
+  private get pwshFunctionsDir(): string {
+    // <cachedir>/autocomplete/functions/powershell
+    return path.join(this.autocompleteCacheDir, 'functions', 'powershell')
+  }
+
   private get bashFunctionsDir(): string {
     // <cachedir>/autocomplete/functions/bash
     return path.join(this.autocompleteCacheDir, 'functions', 'bash')
@@ -84,6 +93,11 @@ export default class Create extends AutocompleteBase {
   private get zshFunctionsDir(): string {
     // <cachedir>/autocomplete/functions/zsh
     return path.join(this.autocompleteCacheDir, 'functions', 'zsh')
+  }
+
+  private get pwshCompletionFunctionPath(): string {
+    // <cachedir>/autocomplete/functions/powershell/<bin>.ps1
+    return path.join(this.pwshFunctionsDir, `${this.cliBin}.ps1`)
   }
 
   private get bashCompletionFunctionPath(): string {

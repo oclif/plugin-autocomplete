@@ -27,12 +27,4 @@ OCLIF_EXAMPLE_AC_ZSH_SETUP_PATH=${
 `,
     )
   })
-
-  test
-  .stdout()
-  .command(['autocomplete:script', 'fish'])
-  .catch(error => {
-    expect(error.message).to.contain('fish is not a supported shell for autocomplete')
-  })
-  .it('errors on unsupported shell')
 })

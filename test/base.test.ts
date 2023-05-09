@@ -10,9 +10,6 @@ import {AutocompleteBase} from '../src/base'
 Chai.use(SinonChai)
 const expect = Chai.expect
 
-// autocomplete will throw error on windows
-const {default: runtest} = require('./helpers/runtest')
-
 class AutocompleteTest extends AutocompleteBase {
   async run() {
     return null
@@ -24,7 +21,7 @@ const config = new Config({root})
 
 const cmd = new AutocompleteTest([], config)
 
-runtest('AutocompleteBase', () => {
+describe('AutocompleteBase', () => {
   let fsWriteStub: Sinon.SinonStub
   let fsOpenSyncStub: Sinon.SinonStub
 
@@ -45,29 +42,6 @@ runtest('AutocompleteBase', () => {
     expect(() => {
       cmd.determineShell('')
     }).to.throw()
-  })
-
-  it('#errorIfWindows', async () => {
-    cmd.config.windows = true
-    expect(() => {
-      cmd.errorIfWindows()
-    }).to.throw('Autocomplete is not currently supported in Windows')
-  })
-
-  it('#errorIfWindows no error with bash on windows', async () => {
-    cmd.config.windows = true
-    cmd.config.shell = 'C:\\bin\\bash.exe'
-    expect(() => {
-      cmd.errorIfWindows()
-    }).to.not.throw('Autocomplete is not currently supported in Windows')
-  })
-
-  it('#errorIfNotSupportedShell', async () => {
-    try {
-      cmd.errorIfNotSupportedShell('fish')
-    } catch (error: any) {
-      expect(error.message).to.eq('fish is not a supported shell for autocomplete')
-    }
   })
 
   it('#autocompleteCacheDir', async () => {

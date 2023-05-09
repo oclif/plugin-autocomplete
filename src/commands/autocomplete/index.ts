@@ -9,7 +9,11 @@ export default class Index extends AutocompleteBase {
   static description = 'display autocomplete installation instructions'
 
   static args = {
-    shell: Args.string({description: 'shell type', required: false}),
+    shell: Args.string({
+      description: 'Shell type',
+      options: ['zsh', 'bash', 'powershell'],
+      required: false,
+    }),
   }
 
   static flags = {
@@ -20,13 +24,13 @@ export default class Index extends AutocompleteBase {
     '$ <%= config.bin %> autocomplete',
     '$ <%= config.bin %> autocomplete bash',
     '$ <%= config.bin %> autocomplete zsh',
+    '$ <%= config.bin %> autocomplete powershell',
     '$ <%= config.bin %> autocomplete --refresh-cache',
   ]
 
   async run() {
     const {args, flags} = await this.parse(Index)
     const shell = args.shell || this.determineShell(this.config.shell)
-    this.errorIfNotSupportedShell(shell)
 
     ux.action.start(`${chalk.bold('Building the autocomplete cache')}`)
     await Create.run([], this.config)
@@ -35,15 +39,33 @@ export default class Index extends AutocompleteBase {
     if (!flags['refresh-cache']) {
       const bin = this.config.bin
       const tabStr = shell === 'bash' ? '<TAB><TAB>' : '<TAB>'
-      const note = shell === 'zsh' ? `After sourcing, you can run \`${chalk.cyan('$ compaudit -D')}\` to ensure no permissions conflicts are present` : 'If your terminal starts as a login shell you may need to print the init script into ~/.bash_profile or ~/.profile.'
+
+      const instructions = shell === 'powershell' ?
+        `New-Item -Type Directory -Path (Split-Path -Parent $PROFILE) -ErrorAction SilentlyContinue
+Add-Content -Path $PROFILE -Value (Invoke-Expression -Command "${bin} autocomplete${this.config.topicSeparator}script ${shell}"); .$PROFILE` :
+        `$ printf "eval $(${bin} autocomplete${this.config.topicSeparator}script ${shell})" >> ~/.${shell}rc; source ~/.${shell}rc`
+
+      let note = ''
+
+      switch (shell) {
+      case 'zsh':
+        note = `After sourcing, you can run \`${chalk.cyan('$ compaudit -D')}\` to ensure no permissions conflicts are present`
+        break
+      case 'bash':
+        note = 'If your terminal starts as a login shell you may need to print the init script into ~/.bash_profile or ~/.profile.'
+        break
+      case 'powershell':
+        note = `Use the \`MenuComplete\` mode to get matching completions printed below the command line:\n${chalk.cyan('Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete')}`
+      }
 
       this.log(`
 ${chalk.bold(`Setup Instructions for ${bin.toUpperCase()} CLI Autocomplete ---`)}
 
-1) Add the autocomplete env var to your ${shell} profile and source it
-${chalk.cyan(`$ printf "eval $(${bin} autocomplete:script ${shell})" >> ~/.${shell}rc; source ~/.${shell}rc`)}
+1) Add the autocomplete ${shell === 'powershell' ? 'file' : 'env var'} to your ${shell} profile and source it
 
-NOTE: ${note}
+${chalk.cyan(instructions)}
+
+${chalk.bold('NOTE')}: ${note}
 
 2) Test it out, e.g.:
 ${chalk.cyan(`$ ${bin} ${tabStr}`)}                 # Command completion

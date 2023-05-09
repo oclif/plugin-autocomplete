@@ -21,22 +21,6 @@ export abstract class AutocompleteBase extends Command {
     }
   }
 
-  public errorIfWindows() {
-    if (this.config.windows && !this.isBashOnWindows(this.config.shell)) {
-      throw new Error('Autocomplete is not currently supported in Windows')
-    }
-  }
-
-  public errorIfNotSupportedShell(shell: string) {
-    if (!shell) {
-      this.error('Missing required argument shell')
-    }
-    this.errorIfWindows()
-    if (!['bash', 'zsh'].includes(shell)) {
-      throw new Error(`${shell} is not a supported shell for autocomplete`)
-    }
-  }
-
   public get autocompleteCacheDir(): string {
     return path.join(this.config.cacheDir, 'autocomplete')
   }
