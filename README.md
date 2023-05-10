@@ -1,7 +1,7 @@
 @oclif/plugin-autocomplete
 ==========================
 
-autocomplete plugin for oclif (bash & zsh)
+autocomplete plugin for oclif (bash, zsh and powershell)
 
 [![Version](https://img.shields.io/npm/v/@oclif/plugin-autocomplete.svg)](https://npmjs.org/package/@oclif/plugin-autocomplete)
 [![Downloads/week](https://img.shields.io/npm/dw/@oclif/plugin-autocomplete.svg)](https://npmjs.org/package/@oclif/plugin-autocomplete)
