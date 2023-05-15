@@ -1,18 +1,7 @@
 import * as util from 'util'
 import {EOL} from 'os'
 import {Config, Interfaces, Command} from '@oclif/core'
-
-function sanitizeSummary(description?: string): string {
-  if (description === undefined) {
-    // PowerShell:
-    // [System.Management.Automation.CompletionResult] will error out if will error out if you pass in an empty string for the summary.
-    return ' '
-  }
-  return description
-  .replace(/"/g, '""') // escape double quotes.
-  .replace(/`/g, '``') // escape backticks.
-  .split(EOL)[0] // only use the first line
-}
+import * as ejs from 'ejs'
 
 type CommandCompletion = {
   id: string;
@@ -78,7 +67,7 @@ export default class PowerShellComp {
         // skip hidden flags
         if (f.hidden) continue
 
-        const flagSummary = sanitizeSummary(f.summary || f.description)
+        const flagSummary = this.sanitizeSummary(f.summary || f.description)
 
         if (f.type === 'option' && f.multiple) {
           flaghHashtables.push(
@@ -165,6 +154,18 @@ ${flaghHashtables.join('\n')}
     }
 
     return leafTpl
+  }
+
+  private sanitizeSummary(summary?: string): string {
+    if (summary === undefined) {
+      // PowerShell:
+      // [System.Management.Automation.CompletionResult] will error out if will error out if you pass in an empty string for the summary.
+      return ' '
+    }
+    return ejs.render(summary, {config: this.config})
+    .replace(/"/g, '""') // escape double quotes.
+    .replace(/`/g, '``') // escape backticks.
+    .split(EOL)[0] // only use the first line
   }
 
   public generate(): string {
@@ -410,7 +411,7 @@ Register-ArgumentCompleter -Native -CommandName ${this.config.bin} -ScriptBlock 
     })
     .map(t => {
       const description = t.description ?
-        sanitizeSummary(t.description) :
+        this.sanitizeSummary(t.description) :
         `${t.name.replace(/:/g, ' ')} commands`
 
       return {
@@ -428,7 +429,7 @@ Register-ArgumentCompleter -Native -CommandName ${this.config.bin} -ScriptBlock 
     this.config.plugins.forEach(p => {
       p.commands.forEach(c => {
         if (c.hidden) return
-        const summary = sanitizeSummary(c.summary || c.description)
+        const summary = this.sanitizeSummary(c.summary || c.description)
         const flags = c.flags
         cmds.push({
           id: c.id,
