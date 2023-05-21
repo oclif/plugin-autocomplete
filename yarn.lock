@@ -520,12 +520,12 @@
   integrity sha512-IMsTN1dXEXaOSre27j/ywGbBjrzx0FNd1XmuhCWCB9NTPrhWI1Ifbz+YLSEcstfQfocYsrbrIessxXb2oon4lA==
 
 "@oclif/test@^2":
-  version "2.3.19"
-  resolved "https://registry.yarnpkg.com/@oclif/test/-/test-2.3.19.tgz#0c5f855c1dadeab879fd72856d21a1bff04502e3"
-  integrity sha512-sdGVAr2ZnONJUpNaivC+LQqIgv/vqwUXp1SbzGWz9UtoUWCOduBS/Oile/pum0nFJvXfiSGf+V8ni9jZd2xALA==
+  version "2.3.20"
+  resolved "https://registry.yarnpkg.com/@oclif/test/-/test-2.3.20.tgz#b9bb3ee390937be5036ff96a6cfe83b776be805a"
+  integrity sha512-Ig85O70K7Cm3HS6Zkn8xygQZgbVvbtQqNyu8meZoHcIBLikAEvrWUhRmv70yxL1WQxIkbW2SQol6X5JdGLYfyA==
   dependencies:
     "@oclif/core" "^2.8.5"
-    fancy-test "^2.0.21"
+    fancy-test "^2.0.22"
 
 "@octokit/auth-token@^2.4.4":
   version "2.5.0"
@@ -2059,10 +2059,10 @@ external-editor@^3.0.3:
     iconv-lite "^0.4.24"
     tmp "^0.0.33"
 
-fancy-test@^2.0.21:
-  version "2.0.22"
-  resolved "https://registry.yarnpkg.com/fancy-test/-/fancy-test-2.0.22.tgz#f3ff137a8282b3e27561fea3c3c6e22798c25470"
-  integrity sha512-8b0hMMQpsUW8XSp2N3BLHcB3dsZrvLW+doUeaaWJ3KAJ20plat06tH2DNLkGSZiofLIoZFeF6hgGEroogTKBOg==
+fancy-test@^2.0.22:
+  version "2.0.23"
+  resolved "https://registry.yarnpkg.com/fancy-test/-/fancy-test-2.0.23.tgz#f5e3232b256071ae8f0d2ef9c59ebae0a7c3d45f"
+  integrity sha512-RPX4iAzAioH9nxkqk2yrcunBLBmnMLxtIsw3Pjgj2PGPHTdT3wZ6asKv9U332+UQyZwZWWc4bP64JOa6DcVhnQ==
   dependencies:
     "@types/chai" "*"
     "@types/lodash" "*"
