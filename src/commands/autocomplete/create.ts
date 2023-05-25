@@ -225,7 +225,7 @@ compinit;\n`
     const supportSpaces = this.config.topicSeparator === ' '
     const bashScript = (process.env.OCLIF_AUTOCOMPLETE_TOPIC_SEPARATOR === 'colon' || !supportSpaces) ? bashAutocomplete : bashAutocompleteWithSpaces
     return bashScript
-    .concat(...(this.config.binAliases?.map(alias => `complete -F _<CLI_BIN>_autocomplete ${alias}`) ?? []))
+    .concat(...(this.config.binAliases?.map(alias => `complete -F _<CLI_BIN>_autocomplete ${alias}`).join('\n') ?? []))
     .replace(/<CLI_BIN>/g, cliBin)
     .replace(/<BASH_COMMANDS_WITH_FLAGS_LIST>/g, this.bashCommandsWithFlagsList)
   }
