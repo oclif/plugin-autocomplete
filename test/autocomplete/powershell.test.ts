@@ -178,7 +178,7 @@ using namespace System.Management.Automation.Language
 $scriptblock = {
     param($WordToComplete, $CommandAst, $CursorPosition)
 
-    $Commands = 
+    $Commands =
 @{
 "app" = @{
 "_summary" = "execute code"
@@ -296,11 +296,11 @@ $scriptblock = {
           # Complete flags
           # \`cli config list -<TAB>\`
           if ($WordToComplete -like '-*') {
-              $NextArg._command.flags.GetEnumerator() | Sort-Object -Property key 
+              $NextArg._command.flags.GetEnumerator() | Sort-Object -Property key
                   | Where-Object {
                       # Filter out already used flags (unless \`flag.multiple = true\`).
                       $_.Key.StartsWith("$($WordToComplete.Trim("-"))") -and ($_.Value.multiple -eq $true -or !$flags.Contains($_.Key))
-                  } 
+                  }
                   | ForEach-Object {
                       New-Object -Type CompletionResult -ArgumentList \`
                           $($Mode -eq "MenuComplete" ? "--$($_.Key) " : "--$($_.Key)"),
@@ -347,6 +347,7 @@ $scriptblock = {
     }
 }
 Register-ArgumentCompleter -Native -CommandName test-cli -ScriptBlock $scriptblock
+
 `)
   })
 })
