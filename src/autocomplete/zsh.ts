@@ -1,5 +1,5 @@
 import * as util from 'util'
-import {Config, Interfaces, Command} from '@oclif/core'
+import {Command, Config, Interfaces} from '@oclif/core'
 
 function sanitizeSummary(description?: string): string {
   if (description === undefined) {
@@ -88,8 +88,8 @@ export default class ZshCompWithSpaces {
       return caseBlock
     }
 
-    const compFunc =
-`#compdef ${this.config.bin}
+    return `#compdef ${this.config.bin}
+${this.config.binAliases?.map(a => `compdef ${a}=${this.config.bin}`).join('\n') ?? ''}
 
 ${this.topics.map(t => this.genZshTopicCompFun(t.name)).join('\n')}
 
@@ -101,7 +101,7 @@ _${this.config.bin}() {
 
   case "$state" in
     cmds)
-      ${this.genZshValuesBlock(firstArgs)} 
+      ${this.genZshValuesBlock(firstArgs)}
     ;;
     args)
       ${mainArgsCaseBlock()}
@@ -111,7 +111,6 @@ _${this.config.bin}() {
 
 _${this.config.bin}
 `
-    return compFunc
   }
 
   private genZshFlagArgumentsBlock(flags?: CommandFlags): string {
@@ -329,7 +328,7 @@ _${this.config.bin}
 %s
       esac
       ;;
-  esac 
+  esac
 }
 `
     return util.format(topicCompFunc, this.genZshValuesBlock(subArgs), argsBlock)

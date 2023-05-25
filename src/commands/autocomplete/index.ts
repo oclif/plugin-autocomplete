@@ -40,7 +40,7 @@ export default class Index extends AutocompleteBase {
       const bin = this.config.bin
       const tabStr = shell === 'bash' ? '<TAB><TAB>' : '<TAB>'
 
-      let instructions = shell === 'powershell' ?
+      const instructions = shell === 'powershell' ?
         `New-Item -Type Directory -Path (Split-Path -Parent $PROFILE) -ErrorAction SilentlyContinue
 Add-Content -Path $PROFILE -Value (Invoke-Expression -Command "${bin} autocomplete${this.config.topicSeparator}script ${shell}"); .$PROFILE` :
         `$ printf "eval $(${bin} autocomplete${this.config.topicSeparator}script ${shell})" >> ~/.${shell}rc; source ~/.${shell}rc`
@@ -50,7 +50,6 @@ Add-Content -Path $PROFILE -Value (Invoke-Expression -Command "${bin} autocomple
       switch (shell) {
       case 'zsh':
         note = `After sourcing, you can run \`${chalk.cyan('$ compaudit -D')}\` to ensure no permissions conflicts are present`
-        instructions += this.config.binAliases?.map(alias => `; compdef ${alias}=${bin}`).join(' ') ?? ''
         break
       case 'bash':
         note = 'If your terminal starts as a login shell you may need to print the init script into ~/.bash_profile or ~/.profile.'

@@ -177,6 +177,7 @@ skipWindows('zsh comp', () => {
       const zshCompWithSpaces = new ZshCompWithSpaces(config as Config)
       expect(zshCompWithSpaces.generate()).to.equal(`#compdef test-cli
 
+
 _test-cli_app() {
   local context state state_descr line
   typeset -A opt_args
@@ -197,7 +198,7 @@ _values "completions" \\
 
       esac
       ;;
-  esac 
+  esac
 }
 
 _test-cli_app_execute() {
@@ -222,7 +223,7 @@ _values "completions" \\
 
       esac
       ;;
-  esac 
+  esac
 }
 
 _test-cli_deploy() {
@@ -284,7 +285,7 @@ _test-cli() {
 "app[execute code]" \\
 "deploy[Deploy a project]" \\
 "search[Search for a command]" \\
- 
+
     ;;
     args)
       case $line[1] in

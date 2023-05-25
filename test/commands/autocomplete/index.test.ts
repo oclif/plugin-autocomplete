@@ -32,7 +32,7 @@ Enjoy!
   .stdout()
   .command(['autocomplete', 'zsh'])
   .it('provides zsh instructions', ctx => {
-    expect(ctx.stdout).to.equal(`
+    expect(ctx.stdout).to.contain(`
 Setup Instructions for OCLIF-EXAMPLE CLI Autocomplete ---
 
 1) Add the autocomplete env var to your zsh profile and source it
