@@ -3,7 +3,6 @@ import * as path from 'path'
 import {Plugin as IPlugin} from '@oclif/core/lib/interfaces'
 import {expect} from 'chai'
 import PowerShellComp from '../../src/autocomplete/powershell'
-import {EOL} from 'os'
 
 class MyCommandClass implements Command.Cached {
   [key: string]: unknown;
@@ -348,7 +347,6 @@ $scriptblock = {
     }
 }
 Register-ArgumentCompleter -Native -CommandName test-cli -ScriptBlock $scriptblock
-
 `)
   })
   it('generates a valid completion file with a bin alias.', () => {
@@ -530,8 +528,7 @@ $scriptblock = {
       }
     }
 }
-Register-ArgumentCompleter -Native -CommandName test-cli -ScriptBlock $scriptblock
-Register-ArgumentCompleter -Native -CommandName test -ScriptBlock $scriptblock
+Register-ArgumentCompleter -Native -CommandName @("test","test-cli") -ScriptBlock $scriptblock
 `)
   })
   it('generates a valid completion file with multiple bin aliases.', () => {
@@ -713,7 +710,7 @@ $scriptblock = {
       }
     }
 }
-Register-ArgumentCompleter -Native -CommandName test-cli -ScriptBlock $scriptblock${EOL}Register-ArgumentCompleter -Native -CommandName test -ScriptBlock $scriptblock${EOL}Register-ArgumentCompleter -Native -CommandName test1 -ScriptBlock $scriptblock
+Register-ArgumentCompleter -Native -CommandName @("test","test1","test-cli") -ScriptBlock $scriptblock
 `)
   })
 })

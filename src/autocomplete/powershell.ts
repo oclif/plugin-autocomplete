@@ -384,8 +384,7 @@ $scriptblock = {
       }
     }
 }
-Register-ArgumentCompleter -Native -CommandName ${this.config.bin} -ScriptBlock $scriptblock
-${this.config.binAliases?.map(a => `Register-ArgumentCompleter -Native -CommandName ${a} -ScriptBlock $scriptblock`).join(EOL) ?? ''}
+Register-ArgumentCompleter -Native -CommandName ${this.config.binAliases ? `@(${[...this.config.binAliases, this.config.bin].map(alias => `"${alias}"`).join(',')})` : this.config.bin} -ScriptBlock $scriptblock
 `
 
     return compRegister
