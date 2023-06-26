@@ -1,16 +1,6 @@
 import * as util from 'util'
-import {Command, Config, Interfaces} from '@oclif/core'
-
-function sanitizeSummary(description?: string): string {
-  if (description === undefined) {
-    return ''
-  }
-  return description
-  .replace(/([`"])/g, '\\\\\\$1') // backticks and double-quotes require triple-backslashes
-  // eslint-disable-next-line no-useless-escape
-  .replace(/([\[\]])/g, '\\\\$1') // square brackets require double-backslashes
-  .split('\n')[0] // only use the first line
-}
+import {Config, Interfaces, Command} from '@oclif/core'
+import * as ejs from 'ejs'
 
 const argTemplate = '        "%s")\n          %s\n        ;;\n'
 
@@ -42,6 +32,17 @@ export default class ZshCompWithSpaces {
     this.config = config
     this.topics = this.getTopics()
     this.commands = this.getCommands()
+  }
+
+  private sanitizeSummary(summary?: string): string {
+    if (summary === undefined) {
+      return ''
+    }
+    return ejs.render(summary, {config: this.config})
+    .replace(/([`"])/g, '\\\\\\$1') // backticks and double-quotes require triple-backslashes
+    // eslint-disable-next-line no-useless-escape
+    .replace(/([\[\]])/g, '\\\\$1') // square brackets require double-backslashes
+    .split('\n')[0] // only use the first line
   }
 
   public generate(): string {
@@ -132,7 +133,7 @@ _${this.config.bin}
       // skip hidden flags
       if (f.hidden) continue
 
-      const flagSummary = sanitizeSummary(f.summary || f.description)
+      const flagSummary = this.sanitizeSummary(f.summary || f.description)
 
       let flagSpec = ''
 
@@ -368,7 +369,7 @@ _${this.config.bin}
       return 0
     })
     .map(t => {
-      const description = t.description ? sanitizeSummary(t.description) : `${t.name.replace(/:/g, ' ')} commands`
+      const description = t.description ? this.sanitizeSummary(t.description) : `${t.name.replace(/:/g, ' ')} commands`
 
       return {
         name: t.name,
@@ -385,7 +386,7 @@ _${this.config.bin}
     this.config.plugins.forEach(p => {
       p.commands.forEach(c => {
         if (c.hidden) return
-        const summary = sanitizeSummary(c.summary || c.description)
+        const summary = this.sanitizeSummary(c.summary || c.description)
         const flags = c.flags
         cmds.push({
           id: c.id,
