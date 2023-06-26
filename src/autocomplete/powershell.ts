@@ -270,7 +270,7 @@ using namespace System.Management.Automation.Language
 $scriptblock = {
     param($WordToComplete, $CommandAst, $CursorPosition)
 
-    $Commands = ${commandsHashtable}
+    $Commands =${commandsHashtable}
 
     # Get the current mode
     $Mode = (Get-PSReadLineKeyHandler | Where-Object {$_.Key -eq "Tab" }).Function
@@ -335,11 +335,11 @@ $scriptblock = {
           # Complete flags
           # \`cli config list -<TAB>\`
           if ($WordToComplete -like '-*') {
-              $NextArg._command.flags.GetEnumerator() | Sort-Object -Property key 
+              $NextArg._command.flags.GetEnumerator() | Sort-Object -Property key
                   | Where-Object {
                       # Filter out already used flags (unless \`flag.multiple = true\`).
                       $_.Key.StartsWith("$($WordToComplete.Trim("-"))") -and ($_.Value.multiple -eq $true -or !$flags.Contains($_.Key))
-                  } 
+                  }
                   | ForEach-Object {
                       New-Object -Type CompletionResult -ArgumentList \`
                           $($Mode -eq "MenuComplete" ? "--$($_.Key) " : "--$($_.Key)"),
@@ -385,7 +385,7 @@ $scriptblock = {
       }
     }
 }
-Register-ArgumentCompleter -Native -CommandName ${this.config.bin} -ScriptBlock $scriptblock
+Register-ArgumentCompleter -Native -CommandName ${this.config.binAliases ? `@(${[...this.config.binAliases, this.config.bin].map(alias => `"${alias}"`).join(',')})` : this.config.bin} -ScriptBlock $scriptblock
 `
 
     return compRegister

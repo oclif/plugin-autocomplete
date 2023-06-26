@@ -173,7 +173,7 @@ foo --bar --baz --dangerous --brackets --double-quotes --multi-line --json
 
       opts=$(printf "%s " "\${commands[@]}") # | grep -Eo '^[a-zA-Z0-9_-]+'
     fi
-  else 
+  ${'else '}
     # Flag
 
     # The full CLI command separated by colons (e.g. "mycli command subcommand --fl" -> "command:subcommand")

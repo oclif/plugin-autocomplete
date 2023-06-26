@@ -1,3 +1,21 @@
+# [2.3.0](https://github.com/oclif/plugin-autocomplete/compare/2.2.0...2.3.0) (2023-05-30)
+
+
+### Features
+
+* support bin aliases ([#470](https://github.com/oclif/plugin-autocomplete/issues/470)) ([9eb97a7](https://github.com/oclif/plugin-autocomplete/commit/9eb97a7bc514899ae99c7cd81f6782e50bbff757))
+
+
+
+# [2.2.0](https://github.com/oclif/plugin-autocomplete/compare/2.1.9...2.2.0) (2023-05-09)
+
+
+### Features
+
+* powershell autocomplete ([#441](https://github.com/oclif/plugin-autocomplete/issues/441)) ([53697c4](https://github.com/oclif/plugin-autocomplete/commit/53697c42c8c4fd1fe6ac3f4cd2f91efd5ee399cd))
+
+
+
 ## [2.1.9](https://github.com/oclif/plugin-autocomplete/compare/2.1.8...2.1.9) (2023-04-16)
 
 
