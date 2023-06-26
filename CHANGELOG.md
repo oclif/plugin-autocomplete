@@ -1,3 +1,12 @@
+## [2.3.1](https://github.com/oclif/plugin-autocomplete/compare/2.3.0...2.3.1) (2023-06-26)
+
+
+### Bug Fixes
+
+* render ejs templates ([b4d2af8](https://github.com/oclif/plugin-autocomplete/commit/b4d2af8149afa22b212e131c0dce4adfd375e271))
+
+
+
 # [2.3.0](https://github.com/oclif/plugin-autocomplete/compare/2.2.0...2.3.0) (2023-05-30)
 
 
