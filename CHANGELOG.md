@@ -1,3 +1,12 @@
+## [2.3.2](https://github.com/oclif/plugin-autocomplete/compare/2.3.1...2.3.2) (2023-07-11)
+
+
+### Bug Fixes
+
+* **deps:** bump semver from 5.7.1 to 5.7.2 ([76a4c77](https://github.com/oclif/plugin-autocomplete/commit/76a4c77d5ce3d43bdfeee767955aa1dc8006276c))
+
+
+
 ## [2.3.1](https://github.com/oclif/plugin-autocomplete/compare/2.3.0...2.3.1) (2023-06-26)
 
 
