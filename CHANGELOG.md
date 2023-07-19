@@ -1,3 +1,12 @@
+## [2.3.3](https://github.com/oclif/plugin-autocomplete/compare/2.3.2...2.3.3) (2023-07-19)
+
+
+### Bug Fixes
+
+* **deps:** bump word-wrap from 1.2.3 to 1.2.4 ([9814e11](https://github.com/oclif/plugin-autocomplete/commit/9814e11ca579a35dac8ee4013e230b46e5e94228))
+
+
+
 ## [2.3.2](https://github.com/oclif/plugin-autocomplete/compare/2.3.1...2.3.2) (2023-07-11)
 
 
