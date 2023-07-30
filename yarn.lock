@@ -476,11 +476,11 @@
     semver "^7.5.4"
 
 "@oclif/test@^2":
-  version "2.3.32"
-  resolved "https://registry.yarnpkg.com/@oclif/test/-/test-2.3.32.tgz#c03bd1edfa56e26b44218cd049ff4993604e25a3"
-  integrity sha512-EqieMRJuanDQ/o///Cr7Z01++nsCf8TuO585cySPr2SzC4rw04oJ8gp/lim5BhC+83vCPj+lwFv2bC9uV1tpYQ==
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/@oclif/test/-/test-2.4.0.tgz#138cb846146295350fa38b2f7ee9b15f374b4f53"
+  integrity sha512-eC99f81IdAzJdRtOAH5x28vfTk4Nbuqe9nySq6Y8z8MwA6zkDbJFWNj/Zz5LdBGabtsbuTXBku8U+evFrYMTcw==
   dependencies:
-    "@oclif/core" "^2.9.3"
+    "@oclif/core" "^2.9.4"
     fancy-test "^2.0.31"
 
 "@octokit/auth-token@^2.4.4":
