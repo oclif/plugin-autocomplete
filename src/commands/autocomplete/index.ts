@@ -1,4 +1,5 @@
 import {Args, ux, Flags} from '@oclif/core'
+import {EOL} from 'os'
 import * as chalk from 'chalk'
 
 import {AutocompleteBase} from '../../base'
@@ -31,6 +32,10 @@ export default class Index extends AutocompleteBase {
   async run() {
     const {args, flags} = await this.parse(Index)
     const shell = args.shell || this.determineShell(this.config.shell)
+
+    if (shell === 'powershell' && this.config?.topicSeparator === ':') {
+      this.error(`PowerShell completion is not supported in CLIs using colon as the topic separator.${EOL}See: https://oclif.io/docs/topic_separator`)
+    }
 
     ux.action.start(`${chalk.bold('Building the autocomplete cache')}`)
     await Create.run([], this.config)
