@@ -1,3 +1,12 @@
+## [2.3.4](https://github.com/oclif/plugin-autocomplete/compare/2.3.3...2.3.4) (2023-08-02)
+
+
+### Bug Fixes
+
+* block pwsh completion if CLI uses colon sep ([a15b628](https://github.com/oclif/plugin-autocomplete/commit/a15b628aa0013a7c780ad9bd79fdfd12d1e5bdab))
+
+
+
 ## [2.3.3](https://github.com/oclif/plugin-autocomplete/compare/2.3.2...2.3.3) (2023-07-19)
 
 
