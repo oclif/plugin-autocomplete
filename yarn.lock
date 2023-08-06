@@ -476,12 +476,12 @@
     semver "^7.5.4"
 
 "@oclif/test@^2":
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/@oclif/test/-/test-2.4.0.tgz#138cb846146295350fa38b2f7ee9b15f374b4f53"
-  integrity sha512-eC99f81IdAzJdRtOAH5x28vfTk4Nbuqe9nySq6Y8z8MwA6zkDbJFWNj/Zz5LdBGabtsbuTXBku8U+evFrYMTcw==
+  version "2.4.2"
+  resolved "https://registry.yarnpkg.com/@oclif/test/-/test-2.4.2.tgz#5f14944ffe6ee44ee57584405e87b0e06118c0bf"
+  integrity sha512-1LUFLBmaHLymTygLhzN6yT/ZVUKrpqR+cPv4xg79H8kXwrjFe6XlZ/9FzV+KywLQaI/c1+pWsOicO8hB8Et8lQ==
   dependencies:
-    "@oclif/core" "^2.9.4"
-    fancy-test "^2.0.31"
+    "@oclif/core" "^2.11.1"
+    fancy-test "^2.0.32"
 
 "@octokit/auth-token@^2.4.4":
   version "2.5.0"
@@ -2020,10 +2020,10 @@ external-editor@^3.0.3:
     iconv-lite "^0.4.24"
     tmp "^0.0.33"
 
-fancy-test@^2.0.31:
-  version "2.0.31"
-  resolved "https://registry.yarnpkg.com/fancy-test/-/fancy-test-2.0.31.tgz#2031920a6608c633ed93eb1629513fb2a2026bc7"
-  integrity sha512-Ok4L7GuoVdOBKtwlHdSnBYDBSFeWazcr6+/lhcC0LWS+sJYOXgbyCPP54fTt2TM1T8QWUm4ULHKQGOHKS61pfg==
+fancy-test@^2.0.32:
+  version "2.0.33"
+  resolved "https://registry.yarnpkg.com/fancy-test/-/fancy-test-2.0.33.tgz#09d52aa91d70e0082871a2ae804b5819d34024e4"
+  integrity sha512-Bu8rNOyF0CxnF5KygWstRMRVX8m0EVsEQ9nqV6xjKvpJwsLLfiDeLTQgEEqFfVlBn3eJo7YFvkwzxLkJn+KD2A==
   dependencies:
     "@types/chai" "*"
     "@types/lodash" "*"
