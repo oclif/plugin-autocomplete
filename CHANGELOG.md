@@ -1,3 +1,12 @@
+## [2.3.6](https://github.com/oclif/plugin-autocomplete/compare/2.3.5...2.3.6) (2023-08-07)
+
+
+### Bug Fixes
+
+* **deps:** bump ansi-regex from 3.0.0 to 3.0.1 ([2a8c9b4](https://github.com/oclif/plugin-autocomplete/commit/2a8c9b482acd6907e2817572fc0f21c2293b3113))
+
+
+
 ## [2.3.5](https://github.com/oclif/plugin-autocomplete/compare/2.3.4...2.3.5) (2023-08-06)
 
 
