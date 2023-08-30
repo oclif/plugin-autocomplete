@@ -1,14 +1,9 @@
 import {Config} from '@oclif/core'
-import * as Chai from 'chai'
+import {expect} from 'chai'
 import * as path from 'path'
-import * as fs from 'fs'
-import * as Sinon from 'sinon'
-import * as SinonChai from 'sinon-chai'
+import {readFile, rm} from 'fs/promises'
 
 import {AutocompleteBase} from '../src/base'
-
-Chai.use(SinonChai)
-const expect = Chai.expect
 
 class AutocompleteTest extends AutocompleteBase {
   async run() {
@@ -22,19 +17,11 @@ const config = new Config({root})
 const cmd = new AutocompleteTest([], config)
 
 describe('AutocompleteBase', () => {
-  let fsWriteStub: Sinon.SinonStub
-  let fsOpenSyncStub: Sinon.SinonStub
-
-  before(() => {
-    fsWriteStub = Sinon.stub(fs, 'writeSync')
-    fsOpenSyncStub = Sinon.stub(fs, 'openSync').returns(7)
-  })
-
   beforeEach(async () => {
     await config.load()
   })
 
-  it('#convertWindowsBash', async () => {
+  it('#convertWindowsBash',  () => {
     expect(cmd.determineShell('bash')).to.eq('bash')
     expect(cmd.determineShell('zsh')).to.eq('zsh')
     expect(cmd.determineShell('fish')).to.eq('fish')
@@ -44,15 +31,16 @@ describe('AutocompleteBase', () => {
     }).to.throw()
   })
 
-  it('#autocompleteCacheDir', async () => {
+  it('#autocompleteCacheDir',  () => {
     expect(cmd.autocompleteCacheDir).to.eq(path.join(config.cacheDir, 'autocomplete'))
   })
 
   it('#acLogfile', async () => {
     expect(cmd.acLogfilePath).to.eq(path.join(config.cacheDir, 'autocomplete.log'))
-
+    await rm(cmd.acLogfilePath, {force: true, recursive: true})
     cmd.writeLogFile('testing')
-    expect(fsOpenSyncStub).to.have.been.calledOnce
-    expect(fsWriteStub).to.be.been.calledWith(7)
+
+    const logs = await readFile(cmd.acLogfilePath, 'utf8')
+    expect(logs).to.include('testing')
   })
 })

@@ -1,10 +1,23 @@
 import {Args, ux, Flags} from '@oclif/core'
 import {EOL} from 'os'
-import {bold, cyan} from 'chalk'
+import chalk from 'chalk'
 
 import {AutocompleteBase} from '../../base'
 
 import Create from './create'
+
+const noteFromShell = (shell: string) => {
+  switch (shell) {
+  case 'zsh':
+    return `After sourcing, you can run \`${chalk.cyan('$ compaudit -D')}\` to ensure no permissions conflicts are present`
+  case 'bash':
+    return  'If your terminal starts as a login shell you may need to print the init script into ~/.bash_profile or ~/.profile.'
+  case 'powershell':
+    return `Use the \`MenuComplete\` mode to get matching completions printed below the command line:\n${chalk.cyan('Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete')}`
+  default:
+    return ''
+  }
+}
 
 export default class Index extends AutocompleteBase {
   static description = 'display autocomplete installation instructions'
@@ -37,7 +50,7 @@ export default class Index extends AutocompleteBase {
       this.error(`PowerShell completion is not supported in CLIs using colon as the topic separator.${EOL}See: https://oclif.io/docs/topic_separator`)
     }
 
-    ux.action.start(`${bold('Building the autocomplete cache')}`)
+    ux.action.start(`${chalk.bold('Building the autocomplete cache')}`)
     await Create.run([], this.config)
     ux.action.stop()
 
@@ -50,34 +63,24 @@ export default class Index extends AutocompleteBase {
 Add-Content -Path $PROFILE -Value (Invoke-Expression -Command "${bin} autocomplete${this.config.topicSeparator}script ${shell}"); .$PROFILE` :
         `$ printf "eval $(${bin} autocomplete${this.config.topicSeparator}script ${shell})" >> ~/.${shell}rc; source ~/.${shell}rc`
 
-      let note = ''
-
-      switch (shell) {
-      case 'zsh':
-        note = `After sourcing, you can run \`${cyan('$ compaudit -D')}\` to ensure no permissions conflicts are present`
-        break
-      case 'bash':
-        note = 'If your terminal starts as a login shell you may need to print the init script into ~/.bash_profile or ~/.profile.'
-        break
-      case 'powershell':
-        note = `Use the \`MenuComplete\` mode to get matching completions printed below the command line:\n${cyan('Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete')}`
-      }
+      const note = noteFromShell(shell)
 
       this.log(`
-${bold(`Setup Instructions for ${bin.toUpperCase()} CLI Autocomplete ---`)}
+${chalk.bold(`Setup Instructions for ${bin.toUpperCase()} CLI Autocomplete ---`)}
 
 1) Add the autocomplete ${shell === 'powershell' ? 'file' : 'env var'} to your ${shell} profile and source it
 
-${cyan(instructions)}
+${chalk.cyan(instructions)}
 
-${bold('NOTE')}: ${note}
+${chalk.bold('NOTE')}: ${note}
 
 2) Test it out, e.g.:
-${cyan(`$ ${bin} ${tabStr}`)}                 # Command completion
-${cyan(`$ ${bin} command --${tabStr}`)}       # Flag completion
+${chalk.cyan(`$ ${bin} ${tabStr}`)}                 # Command completion
+${chalk.cyan(`$ ${bin} command --${tabStr}`)}       # Flag completion
 
 Enjoy!
 `)
     }
   }
 }
+
