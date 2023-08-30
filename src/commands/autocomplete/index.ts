@@ -1,6 +1,6 @@
 import {Args, ux, Flags} from '@oclif/core'
 import {EOL} from 'os'
-import * as chalk from 'chalk'
+import {bold, cyan} from 'chalk'
 
 import {AutocompleteBase} from '../../base'
 
@@ -37,7 +37,7 @@ export default class Index extends AutocompleteBase {
       this.error(`PowerShell completion is not supported in CLIs using colon as the topic separator.${EOL}See: https://oclif.io/docs/topic_separator`)
     }
 
-    ux.action.start(`${chalk.bold('Building the autocomplete cache')}`)
+    ux.action.start(`${bold('Building the autocomplete cache')}`)
     await Create.run([], this.config)
     ux.action.stop()
 
@@ -54,27 +54,27 @@ Add-Content -Path $PROFILE -Value (Invoke-Expression -Command "${bin} autocomple
 
       switch (shell) {
       case 'zsh':
-        note = `After sourcing, you can run \`${chalk.cyan('$ compaudit -D')}\` to ensure no permissions conflicts are present`
+        note = `After sourcing, you can run \`${cyan('$ compaudit -D')}\` to ensure no permissions conflicts are present`
         break
       case 'bash':
         note = 'If your terminal starts as a login shell you may need to print the init script into ~/.bash_profile or ~/.profile.'
         break
       case 'powershell':
-        note = `Use the \`MenuComplete\` mode to get matching completions printed below the command line:\n${chalk.cyan('Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete')}`
+        note = `Use the \`MenuComplete\` mode to get matching completions printed below the command line:\n${cyan('Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete')}`
       }
 
       this.log(`
-${chalk.bold(`Setup Instructions for ${bin.toUpperCase()} CLI Autocomplete ---`)}
+${bold(`Setup Instructions for ${bin.toUpperCase()} CLI Autocomplete ---`)}
 
 1) Add the autocomplete ${shell === 'powershell' ? 'file' : 'env var'} to your ${shell} profile and source it
 
-${chalk.cyan(instructions)}
+${cyan(instructions)}
 
-${chalk.bold('NOTE')}: ${note}
+${bold('NOTE')}: ${note}
 
 2) Test it out, e.g.:
-${chalk.cyan(`$ ${bin} ${tabStr}`)}                 # Command completion
-${chalk.cyan(`$ ${bin} command --${tabStr}`)}       # Flag completion
+${cyan(`$ ${bin} ${tabStr}`)}                 # Command completion
+${cyan(`$ ${bin} command --${tabStr}`)}       # Flag completion
 
 Enjoy!
 `)

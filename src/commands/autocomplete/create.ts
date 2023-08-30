@@ -1,7 +1,5 @@
 import * as path from 'path'
-
-import * as fs from 'fs-extra'
-
+import {mkdir, writeFile} from 'fs/promises'
 import bashAutocomplete from '../../autocomplete/bash'
 import ZshCompWithSpaces from '../../autocomplete/zsh'
 import PowerShellComp from '../../autocomplete/powershell'
@@ -42,32 +40,29 @@ export default class Create extends AutocompleteBase {
   }
 
   private async ensureDirs() {
-    // ensure autocomplete cache dir
-    await fs.ensureDir(this.autocompleteCacheDir)
-    // ensure autocomplete bash function dir
-    await fs.ensureDir(this.bashFunctionsDir)
-    // ensure autocomplete zsh function dir
-    await fs.ensureDir(this.zshFunctionsDir)
-    // ensure autocomplete powershell function dir
-    await fs.ensureDir(this.pwshFunctionsDir)
+    // ensure autocomplete cache dir before doing the children
+    await mkdir(this.autocompleteCacheDir, {recursive: true})
+    await Promise.all([
+      mkdir(this.bashFunctionsDir, {recursive: true}),
+      mkdir(this.zshFunctionsDir, {recursive: true}),
+      mkdir(this.pwshFunctionsDir, {recursive: true}),
+    ])
   }
 
   private async createFiles() {
-    await fs.writeFile(this.bashSetupScriptPath, this.bashSetupScript)
-    await fs.writeFile(this.bashCompletionFunctionPath, this.bashCompletionFunction)
-    await fs.writeFile(this.zshSetupScriptPath, this.zshSetupScript)
-
     // zsh
     const supportSpaces = this.config.topicSeparator === ' '
 
-    if (process.env.OCLIF_AUTOCOMPLETE_TOPIC_SEPARATOR === 'colon' || !supportSpaces) {
-      await fs.writeFile(this.zshCompletionFunctionPath, this.zshCompletionFunction)
-    } else {
-      const zshCompWithSpaces = new ZshCompWithSpaces(this.config)
-      await fs.writeFile(this.zshCompletionFunctionPath, zshCompWithSpaces.generate())
-      const pwshComp = new PowerShellComp(this.config)
-      await fs.writeFile(this.pwshCompletionFunctionPath, pwshComp.generate())
-    }
+    await Promise.all([
+      writeFile(this.bashSetupScriptPath, this.bashSetupScript),
+      writeFile(this.bashCompletionFunctionPath, this.bashCompletionFunction),
+      writeFile(this.zshSetupScriptPath, this.zshSetupScript),
+    ].concat(process.env.OCLIF_AUTOCOMPLETE_TOPIC_SEPARATOR === 'colon' || !supportSpaces ? [
+      writeFile(this.zshCompletionFunctionPath, this.zshCompletionFunction),
+    ] : [
+      writeFile(this.zshCompletionFunctionPath, new ZshCompWithSpaces(this.config).generate()),
+      writeFile(this.pwshCompletionFunctionPath, new PowerShellComp(this.config).generate()),
+    ]))
   }
 
   private get bashSetupScriptPath(): string {

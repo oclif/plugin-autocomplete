@@ -1,7 +1,7 @@
 import {Config} from '@oclif/core'
 import * as Chai from 'chai'
 import * as path from 'path'
-import * as fs from 'fs-extra'
+import * as fs from 'fs'
 import * as Sinon from 'sinon'
 import * as SinonChai from 'sinon-chai'
 
@@ -26,7 +26,7 @@ describe('AutocompleteBase', () => {
   let fsOpenSyncStub: Sinon.SinonStub
 
   before(() => {
-    fsWriteStub = Sinon.stub(fs, 'write')
+    fsWriteStub = Sinon.stub(fs, 'writeSync')
     fsOpenSyncStub = Sinon.stub(fs, 'openSync').returns(7)
   })
 
