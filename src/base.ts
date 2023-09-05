@@ -1,5 +1,5 @@
 import {Command} from '@oclif/core'
-import * as fs from 'fs-extra'
+import {openSync, writeSync, mkdirSync} from 'fs'
 import * as path from 'path'
 
 export abstract class AutocompleteBase extends Command {
@@ -30,9 +30,10 @@ export abstract class AutocompleteBase extends Command {
   }
 
   writeLogFile(msg: string) {
+    mkdirSync(this.config.cacheDir, {recursive: true})
     const entry = `[${(new Date()).toISOString()}] ${msg}\n`
-    const fd = fs.openSync(this.acLogfilePath, 'a')
-    fs.write(fd, entry)
+    const fd = openSync(this.acLogfilePath, 'a')
+    writeSync(fd, entry)
   }
 
   private isBashOnWindows(shell: string) {

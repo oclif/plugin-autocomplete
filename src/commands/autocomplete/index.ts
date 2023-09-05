@@ -1,10 +1,23 @@
 import {Args, ux, Flags} from '@oclif/core'
 import {EOL} from 'os'
-import * as chalk from 'chalk'
+import chalk from 'chalk'
 
 import {AutocompleteBase} from '../../base'
 
 import Create from './create'
+
+const noteFromShell = (shell: string) => {
+  switch (shell) {
+  case 'zsh':
+    return `After sourcing, you can run \`${chalk.cyan('$ compaudit -D')}\` to ensure no permissions conflicts are present`
+  case 'bash':
+    return  'If your terminal starts as a login shell you may need to print the init script into ~/.bash_profile or ~/.profile.'
+  case 'powershell':
+    return `Use the \`MenuComplete\` mode to get matching completions printed below the command line:\n${chalk.cyan('Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete')}`
+  default:
+    return ''
+  }
+}
 
 export default class Index extends AutocompleteBase {
   static description = 'display autocomplete installation instructions'
@@ -50,18 +63,7 @@ export default class Index extends AutocompleteBase {
 Add-Content -Path $PROFILE -Value (Invoke-Expression -Command "${bin} autocomplete${this.config.topicSeparator}script ${shell}"); .$PROFILE` :
         `$ printf "eval $(${bin} autocomplete${this.config.topicSeparator}script ${shell})" >> ~/.${shell}rc; source ~/.${shell}rc`
 
-      let note = ''
-
-      switch (shell) {
-      case 'zsh':
-        note = `After sourcing, you can run \`${chalk.cyan('$ compaudit -D')}\` to ensure no permissions conflicts are present`
-        break
-      case 'bash':
-        note = 'If your terminal starts as a login shell you may need to print the init script into ~/.bash_profile or ~/.profile.'
-        break
-      case 'powershell':
-        note = `Use the \`MenuComplete\` mode to get matching completions printed below the command line:\n${chalk.cyan('Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete')}`
-      }
+      const note = noteFromShell(shell)
 
       this.log(`
 ${chalk.bold(`Setup Instructions for ${bin.toUpperCase()} CLI Autocomplete ---`)}
@@ -81,3 +83,4 @@ Enjoy!
     }
   }
 }
+
