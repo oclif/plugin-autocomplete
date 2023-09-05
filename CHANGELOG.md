@@ -1,3 +1,12 @@
+## [2.3.8](https://github.com/oclif/plugin-autocomplete/compare/2.3.7...2.3.8) (2023-09-05)
+
+
+### Bug Fixes
+
+* remove fs-extra ([7ad7356](https://github.com/oclif/plugin-autocomplete/commit/7ad7356fe80bdf3ed572a11fc34cb356f3a1c943))
+
+
+
 ## [2.3.7](https://github.com/oclif/plugin-autocomplete/compare/2.3.6...2.3.7) (2023-09-03)
 
 
