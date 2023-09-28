@@ -1,3 +1,12 @@
+## [2.3.9](https://github.com/oclif/plugin-autocomplete/compare/2.3.8...2.3.9) (2023-09-28)
+
+
+### Bug Fixes
+
+* **deps:** bump get-func-name from 2.0.0 to 2.0.2 ([762f264](https://github.com/oclif/plugin-autocomplete/commit/762f26444a9d14cd434a1704c0d6e02b25e39ada))
+
+
+
 ## [2.3.8](https://github.com/oclif/plugin-autocomplete/compare/2.3.7...2.3.8) (2023-09-05)
 
 
