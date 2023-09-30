@@ -468,13 +468,13 @@
     lodash "^4.17.21"
     semver "^7.5.4"
 
-"@oclif/test@^2.5.5":
-  version "2.5.5"
-  resolved "https://registry.yarnpkg.com/@oclif/test/-/test-2.5.5.tgz#9c925872e306241d29a2ceec898d134dd183e5ac"
-  integrity sha512-IJV9vkshHjvtaQIFauBdF2E+OEr9YRzTuBNS8TtZ+hZQpExkNXrDh2t+hEVTSH5LExBzZqxObRDdGeAg2by0ig==
+"@oclif/test@^2.5.6":
+  version "2.5.6"
+  resolved "https://registry.yarnpkg.com/@oclif/test/-/test-2.5.6.tgz#454ae74260123f1436babbda8f93223079f3b66c"
+  integrity sha512-AcusFApdU6/akXaofhBDrY4IM9uYzlOD9bYCCM0NwUXOv1m6320hSp2DT/wkj9H1gsvKbJXZHqgtXsNGZTWLFg==
   dependencies:
     "@oclif/core" "^2.15.0"
-    fancy-test "^2.0.41"
+    fancy-test "^2.0.42"
 
 "@octokit/auth-token@^2.4.4":
   version "2.5.0"
@@ -1942,7 +1942,7 @@ external-editor@^3.0.3:
     iconv-lite "^0.4.24"
     tmp "^0.0.33"
 
-fancy-test@^2.0.41:
+fancy-test@^2.0.42:
   version "2.0.42"
   resolved "https://registry.yarnpkg.com/fancy-test/-/fancy-test-2.0.42.tgz#464cf51037a4ff3111d1ca34305a3125df198bc5"
   integrity sha512-TX8YTALYAmExny+f+G24MFxWry3Pk09+9uykwRjfwjibRxJ9ZjJzrnHYVBZK46XQdyli7d+rQc5U/KK7V6uLsw==
