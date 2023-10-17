@@ -1,3 +1,12 @@
+## [2.3.10](https://github.com/oclif/plugin-autocomplete/compare/2.3.9...2.3.10) (2023-10-17)
+
+
+### Bug Fixes
+
+* **deps:** bump @babel/traverse from 7.10.3 to 7.23.2 ([07ee85b](https://github.com/oclif/plugin-autocomplete/commit/07ee85bc3c5bb4673d2eb539d16f85c85910267f))
+
+
+
 ## [2.3.9](https://github.com/oclif/plugin-autocomplete/compare/2.3.8...2.3.9) (2023-09-28)
 
 
