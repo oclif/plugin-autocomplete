@@ -2,14 +2,14 @@
 import {expect, test} from '@oclif/test'
 
 // autocomplete will throw error on windows ci
-const {default: skipWindows} = require('../../helpers/runtest')
+import {default as skipWindows} from '../../helpers/runtest.js'
 
 skipWindows('autocomplete index', () => {
   test
-  .stdout()
-  .command(['autocomplete', 'bash'])
-  .it('provides bash instructions', ctx => {
-    expect(ctx.stdout).to.contain(`
+    .stdout()
+    .command(['autocomplete', 'bash'])
+    .it('provides bash instructions', (ctx) => {
+      expect(ctx.stdout).to.contain(`
 Setup Instructions for OCLIF-EXAMPLE CLI Autocomplete ---
 
 1) Add the autocomplete env var to your bash profile and source it
@@ -24,15 +24,14 @@ $ oclif-example command --<TAB><TAB>       # Flag completion
 
 Enjoy!
 
-`,
-    )
-  })
+`)
+    })
 
   test
-  .stdout()
-  .command(['autocomplete', 'zsh'])
-  .it('provides zsh instructions', ctx => {
-    expect(ctx.stdout).to.contain(`
+    .stdout()
+    .command(['autocomplete', 'zsh'])
+    .it('provides zsh instructions', (ctx) => {
+      expect(ctx.stdout).to.contain(`
 Setup Instructions for OCLIF-EXAMPLE CLI Autocomplete ---
 
 1) Add the autocomplete env var to your zsh profile and source it
@@ -47,7 +46,6 @@ $ oclif-example command --<TAB>       # Flag completion
 
 Enjoy!
 
-`,
-    )
-  })
+`)
+    })
 })

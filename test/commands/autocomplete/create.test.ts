@@ -1,15 +1,16 @@
 import {Config, Plugin} from '@oclif/core'
-import {loadJSON} from '@oclif/core/lib/config/util'
+import {readJson} from '@oclif/core/lib/util/fs.js'
 import {expect} from 'chai'
-import * as path from 'path'
+import * as path from 'node:path'
+import {fileURLToPath} from 'node:url'
 
-import Create from '../../../src/commands/autocomplete/create'
+import Create from '../../../src/commands/autocomplete/create.js'
 
-const root = path.resolve(__dirname, '../../../package.json')
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../package.json')
 const config = new Config({root})
 
 // autocomplete will throw error on windows ci
-const {default: skipWindows} = require('../../helpers/runtest')
+import {default as skipWindows} from '../../helpers/runtest.js'
 
 skipWindows('Create', () => {
   // Unit test private methods for extra coverage
@@ -21,9 +22,8 @@ skipWindows('Create', () => {
       cmd = new Create([], config)
       plugin = new Plugin({root})
       cmd.config.plugins = [plugin]
-      plugin._manifest = () => {
-        return loadJSON(path.resolve(__dirname, '../../test.oclif.manifest.json'))
-      }
+      plugin._manifest = () =>
+        readJson(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../test.oclif.manifest.json'))
       await plugin.load()
     })
 
@@ -36,7 +36,9 @@ skipWindows('Create', () => {
     })
 
     it('#bashSetupScript', () => {
-      expect(cmd.bashSetupScript).to.eq(`OCLIF_EXAMPLE_AC_BASH_COMPFUNC_PATH=${config.cacheDir}/autocomplete/functions/bash/oclif-example.bash && test -f $OCLIF_EXAMPLE_AC_BASH_COMPFUNC_PATH && source $OCLIF_EXAMPLE_AC_BASH_COMPFUNC_PATH;\n`)
+      expect(cmd.bashSetupScript).to.eq(
+        `OCLIF_EXAMPLE_AC_BASH_COMPFUNC_PATH=${config.cacheDir}/autocomplete/functions/bash/oclif-example.bash && test -f $OCLIF_EXAMPLE_AC_BASH_COMPFUNC_PATH && source $OCLIF_EXAMPLE_AC_BASH_COMPFUNC_PATH;\n`,
+      )
     })
 
     it('#bashSetupScript wiht more than one dash', async () => {
@@ -44,7 +46,9 @@ skipWindows('Create', () => {
       await confitWithDash.load()
       confitWithDash.bin = 'oclif-cli-example'
       const cmdWithDash: any = new Create([], confitWithDash)
-      expect(cmdWithDash.bashSetupScript).to.eq(`OCLIF_CLI_EXAMPLE_AC_BASH_COMPFUNC_PATH=${config.cacheDir}/autocomplete/functions/bash/oclif-cli-example.bash && test -f $OCLIF_CLI_EXAMPLE_AC_BASH_COMPFUNC_PATH && source $OCLIF_CLI_EXAMPLE_AC_BASH_COMPFUNC_PATH;\n`)
+      expect(cmdWithDash.bashSetupScript).to.eq(
+        `OCLIF_CLI_EXAMPLE_AC_BASH_COMPFUNC_PATH=${config.cacheDir}/autocomplete/functions/bash/oclif-cli-example.bash && test -f $OCLIF_CLI_EXAMPLE_AC_BASH_COMPFUNC_PATH && source $OCLIF_CLI_EXAMPLE_AC_BASH_COMPFUNC_PATH;\n`,
+      )
     })
 
     it('#zshSetupScript', () => {
@@ -105,9 +109,8 @@ complete -o default -F _oclif-example_autocomplete oclif-example\n`)
       const spacedCmd: any = new Create([], spacedConfig)
       const spacedPlugin: any = new Plugin({root})
       spacedCmd.config.plugins = [spacedPlugin]
-      spacedPlugin._manifest = () => {
-        return loadJSON(path.resolve(__dirname, '../../test.oclif.manifest.json'))
-      }
+      spacedPlugin._manifest = () =>
+        readJson(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../test.oclif.manifest.json'))
       await spacedPlugin.load()
 
       expect(spacedCmd.bashCompletionFunction).to.eq(`#!/usr/bin/env bash

@@ -1,14 +1,22 @@
 import {Command} from '@oclif/core'
-import {openSync, writeSync, mkdirSync} from 'fs'
-import * as path from 'path'
+import {mkdirSync, openSync, writeSync} from 'node:fs'
+import * as path from 'node:path'
 
 export abstract class AutocompleteBase extends Command {
+  public get acLogfilePath(): string {
+    return path.join(this.config.cacheDir, 'autocomplete.log')
+  }
+
+  public get autocompleteCacheDir(): string {
+    return path.join(this.config.cacheDir, 'autocomplete')
+  }
+
   public get cliBin() {
     return this.config.bin
   }
 
   public get cliBinEnvVar() {
-    return this.config.bin.toUpperCase().replace(/-/g, '_')
+    return this.config.bin.toUpperCase().replaceAll('-', '_')
   }
 
   public determineShell(shell: string) {
@@ -21,17 +29,9 @@ export abstract class AutocompleteBase extends Command {
     }
   }
 
-  public get autocompleteCacheDir(): string {
-    return path.join(this.config.cacheDir, 'autocomplete')
-  }
-
-  public get acLogfilePath(): string {
-    return path.join(this.config.cacheDir, 'autocomplete.log')
-  }
-
   writeLogFile(msg: string) {
     mkdirSync(this.config.cacheDir, {recursive: true})
-    const entry = `[${(new Date()).toISOString()}] ${msg}\n`
+    const entry = `[${new Date().toISOString()}] ${msg}\n`
     const fd = openSync(this.acLogfilePath, 'a')
     writeSync(fd, entry)
   }

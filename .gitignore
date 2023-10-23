@@ -8,3 +8,6 @@
 node_modules
 .idea/
 .vscode/
+
+oclif.lock
+oclif.manifest.json
