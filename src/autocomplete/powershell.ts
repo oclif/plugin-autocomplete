@@ -288,7 +288,7 @@ Register-ArgumentCompleter -Native -CommandName ${
         // skip hidden flags
         if (f.hidden) continue
 
-        const flagSummary = this.sanitizeSummary(f.summary || f.description)
+        const flagSummary = this.sanitizeSummary(f.summary ?? f.description)
 
         if (f.type === 'option' && f.multiple) {
           flaghHashtables.push(
