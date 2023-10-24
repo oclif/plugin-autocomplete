@@ -3,7 +3,7 @@ name: failureNotifications
 on:
   workflow_run:
     workflows:
-      - version, tag and github release
+      - create-github-release
       - publish
     types:
       - completed
