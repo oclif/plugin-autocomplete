@@ -54,7 +54,7 @@ export default class Index extends AutocompleteBase {
 
   async run() {
     const {args, flags} = await this.parse(Index)
-    const shell = args.shell || this.determineShell(this.config.shell)
+    const shell = args.shell ?? this.determineShell(this.config.shell)
 
     if (shell === 'powershell' && this.config?.topicSeparator === ':') {
       this.error(

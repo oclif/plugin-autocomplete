@@ -101,7 +101,7 @@ export default class Create extends AutocompleteBase {
       for (const c of p.commands) {
         try {
           if (c.hidden) continue
-          const description = sanitizeDescription(c.summary || c.description || '')
+          const description = sanitizeDescription(c.summary ?? (c.description || ''))
           const {flags} = c
           cmds.push({
             description,

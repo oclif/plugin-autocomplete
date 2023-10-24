@@ -18,7 +18,7 @@ export default class Script extends AutocompleteBase {
 
   async run() {
     const {args} = await this.parse(Script)
-    const shell = args.shell || this.config.shell
+    const shell = args.shell ?? this.config.shell
 
     const binUpcase = this.cliBinEnvVar
     const shellUpcase = shell.toUpperCase()

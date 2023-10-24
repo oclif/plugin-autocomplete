@@ -143,7 +143,7 @@ _${this.config.bin}
       // skip hidden flags
       if (f.hidden) continue
 
-      const flagSummary = this.sanitizeSummary(f.summary || f.description)
+      const flagSummary = this.sanitizeSummary(f.summary ?? f.description)
 
       let flagSpec = ''
 
@@ -338,7 +338,7 @@ _${this.config.bin}
     for (const p of this.config.getPluginsList()) {
       for (const c of p.commands) {
         if (c.hidden) continue
-        const summary = this.sanitizeSummary(c.summary || c.description)
+        const summary = this.sanitizeSummary(c.summary ?? c.description)
         const {flags} = c
         cmds.push({
           flags,
