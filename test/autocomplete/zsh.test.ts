@@ -1,33 +1,53 @@
-import {Config, Command} from '@oclif/core'
-import * as path from 'path'
-import {Plugin as IPlugin} from '@oclif/core/lib/interfaces'
+import {Command, Config} from '@oclif/core'
+import {Deprecation, Plugin as IPlugin} from '@oclif/core/lib/interfaces'
 import {expect} from 'chai'
-import ZshCompWithSpaces from '../../src/autocomplete/zsh'
+import * as path from 'node:path'
+import {fileURLToPath} from 'node:url'
 
+import ZshCompWithSpaces from '../../src/autocomplete/zsh.js'
 // autocomplete will throw error on windows ci
-const {default: skipWindows} = require('../helpers/runtest')
+import {default as skipWindows} from '../helpers/runtest.js'
 
 class MyCommandClass implements Command.Cached {
-  [key: string]: unknown;
-
+  [key: string]: unknown
+  aliases: string[] = []
+  aliasPermutations?: string[] | undefined
   args: {[name: string]: Command.Arg.Cached} = {}
+  deprecateAliases?: boolean | undefined
+  deprecationOptions?: Deprecation | undefined
+  description?: string | undefined
+  examples?: Command.Example[] | undefined
+  flags = {}
+  hasDynamicHelp?: boolean | undefined
+  hidden = false
+  hiddenAliases!: string[]
+  id = 'foo:bar'
+  isESM?: boolean | undefined
+  permutations?: string[] | undefined
+  pluginAlias?: string | undefined
+  pluginName?: string | undefined
+  pluginType?: string | undefined
+  relativePath?: string[] | undefined
+
+  state?: string | undefined
+
+  strict?: boolean | undefined
+
+  summary?: string | undefined
+
+  type?: string | undefined
+
+  usage?: string | string[] | undefined
 
   _base = ''
-
-  aliases: string[] = []
-
-  hidden = false
-
-  id = 'foo:bar'
-
-  flags = {}
 
   new(): Command.Cached {
     // @ts-expect-error this is not the full interface but enough for testing
     return {
       _run(): Promise<any> {
         return Promise.resolve()
-      }}
+      },
+    }
   }
 
   run(): PromiseLike<any> {
@@ -36,135 +56,148 @@ class MyCommandClass implements Command.Cached {
 }
 
 const commandPluginA: Command.Loadable = {
-  strict: false,
   aliases: [],
   args: {},
   flags: {
-    metadata: {
-      name: 'metadata',
-      type: 'option',
-      char: 'm',
-      multiple: true,
-    },
     'api-version': {
-      name: 'api-version',
-      type: 'option',
       char: 'a',
       multiple: false,
-    },
-    json: {
-      name: 'json',
-      type: 'boolean',
-      summary: 'Format output as json.',
-      allowNo: false,
+      name: 'api-version',
+      type: 'option',
     },
     'ignore-errors': {
-      name: 'ignore-errors',
-      type: 'boolean',
-      char: 'i',
-      summary: 'Ignore errors.',
       allowNo: false,
+      char: 'i',
+      name: 'ignore-errors',
+      summary: 'Ignore errors.',
+      type: 'boolean',
+    },
+    json: {
+      allowNo: false,
+      name: 'json',
+      summary: 'Format output as json.',
+      type: 'boolean',
+    },
+    metadata: {
+      char: 'm',
+      multiple: true,
+      name: 'metadata',
+      type: 'option',
     },
   },
   hidden: false,
+  hiddenAliases: [],
   id: 'deploy',
-  summary: 'Deploy a project',
   async load(): Promise<Command.Class> {
     return new MyCommandClass() as unknown as Command.Class
   },
-  pluginType: 'core',
   pluginAlias: '@My/plugina',
+  pluginType: 'core',
+  strict: false,
+  summary: 'Deploy a project',
 }
 
 const commandPluginB: Command.Loadable = {
-  strict: false,
   aliases: [],
   args: {},
   flags: {
     branch: {
-      name: 'branch',
-      type: 'option',
       char: 'b',
       multiple: false,
+      name: 'branch',
+      type: 'option',
     },
   },
   hidden: false,
+  hiddenAliases: [],
   id: 'deploy:functions',
-  summary: 'Deploy a function.',
   async load(): Promise<Command.Class> {
     return new MyCommandClass() as unknown as Command.Class
   },
-  pluginType: 'core',
   pluginAlias: '@My/pluginb',
+  pluginType: 'core',
+  strict: false,
+  summary: 'Deploy a function.',
 }
 
 const commandPluginC: Command.Loadable = {
-  strict: false,
   aliases: [],
   args: {},
   flags: {},
   hidden: false,
+  hiddenAliases: [],
   id: 'search',
-  summary: 'Search for a command',
   async load(): Promise<Command.Class> {
     return new MyCommandClass() as unknown as Command.Class
   },
-  pluginType: 'core',
   pluginAlias: '@My/pluginc',
+  pluginType: 'core',
+  strict: false,
+  summary: 'Search for a command',
 }
 
 const commandPluginD: Command.Loadable = {
-  strict: false,
   aliases: [],
   args: {},
   flags: {},
   hidden: false,
+  hiddenAliases: [],
   id: 'app:execute:code',
-  summary: 'execute code',
   async load(): Promise<Command.Class> {
     return new MyCommandClass() as unknown as Command.Class
   },
-  pluginType: 'core',
   pluginAlias: '@My/plugind',
+  pluginType: 'core',
+  strict: false,
+  summary: 'execute code',
 }
 
 const pluginA: IPlugin = {
-  load: async (): Promise<void> => {},
-  findCommand: async (): Promise<Command.Class> => {
+  _base: '',
+  alias: '@My/plugina',
+  commandIDs: ['deploy'],
+  commands: [commandPluginA, commandPluginB, commandPluginC, commandPluginD],
+  async findCommand(): Promise<Command.Class> {
     return new MyCommandClass() as unknown as Command.Class
   },
-  name: '@My/plugina',
-  alias: '@My/plugina',
-  commands: [commandPluginA, commandPluginB, commandPluginC, commandPluginD],
-  _base: '',
-  pjson: {} as any,
-  commandIDs: ['deploy'],
-  root: '',
-  version: '0.0.0',
-  type: 'core',
+  hasManifest: false,
   hooks: {},
-  topics: [{
-    name: 'foo',
-    description: 'foo commands',
-  }],
-  valid: true,
+  isRoot: false,
+  async load(): Promise<void> {},
+  moduleType: 'commonjs',
+  name: '@My/plugina',
+  options: {
+    root: '',
+  },
+  pjson: {} as any,
+  root: '',
   tag: 'tag',
+  topics: [
+    {
+      description: 'foo commands',
+      name: 'foo',
+    },
+  ],
+  type: 'core',
+  valid: true,
+  version: '0.0.0',
 }
 
 const plugins: IPlugin[] = [pluginA]
 
 skipWindows('zsh comp', () => {
   describe('zsh completion with spaces', () => {
-    const root = path.resolve(__dirname, '../../package.json')
+    const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../package.json')
     const config = new Config({root})
 
     before(async () => {
       await config.load()
-      /* eslint-disable require-atomic-updates */
-      config.plugins = plugins
+
+      for (const plugin of plugins) config.plugins.set(plugin.name, plugin)
+      config.plugins.delete('@oclif/plugin-autocomplete')
       config.pjson.oclif.plugins = ['@My/pluginb']
       config.pjson.dependencies = {'@My/pluginb': '0.0.0'}
-      for (const plugin of config.plugins) {
+      for (const plugin of config.getPluginsList()) {
         // @ts-expect-error private method
         config.loadCommands(plugin)
         // @ts-expect-error private method
@@ -232,10 +265,10 @@ _test-cli_deploy() {
     typeset -A opt_args
 
     _arguments -S \\
-"*"{-m,--metadata}"[]:file:_files" \\
 "(-a --api-version)"{-a,--api-version}"[]:file:_files" \\
---json"[Format output as json.]" \\
 "(-i --ignore-errors)"{-i,--ignore-errors}"[Ignore errors.]" \\
+--json"[Format output as json.]" \\
+"*"{-m,--metadata}"[]:file:_files" \\
 --help"[Show help for command]" \\
 "*: :_files"
   }
@@ -365,10 +398,10 @@ _test-cli_deploy() {
     typeset -A opt_args
 
     _arguments -S \\
-"*"{-m,--metadata}"[]:file:_files" \\
 "(-a --api-version)"{-a,--api-version}"[]:file:_files" \\
---json"[Format output as json.]" \\
 "(-i --ignore-errors)"{-i,--ignore-errors}"[Ignore errors.]" \\
+--json"[Format output as json.]" \\
+"*"{-m,--metadata}"[]:file:_files" \\
 --help"[Show help for command]" \\
 "*: :_files"
   }
@@ -499,10 +532,10 @@ _test-cli_deploy() {
     typeset -A opt_args
 
     _arguments -S \\
-"*"{-m,--metadata}"[]:file:_files" \\
 "(-a --api-version)"{-a,--api-version}"[]:file:_files" \\
---json"[Format output as json.]" \\
 "(-i --ignore-errors)"{-i,--ignore-errors}"[Ignore errors.]" \\
+--json"[Format output as json.]" \\
+"*"{-m,--metadata}"[]:file:_files" \\
 --help"[Show help for command]" \\
 "*: :_files"
   }

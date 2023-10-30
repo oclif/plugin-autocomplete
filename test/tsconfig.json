@@ -1,12 +1,4 @@
 {
-  "declaration": false,
   "extends": "../tsconfig",
-  "compilerOptions": {
-    "sourceMap": true,
-    "esModuleInterop": true
-  },
-  "include": [
-    "./**/*",
-    "../src/**/*"
-  ]
+  "include": ["./**/*", "../src/**/*"]
 }

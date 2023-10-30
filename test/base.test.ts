@@ -1,9 +1,10 @@
 import {Config} from '@oclif/core'
 import {expect} from 'chai'
-import * as path from 'path'
-import {readFile, rm} from 'fs/promises'
+import {readFile, rm} from 'node:fs/promises'
+import * as path from 'node:path'
+import {fileURLToPath} from 'node:url'
 
-import {AutocompleteBase} from '../src/base'
+import {AutocompleteBase} from '../src/base.js'
 
 class AutocompleteTest extends AutocompleteBase {
   async run() {
@@ -11,7 +12,7 @@ class AutocompleteTest extends AutocompleteBase {
   }
 }
 
-const root = path.resolve(__dirname, '../package.json')
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../package.json')
 const config = new Config({root})
 
 const cmd = new AutocompleteTest([], config)
@@ -21,7 +22,7 @@ describe('AutocompleteBase', () => {
     await config.load()
   })
 
-  it('#convertWindowsBash',  () => {
+  it('#convertWindowsBash', () => {
     expect(cmd.determineShell('bash')).to.eq('bash')
     expect(cmd.determineShell('zsh')).to.eq('zsh')
     expect(cmd.determineShell('fish')).to.eq('fish')
@@ -31,7 +32,7 @@ describe('AutocompleteBase', () => {
     }).to.throw()
   })
 
-  it('#autocompleteCacheDir',  () => {
+  it('#autocompleteCacheDir', () => {
     expect(cmd.autocompleteCacheDir).to.eq(path.join(config.cacheDir, 'autocomplete'))
   })
 

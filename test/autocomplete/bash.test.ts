@@ -1,17 +1,18 @@
 import {Config, Command} from '@oclif/core'
-import * as path from 'path'
+import * as path from 'node:path'
 import {Plugin as IPlugin} from '@oclif/core/lib/interfaces'
 import {expect} from 'chai'
-import Create from '../../src/commands/autocomplete/create'
+import Create from '../../src/commands/autocomplete/create.js'
 
 // autocomplete will throw error on windows ci
-const {default: skipWindows} = require('../helpers/runtest')
+import {default as skipWindows} from '../helpers/runtest.js'
+import {fileURLToPath} from 'node:url'
 
 class MyCommandClass implements Command.Cached {
-  [key: string]: unknown;
+  [key: string]: unknown
 
   args: {[name: string]: Command.Arg.Cached} = {}
-
+  hiddenAliases!: string[]
   _base = ''
 
   aliases: string[] = []
@@ -27,7 +28,8 @@ class MyCommandClass implements Command.Cached {
     return {
       _run(): Promise<any> {
         return Promise.resolve()
-      }}
+      },
+    }
   }
 
   run(): PromiseLike<any> {
@@ -39,6 +41,7 @@ const commandPluginA: Command.Loadable = {
   strict: false,
   aliases: [],
   args: {},
+  hiddenAliases: [],
   flags: {
     metadata: {
       name: 'metadata',
@@ -79,6 +82,7 @@ const commandPluginA: Command.Loadable = {
 const commandPluginB: Command.Loadable = {
   strict: false,
   aliases: [],
+  hiddenAliases: [],
   args: {},
   flags: {
     branch: {
@@ -111,11 +115,13 @@ const commandPluginC: Command.Loadable = {
   },
   pluginType: 'core',
   pluginAlias: '@My/pluginc',
+  hiddenAliases: [],
 }
 
 const commandPluginD: Command.Loadable = {
   strict: false,
   aliases: [],
+  hiddenAliases: [],
   args: {},
   flags: {},
   hidden: false,
@@ -143,28 +149,33 @@ const pluginA: IPlugin = {
   version: '0.0.0',
   type: 'core',
   hooks: {},
-  topics: [{
-    name: 'foo',
-    description: 'foo commands',
-  }],
+  topics: [
+    {
+      name: 'foo',
+      description: 'foo commands',
+    },
+  ],
   valid: true,
   tag: 'tag',
+  moduleType: 'commonjs',
+  options: {root: ''},
+  isRoot: false,
+  hasManifest: true,
 }
 
 const plugins: IPlugin[] = [pluginA]
 
 skipWindows('bash comp', () => {
   describe('bash completion', () => {
-    const root = path.resolve(__dirname, '../../package.json')
+    const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../package.json')
     const config = new Config({root})
 
     before(async () => {
       await config.load()
-      /* eslint-disable require-atomic-updates */
-      config.plugins = plugins
+      for (const plugin of plugins) config.plugins.set(plugin.name, plugin)
       config.pjson.oclif.plugins = ['@My/pluginb']
       config.pjson.dependencies = {'@My/pluginb': '0.0.0'}
-      for (const plugin of config.plugins) {
+      for (const plugin of config.getPluginsList()) {
         // @ts-expect-error private method
         config.loadCommands(plugin)
         // @ts-expect-error private method
@@ -187,6 +198,7 @@ _test-cli_autocomplete()
   COMPREPLY=()
 
   local commands="
+autocomplete --refresh-cache
 deploy --metadata --api-version --json --ignore-errors
 deploy:functions --branch
 ${'search '}
@@ -230,6 +242,7 @@ _test-cli_autocomplete()
   COMPREPLY=()
 
   local commands="
+autocomplete --refresh-cache
 deploy --metadata --api-version --json --ignore-errors
 deploy:functions --branch
 ${'search '}
@@ -274,6 +287,7 @@ _test-cli_autocomplete()
   COMPREPLY=()
 
   local commands="
+autocomplete --refresh-cache
 deploy --metadata --api-version --json --ignore-errors
 deploy:functions --branch
 ${'search '}
