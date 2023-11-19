@@ -1043,10 +1043,10 @@
   dependencies:
     "@types/ms" "*"
 
-"@types/ejs@^3.1.4":
-  version "3.1.4"
-  resolved "https://registry.yarnpkg.com/@types/ejs/-/ejs-3.1.4.tgz#b9919c89767493b6443f85994ae6be6e49011b5c"
-  integrity sha512-fnM/NjByiWdSRJRrmGxgqOSAnmOnsvX1QcNYk5TVyIIj+7ZqOKMb9gQa4OIl/lil2w/8TiTWV+nz3q8yqxez/w==
+"@types/ejs@^3.1.5":
+  version "3.1.5"
+  resolved "https://registry.yarnpkg.com/@types/ejs/-/ejs-3.1.5.tgz#49d738257cc73bafe45c13cb8ff240683b4d5117"
+  integrity sha512-nv+GSx77ZtXiJzwKdsASqi+YQ5Z7vwHsTP0JY2SiQgjGckkBRKZnk8nIM+7oUZ1VCtuTz0+By4qVR7fqzp/Dfg==
 
 "@types/expect@^1.20.4":
   version "1.20.4"
