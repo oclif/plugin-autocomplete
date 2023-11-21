@@ -1,3 +1,9 @@
+## [3.0.2](https://github.com/oclif/plugin-autocomplete/compare/3.0.1...3.0.2) (2023-11-21)
+
+### Bug Fixes
+
+- bump oclif/core ([26c5395](https://github.com/oclif/plugin-autocomplete/commit/26c5395ae02df25f45c7eeb45a3c60b3aee46ae3))
+
 ## [3.0.1](https://github.com/oclif/plugin-autocomplete/compare/2.3.11-dev.1...3.0.1) (2023-10-30)
 
 ### Bug Fixes
