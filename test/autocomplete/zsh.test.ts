@@ -157,6 +157,7 @@ const pluginA: IPlugin = {
   alias: '@My/plugina',
   commandIDs: ['deploy'],
   commands: [commandPluginA, commandPluginB, commandPluginC, commandPluginD],
+  commandsDir: '',
   async findCommand(): Promise<Command.Class> {
     return new MyCommandClass() as unknown as Command.Class
   },

@@ -142,6 +142,7 @@ const pluginA: IPlugin = {
   name: '@My/plugina',
   alias: '@My/plugina',
   commands: [commandPluginA, commandPluginB, commandPluginC, commandPluginD],
+  commandsDir: '',
   _base: '',
   pjson: {} as any,
   commandIDs: ['deploy'],
