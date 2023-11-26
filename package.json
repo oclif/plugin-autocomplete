@@ -17,7 +17,7 @@
     "@oclif/test": "^3.1.2",
     "@types/chai": "^4",
     "@types/chalk": "^2.2.0",
-    "@types/debug": "^4.1.10",
+    "@types/debug": "^4.1.12",
     "@types/ejs": "^3.1.5",
     "@types/mocha": "^10.0.4",
     "@types/nock": "^11.1.0",
