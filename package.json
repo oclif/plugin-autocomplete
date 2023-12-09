@@ -37,7 +37,7 @@
     "oclif": "^4.0.4",
     "prettier": "^3.1.0",
     "shx": "^0.3.3",
-    "ts-node": "^10.9.1",
+    "ts-node": "^10.9.2",
     "typescript": "^5.3.2"
   },
   "engines": {
