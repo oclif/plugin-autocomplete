@@ -84,6 +84,13 @@ export default class ZshCompWithSpaces {
     return `#compdef ${this.config.bin}
 ${this.config.binAliases?.map((a) => `compdef ${a}=${this.config.bin}`).join('\n') ?? ''}
 
+_orgs(){
+  local completions
+  completions=($(sf autocomplete --orgs))
+    
+  _describe -t completions 'completions' completions && return 0
+}
+
 ${this.topics.map((t) => this.genZshTopicCompFun(t.name)).join('\n')}
 
 _${this.config.bin}() {
@@ -159,7 +166,11 @@ _${this.config.bin}
 
           flagSpec += `"[${flagSummary}]`
 
-          flagSpec += f.options ? `:${f.name} options:(${f.options?.join(' ')})"` : ':file:_files"'
+          flagSpec += f.options
+            ? `:${f.name} options:(${f.options?.join(' ')})"`
+            : f.name === 'target-org'
+              ? ':org:_orgs"'
+              : ':file:_files"'
         } else {
           if (f.multiple) {
             // this flag can be present multiple times on the line
@@ -168,7 +179,11 @@ _${this.config.bin}
 
           flagSpec += `--${f.name}"[${flagSummary}]:`
 
-          flagSpec += f.options ? `${f.name} options:(${f.options.join(' ')})"` : 'file:_files"'
+          flagSpec += f.options
+            ? `${f.name} options:(${f.options.join(' ')})"`
+            : f.name === 'target-org'
+              ? ':org:_orgs"'
+              : ':file:_files"'
         }
       } else if (f.char) {
         // Flag.Boolean

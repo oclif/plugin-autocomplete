@@ -224,6 +224,14 @@ export default class Create extends AutocompleteBase {
 
     return `#compdef ${cliBin}
 
+_orgs(){
+  local completions
+  completions=($(sf autocomplete --orgs))
+    
+  _describe -t completions 'completions' completions && return 0
+}
+    
+
 _${cliBin} () {
   local _command_id=\${words[2]}
   local _cur=\${words[CURRENT]}
