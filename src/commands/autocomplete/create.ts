@@ -1,4 +1,5 @@
 import makeDebug from 'debug'
+import {execSync} from 'node:child_process'
 import {mkdir, writeFile} from 'node:fs/promises'
 import * as path from 'node:path'
 
@@ -66,6 +67,7 @@ export default class Create extends AutocompleteBase {
         )
         .replaceAll('<CLI_BIN>', cliBin)
         .replaceAll('<BASH_COMMANDS_WITH_FLAGS_LIST>', this.bashCommandsWithFlagsList)
+        .replaceAll('<BASH_ORGS>', this.bashOrgs)
     )
   }
 
@@ -77,6 +79,10 @@ export default class Create extends AutocompleteBase {
   private get bashFunctionsDir(): string {
     // <cachedir>/autocomplete/functions/bash
     return path.join(this.autocompleteCacheDir, 'functions', 'bash')
+  }
+
+  private get bashOrgs(): string {
+    return this.orgs.join('\n')
   }
 
   private get bashSetupScript(): string {
@@ -204,6 +210,17 @@ export default class Create extends AutocompleteBase {
         return `"${completion}"`
       })
       .join('\n')
+  }
+
+  private get orgs(): string[] {
+    const orgsJson = JSON.parse(execSync('sf org list auth --json').toString())
+    const result: string[] = []
+    for (const element of orgsJson.result) {
+      if (element.alias) result.push(element.alias)
+      else result.push(element.username)
+    }
+
+    return result
   }
 
   private get pwshCompletionFunctionPath(): string {

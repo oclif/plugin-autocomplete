@@ -14,6 +14,28 @@ _<CLI_BIN>_autocomplete()
 <BASH_COMMANDS_WITH_FLAGS_LIST>
 "
 
+  local orgs="
+<BASH_ORGS>
+"
+  local targetOrgFlags=("--target-org" "-o")
+
+  function _isTargetOrgFlag(){
+    local value="$1"
+    for flag in "\${targetOrgFlags[@]}"; do
+      if [[ "$flag" == "$value" ]]; then
+        return 0 # value found
+      fi
+    done
+    return 1 # value not found
+  }
+
+  function _suggestOrgs(){
+    if [[ "$cur" != "-"* ]]; then
+      opts=$(printf "%s " "\${orgs[@]}" | grep -i "\${cur}")
+      COMPREPLY=($(compgen -W "$opts"))
+    fi
+  }
+
   function __trim_colon_commands()
   {
     # Turn $commands into an array
@@ -38,26 +60,31 @@ _<CLI_BIN>_autocomplete()
   }
 
   if [[ "$cur" != "-"* ]]; then
-    # Command
-    __COMP_WORDS=( "\${COMP_WORDS[@]:1}" )
-
-    # The command typed by the user but separated by colons (e.g. "mycli command subcom" -> "command:subcom")
-    normalizedCommand="$( printf "%s" "$(join_by ":" "\${__COMP_WORDS[@]}")" )"
-
-    # The command hirarchy, with colons, leading up to the last subcommand entered (e.g. "mycli com subcommand subsubcom" -> "com:subcommand:")
-    colonPrefix="\${normalizedCommand%"\${normalizedCommand##*:}"}"
-
-    if [[ -z "$normalizedCommand" ]]; then
-      # If there is no normalizedCommand yet the user hasn't typed in a full command
-      # So we should trim all subcommands & flags from $commands so we can suggest all top level commands
-      opts=$(printf "%s " "\${commands[@]}" | grep -Eo '^[a-zA-Z0-9_-]+')
+    if _isTargetOrgFlag "\${COMP_WORDS[COMP_CWORD-1]}"; then
+      _suggestOrgs
     else
-      # Filter $commands to just the ones that match the $normalizedCommand and turn into an array
-      commands=( $(compgen -W "$commands" -- "\${normalizedCommand}") )
-      # Trim higher level and subcommands from the subcommands to suggest
-      __trim_colon_commands "$colonPrefix"
 
-      opts=$(printf "%s " "\${commands[@]}") # | grep -Eo '^[a-zA-Z0-9_-]+'
+      # Command
+      __COMP_WORDS=( "\${COMP_WORDS[@]:1}" )
+
+      # The command typed by the user but separated by colons (e.g. "mycli command subcom" -> "command:subcom")
+      normalizedCommand="$( printf "%s" "$(join_by ":" "\${__COMP_WORDS[@]}")" )"
+
+      # The command hirarchy, with colons, leading up to the last subcommand entered (e.g. "mycli com subcommand subsubcom" -> "com:subcommand:")
+      colonPrefix="\${normalizedCommand%"\${normalizedCommand##*:}"}"
+
+      if [[ -z "$normalizedCommand" ]]; then
+        # If there is no normalizedCommand yet the user hasn't typed in a full command
+        # So we should trim all subcommands & flags from $commands so we can suggest all top level commands
+        opts=$(printf "%s " "\${commands[@]}" | grep -Eo '^[a-zA-Z0-9_-]+')
+      else
+        # Filter $commands to just the ones that match the $normalizedCommand and turn into an array
+        commands=( $(compgen -W "$commands" -- "\${normalizedCommand}") )
+        # Trim higher level and subcommands from the subcommands to suggest
+        __trim_colon_commands "$colonPrefix"
+
+        opts=$(printf "%s " "\${commands[@]}") # | grep -Eo '^[a-zA-Z0-9_-]+'
+      fi
     fi
   else 
     # Flag
@@ -69,9 +96,15 @@ _<CLI_BIN>_autocomplete()
     # The line below finds the command in $commands using grep
     # Then, using sed, it removes everything from the found command before the --flags (e.g. "command:subcommand:subsubcom --flag1 --flag2" -> "--flag1 --flag2")
     opts=$(printf "%s " "\${commands[@]}" | grep "\${normalizedCommand}" | sed -n "s/^\${normalizedCommand} //p")
+
+    if _isTargetOrgFlag "\${COMP_WORDS[COMP_CWORD]}"; then
+      _suggestOrgs
+    fi
   fi
 
-  COMPREPLY=($(compgen -W "$opts" -- "\${cur}"))
+  if [[ -z "$COMPREPLY" ]]; then
+    COMPREPLY=($(compgen -W "$opts" -- "\${cur}"))
+  fi
 }
 
 complete -F _<CLI_BIN>_autocomplete <CLI_BIN>
