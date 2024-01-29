@@ -1,6 +1,5 @@
 import {Args, Flags, ux} from '@oclif/core'
 import chalk from 'chalk'
-import {execSync} from 'node:child_process'
 import {EOL} from 'node:os'
 
 import {AutocompleteBase} from '../../base.js'
@@ -50,7 +49,6 @@ export default class Index extends AutocompleteBase {
   ]
 
   static flags = {
-    orgs: Flags.boolean({char: 'o', description: 'Get authenticated orgs'}),
     'refresh-cache': Flags.boolean({char: 'r', description: 'Refresh cache (ignores displaying instructions)'}),
   }
 
@@ -62,18 +60,6 @@ export default class Index extends AutocompleteBase {
       this.error(
         `PowerShell completion is not supported in CLIs using colon as the topic separator.${EOL}See: https://oclif.io/docs/topic_separator`,
       )
-    }
-
-    // Build the current list of authenticated orgs
-    if (flags.orgs) {
-      const orgsJson = JSON.parse(execSync('sf org list auth --json').toString())
-      let result: string = ''
-      for (const element of orgsJson.result) {
-        result += (element.alias ? element.alias + ':' + element.username : element.username + ':') + '\n'
-      }
-
-      this.log(result)
-      this.exit()
     }
 
     ux.action.start(`${chalk.bold('Building the autocomplete cache')}`)
