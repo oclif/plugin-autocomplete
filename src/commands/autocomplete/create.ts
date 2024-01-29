@@ -36,6 +36,8 @@ export default class Create extends AutocompleteBase {
 
   private _commands?: CommandCompletion[]
 
+  private orgs: string[] = this.getOrgs()
+
   async run() {
     // 1. ensure needed dirs
     await this.ensureDirs()
@@ -67,7 +69,7 @@ export default class Create extends AutocompleteBase {
         )
         .replaceAll('<CLI_BIN>', cliBin)
         .replaceAll('<BASH_COMMANDS_WITH_FLAGS_LIST>', this.bashCommandsWithFlagsList)
-        .replaceAll('<BASH_ORGS>', this.bashOrgs)
+        .replaceAll('<BASH_ORGS>', this.genOrgs)
     )
   }
 
@@ -79,10 +81,6 @@ export default class Create extends AutocompleteBase {
   private get bashFunctionsDir(): string {
     // <cachedir>/autocomplete/functions/bash
     return path.join(this.autocompleteCacheDir, 'functions', 'bash')
-  }
-
-  private get bashOrgs(): string {
-    return this.orgs.join('\n')
   }
 
   private get bashSetupScript(): string {
@@ -196,6 +194,10 @@ export default class Create extends AutocompleteBase {
       .join(' ')
   }
 
+  private get genOrgs(): string {
+    return this.orgs.join('\n')
+  }
+
   private genZshFlagSpecs(Klass: any): string {
     return Object.keys(Klass.flags || {})
       .filter((flag) => Klass.flags && !Klass.flags[flag].hidden)
@@ -205,14 +207,19 @@ export default class Create extends AutocompleteBase {
         const isOption = f.type === 'option'
         const name = isBoolean ? flag : `${flag}=-`
         const multiple = isOption && f.multiple ? '*' : ''
-        const valueCmpl = isBoolean ? '' : ':'
+        let valueCmpl = isBoolean ? '' : ':'
+
+        if (name === 'target-org=-') {
+          valueCmpl += `array_values:((\$\{_orgs[*]\}))`
+        }
+
         const completion = `${multiple}--${name}[${sanitizeDescription(f.summary || f.description)}]${valueCmpl}`
         return `"${completion}"`
       })
       .join('\n')
   }
 
-  private get orgs(): string[] {
+  private getOrgs(): string[] {
     const orgsJson = JSON.parse(execSync('sf org list auth --json').toString())
     const result: string[] = []
     for (const element of orgsJson.result) {
@@ -238,21 +245,17 @@ export default class Create extends AutocompleteBase {
     const {cliBin} = this
     const allCommandsMeta = this.genAllCommandsMetaString
     const caseStatementForFlagsMeta = this.genCaseStatementForFlagsMetaString
+    const orgs = this.genOrgs
 
     return `#compdef ${cliBin}
-
-_orgs(){
-  local completions
-  completions=($(sf autocomplete --orgs))
-    
-  _describe -t completions 'completions' completions && return 0
-}
-    
 
 _${cliBin} () {
   local _command_id=\${words[2]}
   local _cur=\${words[CURRENT]}
   local -a _command_flags=()
+  local -a _orgs=(
+${orgs}
+) 
 
   ## public cli commands & flags
   local -a _all_commands=(

@@ -1,5 +1,6 @@
 import {Command, Config, Interfaces} from '@oclif/core'
 import * as ejs from 'ejs'
+import {execSync} from 'node:child_process'
 import * as util from 'node:util'
 
 const argTemplate = '        "%s")\n          %s\n        ;;\n'
@@ -26,12 +27,15 @@ export default class ZshCompWithSpaces {
 
   private commands: CommandCompletion[]
 
+  private orgs: string[]
+
   private topics: Topic[]
 
   constructor(config: Config) {
     this.config = config
     this.topics = this.getTopics()
     this.commands = this.getCommands()
+    this.orgs = this.getOrgs()
   }
 
   public generate(): string {
@@ -85,10 +89,12 @@ export default class ZshCompWithSpaces {
 ${this.config.binAliases?.map((a) => `compdef ${a}=${this.config.bin}`).join('\n') ?? ''}
 
 _orgs(){
-  local completions
-  completions=($(sf autocomplete --orgs))
+  local orgs
+  orgs=(
+    ${this.genOrgs()}
+  )
     
-  _describe -t completions 'completions' completions && return 0
+  _describe -t orgs 'orgs' orgs && return 0
 }
 
 ${this.topics.map((t) => this.genZshTopicCompFun(t.name)).join('\n')}
@@ -129,6 +135,10 @@ _${this.config.bin}
     this._coTopics = coTopics
 
     return this._coTopics
+  }
+
+  private genOrgs(): string {
+    return this.orgs.join('\n')
   }
 
   private genZshFlagArgumentsBlock(flags?: CommandFlags): string {
@@ -392,6 +402,17 @@ _${this.config.bin}
     }
 
     return cmds
+  }
+
+  private getOrgs(): string[] {
+    const orgsJson = JSON.parse(execSync('sf org list auth --json').toString())
+    const result: string[] = []
+    for (const element of orgsJson.result) {
+      if (element.alias) result.push(element.alias)
+      else result.push(element.username)
+    }
+
+    return result
   }
 
   private getTopics(): Topic[] {
