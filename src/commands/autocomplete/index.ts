@@ -48,7 +48,7 @@ export default class Index extends AutocompleteBase {
   }
 
   private printShellInstructions(shell: string): void {
-    const setupEnvVar = `${this.cliBinEnvVar}_AC_${shell.toUpperCase()}_SETUP_PATH`
+    const setupEnvVar = this.getSetupEnvVar(shell)
     const tabStr = shell === 'bash' ? '<TAB><TAB>' : '<TAB>'
     const scriptCommand = `${this.config.bin} autocomplete${this.config.topicSeparator}script ${shell}`
 
