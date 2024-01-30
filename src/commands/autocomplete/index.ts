@@ -48,8 +48,7 @@ export default class Index extends AutocompleteBase {
   }
 
   private printShellInstructions(shell: string): void {
-    const binUpcase = this.cliBinEnvVar
-    const shellUpcase = shell.toUpperCase()
+    const setupEnvVar = `${this.cliBinEnvVar}_AC_${shell.toUpperCase()}_SETUP_PATH`
     const tabStr = shell === 'bash' ? '<TAB><TAB>' : '<TAB>'
     const scriptCommand = `${this.config.bin} autocomplete${this.config.topicSeparator}script ${shell}`
 
@@ -65,7 +64,7 @@ Setup Instructions for ${this.config.bin.toUpperCase()} CLI Autocomplete ---
 
   ${chalk.cyan(`$ printf "eval $(${scriptCommand})" >> ~/.bashrc; source ~/.bashrc`)}
 
-  The previous command adds the ${chalk.cyan(`${binUpcase}_AC_${shellUpcase}_SETUP_PATH`)} environment variable to your Bash config file and then sources the file.
+  The previous command adds the ${chalk.cyan(setupEnvVar)} environment variable to your Bash config file and then sources the file.
 
   NOTE: If you’ve configured your terminal to start as a login shell, you may need to modify the command so it updates either the ~/.bash_profile or ~/.profile file. For example:
 
@@ -89,7 +88,7 @@ Setup Instructions for ${this.config.bin.toUpperCase()} CLI Autocomplete ---
 
   ${chalk.cyan(`$ printf "eval $(${scriptCommand})" >> ~/.zshrc; source ~/.zshrc`)}
 
-  The previous command adds the ${chalk.cyan(`${binUpcase}_AC_${shellUpcase}_SETUP_PATH`)} environment variable to your zsh config file and then sources the file.
+  The previous command adds the ${chalk.cyan(setupEnvVar)} environment variable to your zsh config file and then sources the file.
 
 2) (Optional) Run this command to ensure that you have no permissions conflicts:
 
@@ -126,7 +125,8 @@ Setup Instructions for ${this.config.bin.toUpperCase()} CLI Autocomplete ---
     instructions += `
   Every time you enter ${tabStr}, the autocomplete feature displays a list of commands (or flags if you type --), along with their summaries. Enter a letter and then ${tabStr} again to narrow down the list until you end up with the complete command that you want to execute.
 
-  Enjoy!`
+  Enjoy!
+`
     this.log(instructions)
   }
 }
