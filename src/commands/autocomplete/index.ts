@@ -66,7 +66,7 @@ Setup Instructions for ${this.config.bin.toUpperCase()} CLI Autocomplete ---
 
   The previous command adds the ${chalk.cyan(setupEnvVar)} environment variable to your Bash config file and then sources the file.
 
-  NOTE: If you’ve configured your terminal to start as a login shell, you may need to modify the command so it updates either the ~/.bash_profile or ~/.profile file. For example:
+  ${chalk.bold('NOTE')}: If you’ve configured your terminal to start as a login shell, you may need to modify the command so it updates either the ~/.bash_profile or ~/.profile file. For example:
 
   ${chalk.cyan(`$ printf "eval $(${scriptCommand}) >> ~/.bash_profile; source ~/.bash_profile`)}
   
