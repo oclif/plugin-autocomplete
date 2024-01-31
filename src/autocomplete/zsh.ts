@@ -405,7 +405,7 @@ _${this.config.bin}
   }
 
   private getOrgs(): string[] {
-    const orgsJson = JSON.parse(execSync('sf org list auth --json').toString())
+    const orgsJson = JSON.parse(execSync('sf org list auth --json 2>/dev/null').toString())
     const result: string[] = []
     for (const element of orgsJson.result) {
       if (element.alias) result.push(element.alias)
