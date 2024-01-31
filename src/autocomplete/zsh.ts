@@ -412,7 +412,7 @@ _${this.config.bin}
       else result.push(element.username)
     }
 
-    return result
+    return result.sort()
   }
 
   private getTopics(): Topic[] {

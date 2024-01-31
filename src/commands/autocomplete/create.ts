@@ -227,7 +227,7 @@ export default class Create extends AutocompleteBase {
       else result.push(element.username)
     }
 
-    return result
+    return result.sort()
   }
 
   private get pwshCompletionFunctionPath(): string {
