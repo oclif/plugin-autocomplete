@@ -60,44 +60,44 @@ Setup Instructions for ${this.config.bin.toUpperCase()} CLI Autocomplete ---
     switch (shell) {
       case 'bash': {
         instructions += `
-1) Run this command (starting with "printf") in your terminal window:
+1) Run this command in your terminal window:
 
-  ${chalk.cyan(`$ printf "eval $(${scriptCommand})" >> ~/.bashrc; source ~/.bashrc`)}
+  ${chalk.cyan(`printf "eval $(${scriptCommand})" >> ~/.bashrc; source ~/.bashrc`)}
 
   The previous command adds the ${chalk.cyan(setupEnvVar)} environment variable to your Bash config file and then sources the file.
 
   ${chalk.bold('NOTE')}: If you’ve configured your terminal to start as a login shell, you may need to modify the command so it updates either the ~/.bash_profile or ~/.profile file. For example:
 
-  ${chalk.cyan(`$ printf "eval $(${scriptCommand}) >> ~/.bash_profile; source ~/.bash_profile`)}
+  ${chalk.cyan(`printf "eval $(${scriptCommand}) >> ~/.bash_profile; source ~/.bash_profile`)}
   
   Or:
 
-  ${chalk.cyan(`$ printf "eval $(${scriptCommand})" >> ~/.profile; source ~/.profile`)}
+  ${chalk.cyan(`printf "eval $(${scriptCommand})" >> ~/.profile; source ~/.profile`)}
 
 2) Start using autocomplete:
 
-  ${chalk.cyan(`$ sf ${tabStr}`)}                  # Command completion
-  ${chalk.cyan(`$ sf command --${tabStr}`)}        # Flag completion
+  ${chalk.cyan(`sf ${tabStr}`)}                  # Command completion
+  ${chalk.cyan(`sf command --${tabStr}`)}        # Flag completion
   `
         break
       }
 
       case 'zsh': {
         instructions += `
-1) Run this command (starting with "printf") in your terminal window:
+1) Run this command in your terminal window:
 
-  ${chalk.cyan(`$ printf "eval $(${scriptCommand})" >> ~/.zshrc; source ~/.zshrc`)}
+  ${chalk.cyan(`printf "eval $(${scriptCommand})" >> ~/.zshrc; source ~/.zshrc`)}
 
   The previous command adds the ${chalk.cyan(setupEnvVar)} environment variable to your zsh config file and then sources the file.
 
 2) (Optional) Run this command to ensure that you have no permissions conflicts:
 
-  ${chalk.cyan('$ compaudit -D')}
+  ${chalk.cyan('compaudit -D')}
 
 3) Start using autocomplete:
 
-  ${chalk.cyan(`$ sf ${tabStr}`)}                  # Command completion
-  ${chalk.cyan(`$ sf command --${tabStr}`)}        # Flag completion
+  ${chalk.cyan(`sf ${tabStr}`)}                  # Command completion
+  ${chalk.cyan(`sf command --${tabStr}`)}        # Flag completion
   `
         break
       }
@@ -115,8 +115,8 @@ Setup Instructions for ${this.config.bin.toUpperCase()} CLI Autocomplete ---
 
 3) Start using autocomplete:
 
-  ${chalk.cyan(`$ sf ${tabStr}`)}                  # Command completion
-  ${chalk.cyan(`$ sf command --${tabStr}`)}        # Flag completion
+  ${chalk.cyan(`sf ${tabStr}`)}                  # Command completion
+  ${chalk.cyan(`sf command --${tabStr}`)}        # Flag completion
   `
         break
       }
