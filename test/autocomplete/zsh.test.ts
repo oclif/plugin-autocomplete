@@ -497,10 +497,21 @@ _test-cli
     it('generates a valid completion file with multiple bin aliases.', () => {
       config.bin = 'test-cli'
       config.binAliases = ['testing', 'testing2']
-      const zshCompWithSpaces = new ZshCompWithSpaces(config as Config)
+      const zshCompWithSpaces = new ZshCompWithSpaces(config as Config, testOrgs)
       expect(zshCompWithSpaces.generate()).to.equal(`#compdef test-cli
 compdef testing=test-cli
 compdef testing2=test-cli
+
+_orgs(){
+  local orgs
+  orgs=(
+    org1alias
+org2.username@org.com
+org3alias
+  )
+
+  _describe -t orgs 'orgs' orgs && return 0
+}
 
 _test-cli_app() {
   local context state state_descr line
