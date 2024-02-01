@@ -6,6 +6,7 @@ import {fileURLToPath} from 'node:url'
 
 import ZshCompWithSpaces from '../../src/autocomplete/zsh.js'
 // autocomplete will throw error on windows ci
+import {testOrgs} from '../helpers/orgruntest.js'
 import {default as skipWindows} from '../helpers/runtest.js'
 
 class MyCommandClass implements Command.Cached {
@@ -208,9 +209,20 @@ skipWindows('zsh comp', () => {
 
     it('generates a valid completion file.', () => {
       config.bin = 'test-cli'
-      const zshCompWithSpaces = new ZshCompWithSpaces(config as Config)
+      const zshCompWithSpaces = new ZshCompWithSpaces(config as Config, testOrgs)
       expect(zshCompWithSpaces.generate()).to.equal(`#compdef test-cli
 
+
+_orgs(){
+  local orgs
+  orgs=(
+    org1alias
+org2.username@org.com
+org3alias
+  )
+    
+  _describe -t orgs 'orgs' orgs && return 0
+}
 
 _test-cli_app() {
   local context state state_descr line

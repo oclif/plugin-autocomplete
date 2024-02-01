@@ -31,11 +31,11 @@ export default class ZshCompWithSpaces {
 
   private topics: Topic[]
 
-  constructor(config: Config) {
+  constructor(config: Config, orgs?: string[]) {
     this.config = config
     this.topics = this.getTopics()
     this.commands = this.getCommands()
-    this.orgs = this.getOrgs()
+    this.orgs = orgs || this.getOrgs()
   }
 
   public generate(): string {
