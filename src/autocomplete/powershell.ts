@@ -30,11 +30,11 @@ export default class PowerShellComp {
 
   private topics: Topic[]
 
-  constructor(config: Config) {
+  constructor(config: Config, orgs?: string[]) {
     this.config = config
     this.topics = this.getTopics()
     this.commands = this.getCommands()
-    this.orgs = this.getOrgs()
+    this.orgs = orgs || this.getOrgs()
   }
 
   public generate(): string {
@@ -133,6 +133,7 @@ using namespace System.Management.Automation.Language
 $orgs = @{
   ${this.genOrgs()}
 }
+
 $scriptblock = {
     param($WordToComplete, $CommandAst, $CursorPosition)
 
@@ -219,7 +220,7 @@ $scriptblock = {
                           "ParameterValue",
                           "$($NextArg._command.flags[$_.Key].summary ?? " ")"
                   }
-            } 
+            }
           } else {
               # This could be a coTopic. We remove the "_command" hashtable
               # from $NextArg and check if there's a command under the current partial ID.
