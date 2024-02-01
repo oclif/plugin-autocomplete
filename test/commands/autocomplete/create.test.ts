@@ -275,6 +275,11 @@ _oclif-example () {
   local _command_id=\${words[2]}
   local _cur=\${words[CURRENT]}
   local -a _command_flags=()
+  local -a _orgs=(
+org1alias
+org2.username@org.com
+org3alias
+)
 
   ## public cli commands & flags
   local -a _all_commands=(
