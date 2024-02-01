@@ -446,7 +446,7 @@ ${flaghHashtables.join('\n')}
   }
 
   private getOrgs(): string[] {
-    const orgsJson = JSON.parse(execSync('sf org list auth --json 2>null').toString())
+    const orgsJson = JSON.parse(execSync('sf org list auth --json 2>$null').toString())
     const result: string[] = []
     for (const element of orgsJson.result) {
       if (element.alias) result.push(element.alias)
