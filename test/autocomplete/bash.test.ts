@@ -5,6 +5,7 @@ import {expect} from 'chai'
 import Create from '../../src/commands/autocomplete/create.js'
 
 // autocomplete will throw error on windows ci
+import {testOrgs} from '../helpers/orgruntest.js'
 import {default as skipWindows} from '../helpers/runtest.js'
 import {fileURLToPath} from 'node:url'
 
@@ -186,7 +187,7 @@ skipWindows('bash comp', () => {
 
     it('generates a valid completion file.', async () => {
       config.bin = 'test-cli'
-      const create = new Create([], config)
+      const create = new Create([], config, testOrgs)
 
       // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
       // @ts-ignore
@@ -206,8 +207,37 @@ ${'search '}
 ${'app:execute:code '}
 "
 
+local orgs="
+org1alias
+org2.username@org.com
+org3alias
+"
+
+local targetOrgFlags=("--target-org" "-o")
+
+function _isTargetOrgFlag(){
+  local value="$1"
+  for flag in "\${targetOrgFlags[@]}"; do
+    if [[ "$flag" == "$value" ]]; then
+      return 0 # value found
+    fi
+  done
+  return 1 # value not found
+}
+
+function _suggestOrgs(){
   if [[ "$cur" != "-"* ]]; then
-    opts=$(printf "$commands" | grep -Eo '^[a-zA-Z0-9:_-]+')
+    opts=$(printf "%s " "\${orgs[@]}" | grep -i "\${cur}")
+    COMPREPLY=($(compgen -W "$opts"))
+  fi
+}
+
+  if [[ "$cur" != "-"* ]]; then
+    if _isTargetOrgFlag "\${COMP_WORDS[COMP_CWORD-1]}"; then
+      _suggestOrgs
+    else
+      opts=$(printf "$commands" | grep -Eo '^[a-zA-Z0-9:_-]+')
+    fi
   else
     local __COMP_WORDS
     if [[ $\{COMP_WORDS[2]} == ":" ]]; then
@@ -218,9 +248,16 @@ ${'app:execute:code '}
       __COMP_WORDS="$\{COMP_WORDS[@]:1:1}"
     fi
     opts=$(printf "$commands" | grep "$\{__COMP_WORDS}" | sed -n "s/^$\{__COMP_WORDS} //p")
+
+    if _isTargetOrgFlag "\${COMP_WORDS[COMP_CWORD]}"; then
+      _suggestOrgs
+    fi
   fi
   _get_comp_words_by_ref -n : cur
-  COMPREPLY=( $(compgen -W "$\{opts}" -- $\{cur}) )
+
+  if [[ -z "$COMPREPLY" ]]; then
+    COMPREPLY=( $(compgen -W "$\{opts}" -- $\{cur}) )
+  fi
   __ltrim_colon_completions "$cur"
   return 0
 

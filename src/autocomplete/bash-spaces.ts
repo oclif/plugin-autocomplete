@@ -14,27 +14,28 @@ _<CLI_BIN>_autocomplete()
 <BASH_COMMANDS_WITH_FLAGS_LIST>
 "
 
-  local orgs="
+local orgs="
 <BASH_ORGS>
 "
-  local targetOrgFlags=("--target-org" "-o")
 
-  function _isTargetOrgFlag(){
-    local value="$1"
-    for flag in "\${targetOrgFlags[@]}"; do
-      if [[ "$flag" == "$value" ]]; then
-        return 0 # value found
-      fi
-    done
-    return 1 # value not found
-  }
+local targetOrgFlags=("--target-org" "-o")
 
-  function _suggestOrgs(){
-    if [[ "$cur" != "-"* ]]; then
-      opts=$(printf "%s " "\${orgs[@]}" | grep -i "\${cur}")
-      COMPREPLY=($(compgen -W "$opts"))
+function _isTargetOrgFlag(){
+  local value="$1"
+  for flag in "\${targetOrgFlags[@]}"; do
+    if [[ "$flag" == "$value" ]]; then
+      return 0 # value found
     fi
-  }
+  done
+  return 1 # value not found
+}
+
+function _suggestOrgs(){
+  if [[ "$cur" != "-"* ]]; then
+    opts=$(printf "%s " "\${orgs[@]}" | grep -i "\${cur}")
+    COMPREPLY=($(compgen -W "$opts"))
+  fi
+}
 
   function __trim_colon_commands()
   {
