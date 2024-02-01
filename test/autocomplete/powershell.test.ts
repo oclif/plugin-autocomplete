@@ -627,10 +627,17 @@ Register-ArgumentCompleter -Native -CommandName @("test","test-cli") -ScriptBloc
   it('generates a valid completion file with multiple bin aliases.', () => {
     config.bin = 'test-cli'
     config.binAliases = ['test', 'test1']
-    const powerShellComp = new PowerShellComp(config as Config)
+    const powerShellComp = new PowerShellComp(config as Config, testOrgs)
     expect(powerShellComp.generate()).to.equal(`
 using namespace System.Management.Automation
 using namespace System.Management.Automation.Language
+
+$orgs = @{
+  "org1alias" = @{}
+"org2.username@org.com" = @{}
+"org3alias" = @{}
+
+}
 
 $scriptblock = {
     param($WordToComplete, $CommandAst, $CursorPosition)
@@ -763,6 +770,12 @@ $scriptblock = {
           # Complete flags
           # \`cli config list -<TAB>\`
           if ($WordToComplete -like '-*') {
+            if($CurrentLine[-1] -like "--target-org*"){
+              $search = $CurrentLine[-1].Substring('--target-org '.Length)
+              $orgs.Keys | Where-Object { $_ -like "$search*" } | Sort-Object | ForEach-Object {
+                New-Object -Type CompletionResult -ArgumentList "--target-org $_", $_, 'ParameterValue', 'Custom completion description'
+              }              
+            }else{
               $NextArg._command.flags.GetEnumerator() | Sort-Object -Property key
                   | Where-Object {
                       # Filter out already used flags (unless \`flag.multiple = true\`).
@@ -775,21 +788,28 @@ $scriptblock = {
                           "ParameterValue",
                           "$($NextArg._command.flags[$_.Key].summary ?? " ")"
                   }
+            }
           } else {
               # This could be a coTopic. We remove the "_command" hashtable
               # from $NextArg and check if there's a command under the current partial ID.
               $NextArg.remove("_command")
 
-              if ($NextArg.keys -gt 0) {
-                  $NextArg.GetEnumerator() | Where-Object {
-                      $_.Key.StartsWith("$WordToComplete")
-                    } | Sort-Object -Property key | ForEach-Object {
-                    New-Object -Type CompletionResult -ArgumentList \`
-                      $($Mode -eq "MenuComplete" ? "$($_.Key) " : "$($_.Key)"),
-                      $_.Key,
-                      "ParameterValue",
-                      "$($NextArg[$_.Key]._summary ?? " ")"
-                  }
+              if($CurrentLine[-2] -like "--target-org*" -Or $CurrentLine[-1] -like "--target-org*"){#echo 'here'
+                $orgs.Keys | Where-Object { $search = $CurrentLine[-1]; if ($search -eq "" -Or $search -eq "--target-org") { return $true } else { return $_ -like "*$search*" } } | Sort-Object | ForEach-Object {
+                    New-Object -Type CompletionResult -ArgumentList "$_", $_, 'ParameterValue', 'Custom completion description'
+                }
+              }else{
+                if ($NextArg.keys -gt 0) {
+                    $NextArg.GetEnumerator() | Where-Object {
+                        $_.Key.StartsWith("$WordToComplete")
+                      } | Sort-Object -Property key | ForEach-Object {
+                      New-Object -Type CompletionResult -ArgumentList \`
+                        $($Mode -eq "MenuComplete" ? "$($_.Key) " : "$($_.Key)"),
+                        $_.Key,
+                        "ParameterValue",
+                        "$($NextArg[$_.Key]._summary ?? " ")"
+                    }
+                }
               }
           }
       } else {
