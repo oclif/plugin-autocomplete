@@ -93,7 +93,7 @@ _orgs(){
   orgs=(
     ${this.genOrgs()}
   )
-    
+
   _describe -t orgs 'orgs' orgs && return 0
 }
 
