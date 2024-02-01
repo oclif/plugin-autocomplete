@@ -1,3 +1,4 @@
+import {Config} from '@oclif/core'
 import makeDebug from 'debug'
 import {execSync} from 'node:child_process'
 import {mkdir, writeFile} from 'node:fs/promises'
@@ -36,7 +37,13 @@ export default class Create extends AutocompleteBase {
 
   private _commands?: CommandCompletion[]
 
-  private orgs: string[] = this.getOrgs()
+  private orgs: string[]
+
+  constructor(argv: string[], config: Config, orgs?: string[]) {
+    super(argv, config)
+
+    this.orgs = orgs || this.getOrgs()
+  }
 
   async run() {
     // 1. ensure needed dirs
@@ -255,7 +262,7 @@ _${cliBin} () {
   local -a _command_flags=()
   local -a _orgs=(
 ${orgs}
-) 
+)
 
   ## public cli commands & flags
   local -a _all_commands=(
