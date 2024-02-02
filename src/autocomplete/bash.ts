@@ -10,10 +10,6 @@ _<CLI_BIN>_autocomplete()
 <BASH_COMMANDS_WITH_FLAGS_LIST>
 "
 
-local orgs="
-<BASH_ORGS>
-"
-
 local targetOrgFlags=("--target-org" "-o")
 
 function _isTargetOrgFlag(){
@@ -27,6 +23,8 @@ function _isTargetOrgFlag(){
 }
 
 function _suggestOrgs(){
+  local orgs="$(sf autocomplete --display-orgs bash 2>/dev/null)"
+
   if [[ "$cur" != "-"* ]]; then
     opts=$(printf "%s " "\${orgs[@]}" | grep -i "\${cur}")
     COMPREPLY=($(compgen -W "$opts"))

@@ -1,6 +1,8 @@
 import {Args, Flags, ux} from '@oclif/core'
 import chalk from 'chalk'
+import {existsSync, readFileSync, readdirSync} from 'node:fs'
 import {EOL} from 'node:os'
+import {default as path} from 'node:path'
 
 import {AutocompleteBase} from '../../base.js'
 import Create from './create.js'
@@ -49,6 +51,7 @@ export default class Index extends AutocompleteBase {
   ]
 
   static flags = {
+    'display-orgs': Flags.boolean({char: 'd', description: 'Display authenticated orgs.'}),
     'refresh-cache': Flags.boolean({char: 'r', description: 'Refresh cache (ignores displaying instructions)'}),
   }
 
@@ -62,37 +65,61 @@ export default class Index extends AutocompleteBase {
       )
     }
 
-    ux.action.start(`${chalk.bold('Building the autocomplete cache')}`)
-    await Create.run([], this.config)
-    ux.action.stop()
+    if (flags['display-orgs']) {
+      const sfDir = path.join(this.config.home, '.sfdx')
+      const orgs: string[] = readdirSync(sfDir)
+        .filter((element) => element.match(/^.*@.*\.json/) !== null)
+        .map((element) => element.replace('.json', ''))
 
-    if (!flags['refresh-cache']) {
-      const {bin} = this.config
-      const tabStr = shell === 'bash' ? '<TAB><TAB>' : '<TAB>'
+      let orgsAliases = []
+      const aliasFilename = path.join(sfDir, 'alias.json')
+      if (existsSync(aliasFilename)) {
+        orgsAliases = JSON.parse(readFileSync(aliasFilename).toString()).orgs
+        for (const [alias, username] of Object.entries(orgsAliases)) {
+          const i = orgs.indexOf(username as string)
+          if (i > -1) {
+            orgs[i] = alias
+          }
+        }
+      }
 
-      const instructions =
-        shell === 'powershell'
-          ? `New-Item -Type Directory -Path (Split-Path -Parent $PROFILE) -ErrorAction SilentlyContinue
-Add-Content -Path $PROFILE -Value (Invoke-Expression -Command "${bin} autocomplete${this.config.topicSeparator}script ${shell}"); .$PROFILE`
-          : `$ printf "eval $(${bin} autocomplete${this.config.topicSeparator}script ${shell})" >> ~/.${shell}rc; source ~/.${shell}rc`
+      this.log(
+        orgs.join(`
+`),
+      )
+    } else {
+      ux.action.start(`${chalk.bold('Building the autocomplete cache')}`)
+      await Create.run([], this.config)
+      ux.action.stop()
 
-      const note = noteFromShell(shell)
+      if (!flags['refresh-cache']) {
+        const {bin} = this.config
+        const tabStr = shell === 'bash' ? '<TAB><TAB>' : '<TAB>'
 
-      this.log(`
-${chalk.bold(`Setup Instructions for ${bin.toUpperCase()} CLI Autocomplete ---`)}
+        const instructions =
+          shell === 'powershell'
+            ? `New-Item -Type Directory -Path (Split-Path -Parent $PROFILE) -ErrorAction SilentlyContinue
+  Add-Content -Path $PROFILE -Value (Invoke-Expression -Command "${bin} autocomplete${this.config.topicSeparator}script ${shell}"); .$PROFILE`
+            : `$ printf "eval $(${bin} autocomplete${this.config.topicSeparator}script ${shell})" >> ~/.${shell}rc; source ~/.${shell}rc`
 
-1) Add the autocomplete ${shell === 'powershell' ? 'file' : 'env var'} to your ${shell} profile and source it
+        const note = noteFromShell(shell)
 
-${chalk.cyan(instructions)}
+        this.log(`
+  ${chalk.bold(`Setup Instructions for ${bin.toUpperCase()} CLI Autocomplete ---`)}
 
-${chalk.bold('NOTE')}: ${note}
+  1) Add the autocomplete ${shell === 'powershell' ? 'file' : 'env var'} to your ${shell} profile and source it
 
-2) Test it out, e.g.:
-${chalk.cyan(`$ ${bin} ${tabStr}`)}                 # Command completion
-${chalk.cyan(`$ ${bin} command --${tabStr}`)}       # Flag completion
+  ${chalk.cyan(instructions)}
 
-Enjoy!
-`)
+  ${chalk.bold('NOTE')}: ${note}
+
+  2) Test it out, e.g.:
+  ${chalk.cyan(`$ ${bin} ${tabStr}`)}                 # Command completion
+  ${chalk.cyan(`$ ${bin} command --${tabStr}`)}       # Flag completion
+
+  Enjoy!
+  `)
+      }
     }
   }
 }

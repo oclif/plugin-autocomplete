@@ -1,6 +1,4 @@
-import {Config} from '@oclif/core'
 import makeDebug from 'debug'
-import {execSync} from 'node:child_process'
 import {mkdir, writeFile} from 'node:fs/promises'
 import * as path from 'node:path'
 
@@ -37,14 +35,6 @@ export default class Create extends AutocompleteBase {
 
   private _commands?: CommandCompletion[]
 
-  private orgs: string[]
-
-  constructor(argv: string[], config: Config, orgs?: string[]) {
-    super(argv, config)
-
-    this.orgs = orgs || this.getOrgs()
-  }
-
   async run() {
     // 1. ensure needed dirs
     await this.ensureDirs()
@@ -76,7 +66,6 @@ export default class Create extends AutocompleteBase {
         )
         .replaceAll('<CLI_BIN>', cliBin)
         .replaceAll('<BASH_COMMANDS_WITH_FLAGS_LIST>', this.bashCommandsWithFlagsList)
-        .replaceAll('<BASH_ORGS>', this.genOrgs)
     )
   }
 
@@ -201,10 +190,6 @@ export default class Create extends AutocompleteBase {
       .join(' ')
   }
 
-  private get genOrgs(): string {
-    return this.orgs.join('\n')
-  }
-
   private genZshFlagSpecs(Klass: any): string {
     return Object.keys(Klass.flags || {})
       .filter((flag) => Klass.flags && !Klass.flags[flag].hidden)
@@ -217,24 +202,13 @@ export default class Create extends AutocompleteBase {
         let valueCmpl = isBoolean ? '' : ':'
 
         if (name === 'target-org=-') {
-          valueCmpl += `array_values:((\$\{_orgs[*]\}))`
+          valueCmpl += `array_values:((\${(@)$(_orgs)}))`
         }
 
         const completion = `${multiple}--${name}[${sanitizeDescription(f.summary || f.description)}]${valueCmpl}`
         return `"${completion}"`
       })
       .join('\n')
-  }
-
-  private getOrgs(): string[] {
-    const orgsJson = JSON.parse(execSync('sf org list auth --json 2>/dev/null').toString())
-    const result: string[] = []
-    for (const element of orgsJson.result) {
-      if (element.alias) result.push(element.alias)
-      else result.push(element.username)
-    }
-
-    return result.sort()
   }
 
   private get pwshCompletionFunctionPath(): string {
@@ -252,7 +226,6 @@ export default class Create extends AutocompleteBase {
     const {cliBin} = this
     const allCommandsMeta = this.genAllCommandsMetaString
     const caseStatementForFlagsMeta = this.genCaseStatementForFlagsMetaString
-    const orgs = this.genOrgs
 
     return `#compdef ${cliBin}
 
@@ -260,10 +233,12 @@ _${cliBin} () {
   local _command_id=\${words[2]}
   local _cur=\${words[CURRENT]}
   local -a _command_flags=()
-  local -a _orgs=(
-${orgs}
-)
 
+  _orgs(){
+    local orgs=(\${(@f)$(sf autocomplete --display-orgs zsh 2>/dev/null)})
+    echo "$orgs"
+  }
+  
   ## public cli commands & flags
   local -a _all_commands=(
 ${allCommandsMeta}

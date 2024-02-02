@@ -1,6 +1,5 @@
 import {Command, Config, Interfaces} from '@oclif/core'
 import * as ejs from 'ejs'
-import {execSync} from 'node:child_process'
 import {EOL} from 'node:os'
 import * as util from 'node:util'
 
@@ -26,15 +25,12 @@ export default class PowerShellComp {
 
   private commands: CommandCompletion[]
 
-  private orgs: string[]
-
   private topics: Topic[]
 
-  constructor(config: Config, orgs?: string[]) {
+  constructor(config: Config) {
     this.config = config
     this.topics = this.getTopics()
     this.commands = this.getCommands()
-    this.orgs = orgs || this.getOrgs()
   }
 
   public generate(): string {
@@ -130,8 +126,43 @@ ${hashtables.join('\n')}
 using namespace System.Management.Automation
 using namespace System.Management.Automation.Language
 
-$orgs = @{
-  ${this.genOrgs()}
+function orgs(){
+  $orglist=sf autocomplete --display-orgs
+  return $orglist
+}
+
+$targetOrgFlags=@{
+  "long" = "--target-org"
+  "short" = "-o"
+}
+
+function containsTargetOrgFlag {
+    param (
+        [Parameter(Mandatory=$true)]
+        [array]$items,
+
+        [Parameter(Mandatory=$true)]
+        [hashtable]$targetOrgFlags
+    )
+
+    foreach ($item in $items) {
+        if ($item -like $targetOrgFlags['long']+"*" -Or $item -like $targetOrgFlags['short']+"*") {return $true}
+    }
+    return $false
+}
+
+function getTargetOrgFlag {
+    param (
+        [Parameter(Mandatory=$true)]
+        [array]$line,
+
+        [Parameter(Mandatory=$true)]
+        [hashtable]$targetOrgFlags
+    )
+
+    if($line -contains $targetOrgFlags['long']) {return $targetOrgFlags['long']}
+    if($line -contains $targetOrgFlags['short']) {return $targetOrgFlags['short']} 
+    return ""
 }
 
 $scriptblock = {
@@ -202,11 +233,12 @@ $scriptblock = {
           # Complete flags
           # \`cli config list -<TAB>\`
           if ($WordToComplete -like '-*') {
-            if($CurrentLine[-1] -like "--target-org*"){
-              $search = $CurrentLine[-1].Substring('--target-org '.Length)
-              $orgs.Keys | Where-Object { $_ -like "$search*" } | Sort-Object | ForEach-Object {
-                New-Object -Type CompletionResult -ArgumentList "--target-org $_", $_, 'ParameterValue', 'Custom completion description'
-              }              
+            if(containsTargetOrgFlag @($CurrentLine[-1]) $targetOrgFlags){
+              $targetOrgFlag=getTargetOrgFlag $CurrentLine $targetOrgFlags
+              
+              orgs | Where-Object { $search = $CurrentLine[-1].replace($targetOrgFlag, "").Trim(); return ($search -eq "" ? $true : $_ -like "*$search*") } | Sort-Object | ForEach-Object {
+                New-Object -Type CompletionResult -ArgumentList "$_", $_, 'ParameterValue', 'Custom completion description'
+              }
             }else{
               $NextArg._command.flags.GetEnumerator() | Sort-Object -Property key
                   | Where-Object {
@@ -225,10 +257,11 @@ $scriptblock = {
               # This could be a coTopic. We remove the "_command" hashtable
               # from $NextArg and check if there's a command under the current partial ID.
               $NextArg.remove("_command")
+              $targetOrgFlag=getTargetOrgFlag $CurrentLine $targetOrgFlags
 
-              if($CurrentLine[-2] -like "--target-org*" -Or $CurrentLine[-1] -like "--target-org*"){#echo 'here'
-                $orgs.Keys | Where-Object { $search = $CurrentLine[-1]; if ($search -eq "" -Or $search -eq "--target-org") { return $true } else { return $_ -like "*$search*" } } | Sort-Object | ForEach-Object {
-                    New-Object -Type CompletionResult -ArgumentList "$_", $_, 'ParameterValue', 'Custom completion description'
+              if(containsTargetOrgFlag @($CurrentLine[-1], $CurrentLine[-2]) $targetOrgFlags){
+                orgs | Where-Object { $search = $CurrentLine[-1].replace($targetOrgFlag, "").Trim(); return ($search -eq "" ? $true : $_ -like "*$search*") } | Sort-Object | ForEach-Object {
+                  New-Object -Type CompletionResult -ArgumentList "$_", $_, 'ParameterValue', 'Custom completion description'
                 }
               }else{
                 if ($NextArg.keys -gt 0) {
@@ -389,15 +422,6 @@ ${flaghHashtables.join('\n')}
     return leafTpl
   }
 
-  private genOrgs(): string {
-    let jointedOrgs = ''
-    for (const org of this.orgs) {
-      jointedOrgs += `"${org}" = @{}\n`
-    }
-
-    return jointedOrgs
-  }
-
   private getCommands(): CommandCompletion[] {
     const cmds: CommandCompletion[] = []
 
@@ -443,17 +467,6 @@ ${flaghHashtables.join('\n')}
     }
 
     return cmds
-  }
-
-  private getOrgs(): string[] {
-    const orgsJson = JSON.parse(execSync('sf org list auth --json 2>$null').toString())
-    const result: string[] = []
-    for (const element of orgsJson.result) {
-      if (element.alias) result.push(element.alias)
-      else result.push(element.username)
-    }
-
-    return result.sort()
   }
 
   private getTopics(): Topic[] {
