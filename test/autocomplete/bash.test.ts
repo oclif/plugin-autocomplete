@@ -5,7 +5,6 @@ import {expect} from 'chai'
 import Create from '../../src/commands/autocomplete/create.js'
 
 // autocomplete will throw error on windows ci
-import {testOrgs} from '../helpers/orgruntest.js'
 import {default as skipWindows} from '../helpers/runtest.js'
 import {fileURLToPath} from 'node:url'
 
@@ -187,7 +186,7 @@ skipWindows('bash comp', () => {
 
     it('generates a valid completion file.', async () => {
       config.bin = 'test-cli'
-      const create = new Create([], config, testOrgs)
+      const create = new Create([], config)
 
       // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
       // @ts-ignore
@@ -200,17 +199,11 @@ _test-cli_autocomplete()
   COMPREPLY=()
 
   local commands="
-autocomplete --refresh-cache
+autocomplete --display-orgs --refresh-cache
 deploy --metadata --api-version --json --ignore-errors
 deploy:functions --branch
 ${'search '}
 ${'app:execute:code '}
-"
-
-local orgs="
-org1alias
-org2.username@org.com
-org3alias
 "
 
 local targetOrgFlags=("--target-org" "-o")
@@ -226,6 +219,8 @@ function _isTargetOrgFlag(){
 }
 
 function _suggestOrgs(){
+  local orgs="$(sf autocomplete --display-orgs bash 2>/dev/null)"
+
   if [[ "$cur" != "-"* ]]; then
     opts=$(printf "%s " "\${orgs[@]}" | grep -i "\${cur}")
     COMPREPLY=($(compgen -W "$opts"))
@@ -268,7 +263,7 @@ complete -o default -F _test-cli_autocomplete test-cli`)
     it('generates a valid completion file with an alias.', async () => {
       config.bin = 'test-cli'
       config.binAliases = ['alias']
-      const create = new Create([], config, testOrgs)
+      const create = new Create([], config)
       // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
       // @ts-ignore
       expect(create.bashCompletionFunction.trim()).to.equal(`#!/usr/bin/env bash
@@ -280,17 +275,11 @@ _test-cli_autocomplete()
   COMPREPLY=()
 
   local commands="
-autocomplete --refresh-cache
+autocomplete --display-orgs --refresh-cache
 deploy --metadata --api-version --json --ignore-errors
 deploy:functions --branch
 ${'search '}
 ${'app:execute:code '}
-"
-
-local orgs="
-org1alias
-org2.username@org.com
-org3alias
 "
 
 local targetOrgFlags=("--target-org" "-o")
@@ -306,6 +295,8 @@ function _isTargetOrgFlag(){
 }
 
 function _suggestOrgs(){
+  local orgs="$(sf autocomplete --display-orgs bash 2>/dev/null)"
+
   if [[ "$cur" != "-"* ]]; then
     opts=$(printf "%s " "\${orgs[@]}" | grep -i "\${cur}")
     COMPREPLY=($(compgen -W "$opts"))
@@ -349,7 +340,7 @@ complete -F _test-cli_autocomplete alias`)
     it('generates a valid completion file with multiple aliases.', async () => {
       config.bin = 'test-cli'
       config.binAliases = ['alias', 'alias2']
-      const create = new Create([], config, testOrgs)
+      const create = new Create([], config)
       // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
       // @ts-ignore
       expect(create.bashCompletionFunction).to.equal(`#!/usr/bin/env bash
@@ -361,17 +352,11 @@ _test-cli_autocomplete()
   COMPREPLY=()
 
   local commands="
-autocomplete --refresh-cache
+autocomplete --display-orgs --refresh-cache
 deploy --metadata --api-version --json --ignore-errors
 deploy:functions --branch
 ${'search '}
 ${'app:execute:code '}
-"
-
-local orgs="
-org1alias
-org2.username@org.com
-org3alias
 "
 
 local targetOrgFlags=("--target-org" "-o")
@@ -387,6 +372,8 @@ function _isTargetOrgFlag(){
 }
 
 function _suggestOrgs(){
+  local orgs="$(sf autocomplete --display-orgs bash 2>/dev/null)"
+
   if [[ "$cur" != "-"* ]]; then
     opts=$(printf "%s " "\${orgs[@]}" | grep -i "\${cur}")
     COMPREPLY=($(compgen -W "$opts"))
