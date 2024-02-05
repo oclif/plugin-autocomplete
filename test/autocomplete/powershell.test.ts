@@ -5,7 +5,6 @@ import * as path from 'node:path'
 import {fileURLToPath} from 'node:url'
 
 import PowerShellComp from '../../src/autocomplete/powershell.js'
-import {testOrgs} from '../helpers/orgruntest.js'
 
 class MyCommandClass implements Command.Cached {
   [key: string]: unknown
@@ -203,16 +202,48 @@ describe('powershell completion', () => {
 
   it('generates a valid completion file.', () => {
     config.bin = 'test-cli'
-    const powerShellComp = new PowerShellComp(config as Config, testOrgs)
+    const powerShellComp = new PowerShellComp(config as Config)
     expect(powerShellComp.generate()).to.equal(`
 using namespace System.Management.Automation
 using namespace System.Management.Automation.Language
 
-$orgs = @{
-  "org1alias" = @{}
-"org2.username@org.com" = @{}
-"org3alias" = @{}
+function orgs(){
+  $orglist=sf autocomplete --display-orgs
+  return $orglist
+}
 
+$targetOrgFlags=@{
+  "long" = "--target-org"
+  "short" = "-o"
+}
+
+function containsTargetOrgFlag {
+  param (
+      [Parameter(Mandatory=$true)]
+      [array]$items,
+
+      [Parameter(Mandatory=$true)]
+      [hashtable]$targetOrgFlags
+  )
+
+  foreach ($item in $items) {
+      if ($item -like $targetOrgFlags['long']+"*" -Or $item -like $targetOrgFlags['short']+"*") {return $true}
+  }
+  return $false
+}
+
+function getTargetOrgFlag {
+  param (
+      [Parameter(Mandatory=$true)]
+      [array]$line,
+
+      [Parameter(Mandatory=$true)]
+      [hashtable]$targetOrgFlags
+  )
+
+  if($line -contains $targetOrgFlags['long']) {return $targetOrgFlags['long']}
+  if($line -contains $targetOrgFlags['short']) {return $targetOrgFlags['short']} 
+  return ""
 }
 
 $scriptblock = {
@@ -267,6 +298,7 @@ $scriptblock = {
   "summary" = "Display autocomplete installation instructions."
   "flags" = @{
     "help" = @{ "summary" = "Show help for command" }
+    "display-orgs" = @{ "summary" = "Display authenticated orgs." }
     "refresh-cache" = @{ "summary" = "Refresh cache (ignores displaying instructions)" }
   }
 }
@@ -346,11 +378,12 @@ $scriptblock = {
           # Complete flags
           # \`cli config list -<TAB>\`
           if ($WordToComplete -like '-*') {
-            if($CurrentLine[-1] -like "--target-org*"){
-              $search = $CurrentLine[-1].Substring('--target-org '.Length)
-              $orgs.Keys | Where-Object { $_ -like "$search*" } | Sort-Object | ForEach-Object {
-                New-Object -Type CompletionResult -ArgumentList "--target-org $_", $_, 'ParameterValue', 'Custom completion description'
-              }              
+            if(containsTargetOrgFlag @($CurrentLine[-1]) $targetOrgFlags){
+              $targetOrgFlag=getTargetOrgFlag $CurrentLine $targetOrgFlags
+              
+              orgs | Where-Object { $search = $CurrentLine[-1].replace($targetOrgFlag, "").Trim(); return ($search -eq "" ? $true : $_ -like "*$search*") } | Sort-Object | ForEach-Object {
+                New-Object -Type CompletionResult -ArgumentList "$_", $_, 'ParameterValue', 'Custom completion description'
+              }
             }else{
               $NextArg._command.flags.GetEnumerator() | Sort-Object -Property key
                   | Where-Object {
@@ -369,10 +402,11 @@ $scriptblock = {
               # This could be a coTopic. We remove the "_command" hashtable
               # from $NextArg and check if there's a command under the current partial ID.
               $NextArg.remove("_command")
+              $targetOrgFlag=getTargetOrgFlag $CurrentLine $targetOrgFlags
 
-              if($CurrentLine[-2] -like "--target-org*" -Or $CurrentLine[-1] -like "--target-org*"){#echo 'here'
-                $orgs.Keys | Where-Object { $search = $CurrentLine[-1]; if ($search -eq "" -Or $search -eq "--target-org") { return $true } else { return $_ -like "*$search*" } } | Sort-Object | ForEach-Object {
-                    New-Object -Type CompletionResult -ArgumentList "$_", $_, 'ParameterValue', 'Custom completion description'
+              if(containsTargetOrgFlag @($CurrentLine[-1], $CurrentLine[-2]) $targetOrgFlags){
+                orgs | Where-Object { $search = $CurrentLine[-1].replace($targetOrgFlag, "").Trim(); return ($search -eq "" ? $true : $_ -like "*$search*") } | Sort-Object | ForEach-Object {
+                  New-Object -Type CompletionResult -ArgumentList "$_", $_, 'ParameterValue', 'Custom completion description'
                 }
               }else{
                 if ($NextArg.keys -gt 0) {
@@ -415,16 +449,48 @@ Register-ArgumentCompleter -Native -CommandName test-cli -ScriptBlock $scriptblo
   it('generates a valid completion file with a bin alias.', () => {
     config.bin = 'test-cli'
     config.binAliases = ['test']
-    const powerShellComp = new PowerShellComp(config as Config, testOrgs)
+    const powerShellComp = new PowerShellComp(config as Config)
     expect(powerShellComp.generate()).to.equal(`
 using namespace System.Management.Automation
 using namespace System.Management.Automation.Language
 
-$orgs = @{
-  "org1alias" = @{}
-"org2.username@org.com" = @{}
-"org3alias" = @{}
+function orgs(){
+  $orglist=sf autocomplete --display-orgs
+  return $orglist
+}
 
+$targetOrgFlags=@{
+  "long" = "--target-org"
+  "short" = "-o"
+}
+
+function containsTargetOrgFlag {
+  param (
+      [Parameter(Mandatory=$true)]
+      [array]$items,
+
+      [Parameter(Mandatory=$true)]
+      [hashtable]$targetOrgFlags
+  )
+
+  foreach ($item in $items) {
+      if ($item -like $targetOrgFlags['long']+"*" -Or $item -like $targetOrgFlags['short']+"*") {return $true}
+  }
+  return $false
+}
+
+function getTargetOrgFlag {
+  param (
+      [Parameter(Mandatory=$true)]
+      [array]$line,
+
+      [Parameter(Mandatory=$true)]
+      [hashtable]$targetOrgFlags
+  )
+
+  if($line -contains $targetOrgFlags['long']) {return $targetOrgFlags['long']}
+  if($line -contains $targetOrgFlags['short']) {return $targetOrgFlags['short']} 
+  return ""
 }
 
 $scriptblock = {
@@ -479,6 +545,7 @@ $scriptblock = {
   "summary" = "Display autocomplete installation instructions."
   "flags" = @{
     "help" = @{ "summary" = "Show help for command" }
+    "display-orgs" = @{ "summary" = "Display authenticated orgs." }
     "refresh-cache" = @{ "summary" = "Refresh cache (ignores displaying instructions)" }
   }
 }
@@ -558,11 +625,12 @@ $scriptblock = {
           # Complete flags
           # \`cli config list -<TAB>\`
           if ($WordToComplete -like '-*') {
-            if($CurrentLine[-1] -like "--target-org*"){
-              $search = $CurrentLine[-1].Substring('--target-org '.Length)
-              $orgs.Keys | Where-Object { $_ -like "$search*" } | Sort-Object | ForEach-Object {
-                New-Object -Type CompletionResult -ArgumentList "--target-org $_", $_, 'ParameterValue', 'Custom completion description'
-              }              
+            if(containsTargetOrgFlag @($CurrentLine[-1]) $targetOrgFlags){
+              $targetOrgFlag=getTargetOrgFlag $CurrentLine $targetOrgFlags
+              
+              orgs | Where-Object { $search = $CurrentLine[-1].replace($targetOrgFlag, "").Trim(); return ($search -eq "" ? $true : $_ -like "*$search*") } | Sort-Object | ForEach-Object {
+                New-Object -Type CompletionResult -ArgumentList "$_", $_, 'ParameterValue', 'Custom completion description'
+              }
             }else{
               $NextArg._command.flags.GetEnumerator() | Sort-Object -Property key
                   | Where-Object {
@@ -581,10 +649,11 @@ $scriptblock = {
               # This could be a coTopic. We remove the "_command" hashtable
               # from $NextArg and check if there's a command under the current partial ID.
               $NextArg.remove("_command")
+              $targetOrgFlag=getTargetOrgFlag $CurrentLine $targetOrgFlags
 
-              if($CurrentLine[-2] -like "--target-org*" -Or $CurrentLine[-1] -like "--target-org*"){#echo 'here'
-                $orgs.Keys | Where-Object { $search = $CurrentLine[-1]; if ($search -eq "" -Or $search -eq "--target-org") { return $true } else { return $_ -like "*$search*" } } | Sort-Object | ForEach-Object {
-                    New-Object -Type CompletionResult -ArgumentList "$_", $_, 'ParameterValue', 'Custom completion description'
+              if(containsTargetOrgFlag @($CurrentLine[-1], $CurrentLine[-2]) $targetOrgFlags){
+                orgs | Where-Object { $search = $CurrentLine[-1].replace($targetOrgFlag, "").Trim(); return ($search -eq "" ? $true : $_ -like "*$search*") } | Sort-Object | ForEach-Object {
+                  New-Object -Type CompletionResult -ArgumentList "$_", $_, 'ParameterValue', 'Custom completion description'
                 }
               }else{
                 if ($NextArg.keys -gt 0) {
@@ -627,16 +696,48 @@ Register-ArgumentCompleter -Native -CommandName @("test","test-cli") -ScriptBloc
   it('generates a valid completion file with multiple bin aliases.', () => {
     config.bin = 'test-cli'
     config.binAliases = ['test', 'test1']
-    const powerShellComp = new PowerShellComp(config as Config, testOrgs)
+    const powerShellComp = new PowerShellComp(config as Config)
     expect(powerShellComp.generate()).to.equal(`
 using namespace System.Management.Automation
 using namespace System.Management.Automation.Language
 
-$orgs = @{
-  "org1alias" = @{}
-"org2.username@org.com" = @{}
-"org3alias" = @{}
+function orgs(){
+  $orglist=sf autocomplete --display-orgs
+  return $orglist
+}
 
+$targetOrgFlags=@{
+  "long" = "--target-org"
+  "short" = "-o"
+}
+
+function containsTargetOrgFlag {
+  param (
+      [Parameter(Mandatory=$true)]
+      [array]$items,
+
+      [Parameter(Mandatory=$true)]
+      [hashtable]$targetOrgFlags
+  )
+
+  foreach ($item in $items) {
+      if ($item -like $targetOrgFlags['long']+"*" -Or $item -like $targetOrgFlags['short']+"*") {return $true}
+  }
+  return $false
+}
+
+function getTargetOrgFlag {
+  param (
+      [Parameter(Mandatory=$true)]
+      [array]$line,
+
+      [Parameter(Mandatory=$true)]
+      [hashtable]$targetOrgFlags
+  )
+
+  if($line -contains $targetOrgFlags['long']) {return $targetOrgFlags['long']}
+  if($line -contains $targetOrgFlags['short']) {return $targetOrgFlags['short']} 
+  return ""
 }
 
 $scriptblock = {
@@ -691,6 +792,7 @@ $scriptblock = {
   "summary" = "Display autocomplete installation instructions."
   "flags" = @{
     "help" = @{ "summary" = "Show help for command" }
+    "display-orgs" = @{ "summary" = "Display authenticated orgs." }
     "refresh-cache" = @{ "summary" = "Refresh cache (ignores displaying instructions)" }
   }
 }
@@ -770,11 +872,12 @@ $scriptblock = {
           # Complete flags
           # \`cli config list -<TAB>\`
           if ($WordToComplete -like '-*') {
-            if($CurrentLine[-1] -like "--target-org*"){
-              $search = $CurrentLine[-1].Substring('--target-org '.Length)
-              $orgs.Keys | Where-Object { $_ -like "$search*" } | Sort-Object | ForEach-Object {
-                New-Object -Type CompletionResult -ArgumentList "--target-org $_", $_, 'ParameterValue', 'Custom completion description'
-              }              
+            if(containsTargetOrgFlag @($CurrentLine[-1]) $targetOrgFlags){
+              $targetOrgFlag=getTargetOrgFlag $CurrentLine $targetOrgFlags
+              
+              orgs | Where-Object { $search = $CurrentLine[-1].replace($targetOrgFlag, "").Trim(); return ($search -eq "" ? $true : $_ -like "*$search*") } | Sort-Object | ForEach-Object {
+                New-Object -Type CompletionResult -ArgumentList "$_", $_, 'ParameterValue', 'Custom completion description'
+              }
             }else{
               $NextArg._command.flags.GetEnumerator() | Sort-Object -Property key
                   | Where-Object {
@@ -793,10 +896,11 @@ $scriptblock = {
               # This could be a coTopic. We remove the "_command" hashtable
               # from $NextArg and check if there's a command under the current partial ID.
               $NextArg.remove("_command")
+              $targetOrgFlag=getTargetOrgFlag $CurrentLine $targetOrgFlags
 
-              if($CurrentLine[-2] -like "--target-org*" -Or $CurrentLine[-1] -like "--target-org*"){#echo 'here'
-                $orgs.Keys | Where-Object { $search = $CurrentLine[-1]; if ($search -eq "" -Or $search -eq "--target-org") { return $true } else { return $_ -like "*$search*" } } | Sort-Object | ForEach-Object {
-                    New-Object -Type CompletionResult -ArgumentList "$_", $_, 'ParameterValue', 'Custom completion description'
+              if(containsTargetOrgFlag @($CurrentLine[-1], $CurrentLine[-2]) $targetOrgFlags){
+                orgs | Where-Object { $search = $CurrentLine[-1].replace($targetOrgFlag, "").Trim(); return ($search -eq "" ? $true : $_ -like "*$search*") } | Sort-Object | ForEach-Object {
+                  New-Object -Type CompletionResult -ArgumentList "$_", $_, 'ParameterValue', 'Custom completion description'
                 }
               }else{
                 if ($NextArg.keys -gt 0) {

@@ -137,32 +137,32 @@ $targetOrgFlags=@{
 }
 
 function containsTargetOrgFlag {
-    param (
-        [Parameter(Mandatory=$true)]
-        [array]$items,
+  param (
+      [Parameter(Mandatory=$true)]
+      [array]$items,
 
-        [Parameter(Mandatory=$true)]
-        [hashtable]$targetOrgFlags
-    )
+      [Parameter(Mandatory=$true)]
+      [hashtable]$targetOrgFlags
+  )
 
-    foreach ($item in $items) {
-        if ($item -like $targetOrgFlags['long']+"*" -Or $item -like $targetOrgFlags['short']+"*") {return $true}
-    }
-    return $false
+  foreach ($item in $items) {
+      if ($item -like $targetOrgFlags['long']+"*" -Or $item -like $targetOrgFlags['short']+"*") {return $true}
+  }
+  return $false
 }
 
 function getTargetOrgFlag {
-    param (
-        [Parameter(Mandatory=$true)]
-        [array]$line,
+  param (
+      [Parameter(Mandatory=$true)]
+      [array]$line,
 
-        [Parameter(Mandatory=$true)]
-        [hashtable]$targetOrgFlags
-    )
+      [Parameter(Mandatory=$true)]
+      [hashtable]$targetOrgFlags
+  )
 
-    if($line -contains $targetOrgFlags['long']) {return $targetOrgFlags['long']}
-    if($line -contains $targetOrgFlags['short']) {return $targetOrgFlags['short']} 
-    return ""
+  if($line -contains $targetOrgFlags['long']) {return $targetOrgFlags['long']}
+  if($line -contains $targetOrgFlags['short']) {return $targetOrgFlags['short']} 
+  return ""
 }
 
 $scriptblock = {
