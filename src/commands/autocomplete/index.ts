@@ -105,20 +105,20 @@ export default class Index extends AutocompleteBase {
         const note = noteFromShell(shell)
 
         this.log(`
-  ${chalk.bold(`Setup Instructions for ${bin.toUpperCase()} CLI Autocomplete ---`)}
+${chalk.bold(`Setup Instructions for ${bin.toUpperCase()} CLI Autocomplete ---`)}
 
-  1) Add the autocomplete ${shell === 'powershell' ? 'file' : 'env var'} to your ${shell} profile and source it
+1) Add the autocomplete ${shell === 'powershell' ? 'file' : 'env var'} to your ${shell} profile and source it
 
-  ${chalk.cyan(instructions)}
+${chalk.cyan(instructions)}
 
-  ${chalk.bold('NOTE')}: ${note}
+${chalk.bold('NOTE')}: ${note}
 
-  2) Test it out, e.g.:
-  ${chalk.cyan(`$ ${bin} ${tabStr}`)}                 # Command completion
-  ${chalk.cyan(`$ ${bin} command --${tabStr}`)}       # Flag completion
+2) Test it out, e.g.:
+${chalk.cyan(`$ ${bin} ${tabStr}`)}                 # Command completion
+${chalk.cyan(`$ ${bin} command --${tabStr}`)}       # Flag completion
 
-  Enjoy!
-  `)
+Enjoy!
+`)
       }
     }
   }
