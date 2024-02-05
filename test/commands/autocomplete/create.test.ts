@@ -10,7 +10,6 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../.
 const config = new Config({root})
 
 // autocomplete will throw error on windows ci
-import {testOrgs} from '../../helpers/orgruntest.js'
 import {default as skipWindows} from '../../helpers/runtest.js'
 
 skipWindows('Create', () => {
@@ -20,7 +19,7 @@ skipWindows('Create', () => {
     let plugin: any
     before(async () => {
       await config.load()
-      cmd = new Create([], config, testOrgs)
+      cmd = new Create([], config)
       plugin = new Plugin({root})
       cmd.config.plugins = [plugin]
       plugin._manifest = () =>
@@ -78,12 +77,6 @@ autocomplete:foo --bar --baz --dangerous --brackets --double-quotes --multi-line
 foo --bar --baz --dangerous --brackets --double-quotes --multi-line --json
 "
 
-local orgs="
-org1alias
-org2.username@org.com
-org3alias
-"
-
 local targetOrgFlags=("--target-org" "-o")
 
 function _isTargetOrgFlag(){
@@ -97,6 +90,8 @@ function _isTargetOrgFlag(){
 }
 
 function _suggestOrgs(){
+  local orgs="$(sf autocomplete --display-orgs bash 2>/dev/null)"
+
   if [[ "$cur" != "-"* ]]; then
     opts=$(printf "%s " "\${orgs[@]}" | grep -i "\${cur}")
     COMPREPLY=($(compgen -W "$opts"))
@@ -143,7 +138,7 @@ complete -o default -F _oclif-example_autocomplete oclif-example\n`)
       await spacedConfig.load()
       spacedConfig.topicSeparator = ' '
       // : any is required for the next two lines otherwise ts will complain about _manifest and bashCompletionFunction being private down below
-      const spacedCmd: any = new Create([], spacedConfig, testOrgs)
+      const spacedCmd: any = new Create([], spacedConfig)
       const spacedPlugin: any = new Plugin({root})
       spacedCmd.config.plugins = [spacedPlugin]
       spacedPlugin._manifest = () =>
@@ -168,12 +163,6 @@ autocomplete:foo --bar --baz --dangerous --brackets --double-quotes --multi-line
 foo --bar --baz --dangerous --brackets --double-quotes --multi-line --json
 "
 
-local orgs="
-org1alias
-org2.username@org.com
-org3alias
-"
-
 local targetOrgFlags=("--target-org" "-o")
 
 function _isTargetOrgFlag(){
@@ -187,6 +176,8 @@ function _isTargetOrgFlag(){
 }
 
 function _suggestOrgs(){
+  local orgs="$(sf autocomplete --display-orgs bash 2>/dev/null)"
+
   if [[ "$cur" != "-"* ]]; then
     opts=$(printf "%s " "\${orgs[@]}" | grep -i "\${cur}")
     COMPREPLY=($(compgen -W "$opts"))
@@ -275,12 +266,12 @@ _oclif-example () {
   local _command_id=\${words[2]}
   local _cur=\${words[CURRENT]}
   local -a _command_flags=()
-  local -a _orgs=(
-org1alias
-org2.username@org.com
-org3alias
-)
 
+  _orgs(){
+    local orgs=(\${(@f)$(sf autocomplete --display-orgs zsh 2>/dev/null)})
+    echo "$orgs"
+  }
+  
   ## public cli commands & flags
   local -a _all_commands=(
 "autocomplete:display autocomplete instructions"
