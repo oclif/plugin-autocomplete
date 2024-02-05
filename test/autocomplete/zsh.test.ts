@@ -6,7 +6,6 @@ import {fileURLToPath} from 'node:url'
 
 import ZshCompWithSpaces from '../../src/autocomplete/zsh.js'
 // autocomplete will throw error on windows ci
-import {testOrgs} from '../helpers/orgruntest.js'
 import {default as skipWindows} from '../helpers/runtest.js'
 
 class MyCommandClass implements Command.Cached {
@@ -209,18 +208,12 @@ skipWindows('zsh comp', () => {
 
     it('generates a valid completion file.', () => {
       config.bin = 'test-cli'
-      const zshCompWithSpaces = new ZshCompWithSpaces(config as Config, testOrgs)
+      const zshCompWithSpaces = new ZshCompWithSpaces(config as Config)
       expect(zshCompWithSpaces.generate()).to.equal(`#compdef test-cli
 
 
 _orgs(){
-  local orgs
-  orgs=(
-    org1alias
-org2.username@org.com
-org3alias
-  )
-
+  local orgs=(\${(@f)$(sf autocomplete --display-orgs zsh 2>/dev/null)})
   _describe -t orgs 'orgs' orgs && return 0
 }
 
@@ -353,18 +346,12 @@ _test-cli
     it('generates a valid completion file with a bin alias.', () => {
       config.bin = 'test-cli'
       config.binAliases = ['testing']
-      const zshCompWithSpaces = new ZshCompWithSpaces(config as Config, testOrgs)
+      const zshCompWithSpaces = new ZshCompWithSpaces(config as Config)
       expect(zshCompWithSpaces.generate()).to.equal(`#compdef test-cli
 compdef testing=test-cli
 
 _orgs(){
-  local orgs
-  orgs=(
-    org1alias
-org2.username@org.com
-org3alias
-  )
-
+  local orgs=(\${(@f)$(sf autocomplete --display-orgs zsh 2>/dev/null)})
   _describe -t orgs 'orgs' orgs && return 0
 }
 
@@ -497,19 +484,13 @@ _test-cli
     it('generates a valid completion file with multiple bin aliases.', () => {
       config.bin = 'test-cli'
       config.binAliases = ['testing', 'testing2']
-      const zshCompWithSpaces = new ZshCompWithSpaces(config as Config, testOrgs)
+      const zshCompWithSpaces = new ZshCompWithSpaces(config as Config)
       expect(zshCompWithSpaces.generate()).to.equal(`#compdef test-cli
 compdef testing=test-cli
 compdef testing2=test-cli
 
 _orgs(){
-  local orgs
-  orgs=(
-    org1alias
-org2.username@org.com
-org3alias
-  )
-
+  local orgs=(\${(@f)$(sf autocomplete --display-orgs zsh 2>/dev/null)})
   _describe -t orgs 'orgs' orgs && return 0
 }
 

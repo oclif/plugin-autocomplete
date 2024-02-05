@@ -89,11 +89,8 @@ export default class ZshCompWithSpaces {
 ${this.config.binAliases?.map((a) => `compdef ${a}=${this.config.bin}`).join('\n') ?? ''}
 
 _orgs(){
-  if [[ -z $ORGS ]]; then
-    export ORGS=(\${(@f)$(sf autocomplete --display-orgs zsh 2>/dev/null)})
-  fi
-
-  _describe -t ORGS 'ORGS' ORGS && return 0
+  local orgs=(\${(@f)$(sf autocomplete --display-orgs zsh 2>/dev/null)})
+  _describe -t orgs 'orgs' orgs && return 0
 }
 
 ${this.topics.map((t) => this.genZshTopicCompFun(t.name)).join('\n')}
