@@ -20,8 +20,6 @@ export default class Script extends AutocompleteBase {
     const {args} = await this.parse(Script)
     const shell = args.shell ?? this.config.shell
 
-    const binUpcase = this.cliBinEnvVar
-    const shellUpcase = shell.toUpperCase()
     if (shell === 'powershell') {
       const completionFuncPath = path.join(
         this.config.cacheDir,
@@ -33,12 +31,10 @@ export default class Script extends AutocompleteBase {
       this.log(`. ${completionFuncPath}`)
     } else {
       this.log(
-        `${this.prefix}${binUpcase}_AC_${shellUpcase}_SETUP_PATH=${path.join(
+        `${this.prefix}${this.getSetupEnvVar(shell)}=${path.join(
           this.autocompleteCacheDir,
           `${shell}_setup`,
-        )} && test -f $${binUpcase}_AC_${shellUpcase}_SETUP_PATH && source $${binUpcase}_AC_${shellUpcase}_SETUP_PATH;${
-          this.suffix
-        }`,
+        )} && test -f $${this.getSetupEnvVar(shell)} && source $${this.getSetupEnvVar(shell)};${this.suffix}`,
       )
     }
   }

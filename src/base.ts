@@ -29,6 +29,10 @@ export abstract class AutocompleteBase extends Command {
     }
   }
 
+  public getSetupEnvVar(shell: string): string {
+    return `${this.cliBinEnvVar}_AC_${shell.toUpperCase()}_SETUP_PATH`
+  }
+
   writeLogFile(msg: string) {
     mkdirSync(this.config.cacheDir, {recursive: true})
     const entry = `[${new Date().toISOString()}] ${msg}\n`
