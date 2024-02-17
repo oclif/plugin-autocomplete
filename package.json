@@ -30,7 +30,7 @@
     "eslint-config-prettier": "^9.1.0",
     "globby": "^11",
     "husky": "^8.0.3",
-    "lint-staged": "^15.2.1",
+    "lint-staged": "^15.2.2",
     "mocha": "^10.3.0",
     "nock": "^13.5.1",
     "nyc": "^15.1.0",
