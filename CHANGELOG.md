@@ -1,3 +1,9 @@
+## [3.0.10](https://github.com/oclif/plugin-autocomplete/compare/3.0.9...3.0.10) (2024-02-22)
+
+### Bug Fixes
+
+- **deps:** bump ip from 1.1.5 to 1.1.9 ([#626](https://github.com/oclif/plugin-autocomplete/issues/626)) ([88f3a58](https://github.com/oclif/plugin-autocomplete/commit/88f3a5824a96b74d20a898e3b9146e0cac18a71e))
+
 ## [3.0.9](https://github.com/oclif/plugin-autocomplete/compare/3.0.8...3.0.9) (2024-02-18)
 
 ### Bug Fixes
