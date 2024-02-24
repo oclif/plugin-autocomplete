@@ -76,8 +76,8 @@ Setup Instructions for ${this.config.bin.toUpperCase()} CLI Autocomplete ---
 
 2) Start using autocomplete:
 
-  ${chalk.cyan(`sf ${tabStr}`)}                  # Command completion
-  ${chalk.cyan(`sf command --${tabStr}`)}        # Flag completion
+  ${chalk.cyan(`${this.config.bin} ${tabStr}`)}                  # Command completion
+  ${chalk.cyan(`${this.config.bin} command --${tabStr}`)}        # Flag completion
   `
         break
       }
@@ -96,8 +96,8 @@ Setup Instructions for ${this.config.bin.toUpperCase()} CLI Autocomplete ---
 
 3) Start using autocomplete:
 
-  ${chalk.cyan(`sf ${tabStr}`)}                  # Command completion
-  ${chalk.cyan(`sf command --${tabStr}`)}        # Flag completion
+  ${chalk.cyan(`${this.config.bin} ${tabStr}`)}                  # Command completion
+  ${chalk.cyan(`${this.config.bin} command --${tabStr}`)}        # Flag completion
   `
         break
       }
@@ -115,8 +115,8 @@ Setup Instructions for ${this.config.bin.toUpperCase()} CLI Autocomplete ---
 
 3) Start using autocomplete:
 
-  ${chalk.cyan(`sf ${tabStr}`)}                  # Command completion
-  ${chalk.cyan(`sf command --${tabStr}`)}        # Flag completion
+  ${chalk.cyan(`${this.config.bin} ${tabStr}`)}                  # Command completion
+  ${chalk.cyan(`${this.config.bin} command --${tabStr}`)}        # Flag completion
   `
         break
       }
