@@ -62,6 +62,6 @@ EXAMPLES
   $ oclif-example autocomplete --refresh-cache
 ```
 
-_See code: [src/commands/autocomplete/index.ts](https://github.com/oclif/plugin-autocomplete/blob/3.0.10/src/commands/autocomplete/index.ts)_
+_See code: [src/commands/autocomplete/index.ts](https://github.com/oclif/plugin-autocomplete/blob/3.0.11/src/commands/autocomplete/index.ts)_
 
 <!-- commandsstop -->

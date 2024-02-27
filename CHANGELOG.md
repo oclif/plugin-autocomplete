@@ -1,3 +1,9 @@
+## [3.0.11](https://github.com/oclif/plugin-autocomplete/compare/3.0.10...3.0.11) (2024-02-26)
+
+### Bug Fixes
+
+- output correct CLI binary name in 'autocomplete' command ([77206a5](https://github.com/oclif/plugin-autocomplete/commit/77206a53464e825edbd2b68554df09cd3daad02f))
+
 ## [3.0.10](https://github.com/oclif/plugin-autocomplete/compare/3.0.9...3.0.10) (2024-02-22)
 
 ### Bug Fixes
