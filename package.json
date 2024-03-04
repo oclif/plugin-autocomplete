@@ -45,7 +45,8 @@
   "files": [
     "oclif.manifest.json",
     "npm-shrinkwrap.json",
-    "/lib"
+    "/lib",
+    "oclif.lock"
   ],
   "homepage": "https://github.com/oclif/plugin-autocomplete",
   "keywords": [
@@ -63,12 +64,12 @@
   "repository": "oclif/plugin-autocomplete",
   "scripts": {
     "build": "shx rm -rf lib && tsc",
-    "clean": "shx rm -f oclif.manifest.json npm-shrinkwrap.json",
+    "clean": "shx rm -f oclif.manifest.json npm-shrinkwrap.json oclif.lock",
     "compile": "tsc",
     "lint": "eslint . --ext .ts",
     "postpack": "yarn run clean",
     "posttest": "yarn lint",
-    "prepack": "yarn build && oclif manifest && oclif readme && npm shrinkwrap",
+    "prepack": "yarn build && oclif manifest && oclif readme && npm shrinkwrap && oclif lock",
     "prepare": "husky && yarn build",
     "pretest": "yarn build && tsc -p test --noEmit",
     "test": "mocha --forbid-only \"test/**/*.test.ts\"",
