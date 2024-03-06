@@ -1,3 +1,9 @@
+## [3.0.12](https://github.com/oclif/plugin-autocomplete/compare/3.0.11...3.0.12) (2024-03-06)
+
+### Bug Fixes
+
+- publish npm-shrinkwrap.json ([fe7947a](https://github.com/oclif/plugin-autocomplete/commit/fe7947a39edd900aca16b11618bce1aa0588bbcf))
+
 ## [3.0.11](https://github.com/oclif/plugin-autocomplete/compare/3.0.10...3.0.11) (2024-02-26)
 
 ### Bug Fixes
