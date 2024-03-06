@@ -16,7 +16,6 @@
     "@oclif/prettier-config": "^0.2.1",
     "@oclif/test": "^3.1.12",
     "@types/chai": "^4",
-    "@types/chalk": "^2.2.0",
     "@types/debug": "^4.1.12",
     "@types/ejs": "^3.1.5",
     "@types/mocha": "^10.0.6",
@@ -28,8 +27,7 @@
     "eslint-config-oclif": "^5.0.2",
     "eslint-config-oclif-typescript": "^3.0.47",
     "eslint-config-prettier": "^9.1.0",
-    "globby": "^11",
-    "husky": "^8.0.3",
+    "husky": "^9",
     "lint-staged": "^15.2.2",
     "mocha": "^10.3.0",
     "nock": "^13.5.3",
@@ -45,9 +43,10 @@
   },
   "exports": "./lib/index.js",
   "files": [
+    "oclif.manifest.json",
+    "npm-shrinkwrap.json",
     "/lib",
-    "/oclif.manifest.json",
-    "/oclif.lock"
+    "oclif.lock"
   ],
   "homepage": "https://github.com/oclif/plugin-autocomplete",
   "keywords": [
@@ -65,12 +64,14 @@
   "repository": "oclif/plugin-autocomplete",
   "scripts": {
     "build": "shx rm -rf lib && tsc",
+    "clean": "shx rm -f oclif.manifest.json npm-shrinkwrap.json oclif.lock",
+    "compile": "tsc",
     "lint": "eslint . --ext .ts",
-    "postpack": "shx rm -f oclif.manifest.json oclif.lock",
+    "postpack": "yarn run clean",
     "posttest": "yarn lint",
-    "prepack": "shx rm -rf lib && tsc && oclif lock && oclif manifest . && oclif readme",
-    "prepare": "husky install && yarn build",
-    "pretest": "yarn build && tsc -p test",
+    "prepack": "yarn build && oclif manifest && oclif readme && npm shrinkwrap && oclif lock",
+    "prepare": "husky && yarn build",
+    "pretest": "yarn build && tsc -p test --noEmit",
     "test": "mocha --forbid-only \"test/**/*.test.ts\"",
     "version": "oclif readme && git add README.md"
   },
