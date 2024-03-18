@@ -10,7 +10,10 @@ autocomplete plugin for oclif (bash, zsh and powershell)
 
 - [@oclif/plugin-autocomplete](#oclifplugin-autocomplete)
 - [Usage](#usage)
+  - [Topic separator](#topic-separator)
 - [Commands](#commands)
+  - [`oclif-example autocomplete [SHELL]`](#oclif-example-autocomplete-shell)
+- [Contributing](#contributing)
 <!-- tocstop -->
 
 # Usage
@@ -31,7 +34,12 @@ Docs: https://oclif.io/docs/topic_separator
 
 <!-- commands -->
 
-- [`oclif-example autocomplete [SHELL]`](#oclif-example-autocomplete-shell)
+- [@oclif/plugin-autocomplete](#oclifplugin-autocomplete)
+- [Usage](#usage)
+  - [Topic separator](#topic-separator)
+- [Commands](#commands)
+  - [`oclif-example autocomplete [SHELL]`](#oclif-example-autocomplete-shell)
+- [Contributing](#contributing)
 
 ## `oclif-example autocomplete [SHELL]`
 
@@ -65,3 +73,7 @@ EXAMPLES
 _See code: [src/commands/autocomplete/index.ts](https://github.com/oclif/plugin-autocomplete/blob/3.0.13/src/commands/autocomplete/index.ts)_
 
 <!-- commandsstop -->
+
+# Contributing
+
+See [contributing guide](./CONRTIBUTING.md)
