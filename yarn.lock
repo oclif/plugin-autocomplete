@@ -1718,10 +1718,10 @@
     node-gyp "^8.2.0"
     read-package-json-fast "^2.0.1"
 
-"@oclif/core@^3.21.0", "@oclif/core@^3.23.0":
-  version "3.23.0"
-  resolved "https://registry.yarnpkg.com/@oclif/core/-/core-3.23.0.tgz#d0ccc5f99c376e4bcfce04e8e94efae8417a53f8"
-  integrity sha512-giQ/8Ft8yXWg4IyPVtynPb7ihoQsa3A/1Q53UIJIhh+8k+EedE3lJ01yn6sq6Ha35IGqsG1WhkeHzlJIuldEaw==
+"@oclif/core@^3.21.0", "@oclif/core@^3.23.0", "@oclif/core@^3.25.2":
+  version "3.26.0"
+  resolved "https://registry.yarnpkg.com/@oclif/core/-/core-3.26.0.tgz#959d5e9f13f4ad6a4e98235ad125189df9ee4279"
+  integrity sha512-TpMdfD4tfA2tVVbd4l0PrP02o5KoUXYmudBbTC7CeguDo/GLoprw4uL8cMsaVA26+cbcy7WYtOEydQiHVtJixA==
   dependencies:
     "@types/cli-progress" "^3.11.5"
     ansi-escapes "^4.3.2"
@@ -1784,12 +1784,12 @@
   resolved "https://registry.yarnpkg.com/@oclif/prettier-config/-/prettier-config-0.2.1.tgz#1def9f38134f9bfb229257f48a35f7d0d183dc78"
   integrity sha512-XB8kwQj8zynXjIIWRm+6gO/r8Qft2xKtwBMSmq1JRqtA6TpwpqECqiu8LosBCyg2JBXuUy2lU23/L98KIR7FrQ==
 
-"@oclif/test@^3.2.5":
-  version "3.2.5"
-  resolved "https://registry.yarnpkg.com/@oclif/test/-/test-3.2.5.tgz#b66cb439c1317f440c0cf2209f95221080a9f624"
-  integrity sha512-ilMTbpkK22ZOGw11/IfumyagMTqEWpzD0ADyKKGcKWT8PXnnqxz9bCGPfBNqPk5pwsX4cvV1oM+OcPEqtJx02A==
+"@oclif/test@^3.2.6":
+  version "3.2.6"
+  resolved "https://registry.yarnpkg.com/@oclif/test/-/test-3.2.6.tgz#5ee01bcda02ca5f64488b5ee214a1d94e7eeeefc"
+  integrity sha512-UZAHGAG31lJUyLkGpE94E2Tt+cstGZ4FnS/fvcjeZMkUzlh78HcSHOQWj6FhT8Sd4v62TYYobXNADxEgp+qnng==
   dependencies:
-    "@oclif/core" "^3.23.0"
+    "@oclif/core" "^3.25.2"
     chai "^4.4.1"
     fancy-test "^3.0.13"
 
