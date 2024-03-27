@@ -212,6 +212,11 @@ skipWindows('zsh comp', () => {
       expect(zshCompWithSpaces.generate()).to.equal(`#compdef test-cli
 
 
+_orgs(){
+  local orgs=(\${(@f)$(sf autocomplete --display-orgs zsh 2>/dev/null)})
+  _describe -t orgs 'orgs' orgs && return 0
+}
+
 _test-cli_app() {
   local context state state_descr line
   typeset -A opt_args
@@ -344,6 +349,11 @@ _test-cli
       const zshCompWithSpaces = new ZshCompWithSpaces(config as Config)
       expect(zshCompWithSpaces.generate()).to.equal(`#compdef test-cli
 compdef testing=test-cli
+
+_orgs(){
+  local orgs=(\${(@f)$(sf autocomplete --display-orgs zsh 2>/dev/null)})
+  _describe -t orgs 'orgs' orgs && return 0
+}
 
 _test-cli_app() {
   local context state state_descr line
@@ -478,6 +488,11 @@ _test-cli
       expect(zshCompWithSpaces.generate()).to.equal(`#compdef test-cli
 compdef testing=test-cli
 compdef testing2=test-cli
+
+_orgs(){
+  local orgs=(\${(@f)$(sf autocomplete --display-orgs zsh 2>/dev/null)})
+  _describe -t orgs 'orgs' orgs && return 0
+}
 
 _test-cli_app() {
   local context state state_descr line

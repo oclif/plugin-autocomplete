@@ -126,6 +126,45 @@ ${hashtables.join('\n')}
 using namespace System.Management.Automation
 using namespace System.Management.Automation.Language
 
+function orgs(){
+  $orglist=sf autocomplete --display-orgs
+  return $orglist
+}
+
+$targetOrgFlags=@{
+  "long" = "--target-org"
+  "short" = "-o"
+}
+
+function containsTargetOrgFlag {
+  param (
+      [Parameter(Mandatory=$true)]
+      [array]$items,
+
+      [Parameter(Mandatory=$true)]
+      [hashtable]$targetOrgFlags
+  )
+
+  foreach ($item in $items) {
+      if ($item -like $targetOrgFlags['long']+"*" -Or $item -like $targetOrgFlags['short']+"*") {return $true}
+  }
+  return $false
+}
+
+function getTargetOrgFlag {
+  param (
+      [Parameter(Mandatory=$true)]
+      [array]$line,
+
+      [Parameter(Mandatory=$true)]
+      [hashtable]$targetOrgFlags
+  )
+
+  if($line -contains $targetOrgFlags['long']) {return $targetOrgFlags['long']}
+  if($line -contains $targetOrgFlags['short']) {return $targetOrgFlags['short']} 
+  return ""
+}
+
 $scriptblock = {
     param($WordToComplete, $CommandAst, $CursorPosition)
 
@@ -194,6 +233,13 @@ $scriptblock = {
           # Complete flags
           # \`cli config list -<TAB>\`
           if ($WordToComplete -like '-*') {
+            if(containsTargetOrgFlag @($CurrentLine[-1]) $targetOrgFlags){
+              $targetOrgFlag=getTargetOrgFlag $CurrentLine $targetOrgFlags
+              
+              orgs | Where-Object { $search = $CurrentLine[-1].replace($targetOrgFlag, "").Trim(); return ($search -eq "" ? $true : $_ -like "*$search*") } | Sort-Object | ForEach-Object {
+                New-Object -Type CompletionResult -ArgumentList "$_", $_, 'ParameterValue', 'Custom completion description'
+              }
+            }else{
               $NextArg._command.flags.GetEnumerator() | Sort-Object -Property key
                   | Where-Object {
                       # Filter out already used flags (unless \`flag.multiple = true\`).
@@ -206,21 +252,29 @@ $scriptblock = {
                           "ParameterValue",
                           "$($NextArg._command.flags[$_.Key].summary ?? " ")"
                   }
+            }
           } else {
               # This could be a coTopic. We remove the "_command" hashtable
               # from $NextArg and check if there's a command under the current partial ID.
               $NextArg.remove("_command")
+              $targetOrgFlag=getTargetOrgFlag $CurrentLine $targetOrgFlags
 
-              if ($NextArg.keys -gt 0) {
-                  $NextArg.GetEnumerator() | Where-Object {
-                      $_.Key.StartsWith("$WordToComplete")
-                    } | Sort-Object -Property key | ForEach-Object {
-                    New-Object -Type CompletionResult -ArgumentList \`
-                      $($Mode -eq "MenuComplete" ? "$($_.Key) " : "$($_.Key)"),
-                      $_.Key,
-                      "ParameterValue",
-                      "$($NextArg[$_.Key]._summary ?? " ")"
-                  }
+              if(containsTargetOrgFlag @($CurrentLine[-1], $CurrentLine[-2]) $targetOrgFlags){
+                orgs | Where-Object { $search = $CurrentLine[-1].replace($targetOrgFlag, "").Trim(); return ($search -eq "" ? $true : $_ -like "*$search*") } | Sort-Object | ForEach-Object {
+                  New-Object -Type CompletionResult -ArgumentList "$_", $_, 'ParameterValue', 'Custom completion description'
+                }
+              }else{
+                if ($NextArg.keys -gt 0) {
+                    $NextArg.GetEnumerator() | Where-Object {
+                        $_.Key.StartsWith("$WordToComplete")
+                      } | Sort-Object -Property key | ForEach-Object {
+                      New-Object -Type CompletionResult -ArgumentList \`
+                        $($Mode -eq "MenuComplete" ? "$($_.Key) " : "$($_.Key)"),
+                        $_.Key,
+                        "ParameterValue",
+                        "$($NextArg[$_.Key]._summary ?? " ")"
+                    }
+                }
               }
           }
       } else {
