@@ -1328,12 +1328,12 @@
     chalk "^5.3.0"
     fast-levenshtein "^3.0.0"
 
-"@oclif/plugin-warn-if-update-available@^3.0.12":
-  version "3.0.14"
-  resolved "https://registry.yarnpkg.com/@oclif/plugin-warn-if-update-available/-/plugin-warn-if-update-available-3.0.14.tgz#6fe230e900a2d5a074e5d3c27c077304e2378029"
-  integrity sha512-CCChGqmR8F0JHJ4ikXD1KgNC/dAsd3FJeQHsZm1BP5YlzLCtSEu6Oz/lpdH1OdnCbVBHJkrquCiL/81S9DTzGw==
+"@oclif/plugin-warn-if-update-available@^3.0.14":
+  version "3.0.15"
+  resolved "https://registry.yarnpkg.com/@oclif/plugin-warn-if-update-available/-/plugin-warn-if-update-available-3.0.15.tgz#533e5914c9efc46a1539b5a5e931dbf3c32ffb52"
+  integrity sha512-JtPTJFjL6izMCe5dDS2ix2PyWAD2DeJ5Atzd2HHRifbPcmOxaUE62FKTnarIwfPHLMF/nN33liwo9InAdirozg==
   dependencies:
-    "@oclif/core" "^3.23.0"
+    "@oclif/core" "^3.26.0"
     chalk "^5.3.0"
     debug "^4.1.0"
     http-call "^5.2.2"
@@ -5078,10 +5078,10 @@ object.values@^1.1.7:
     define-properties "^1.2.0"
     es-abstract "^1.22.1"
 
-oclif@^4.6.2:
-  version "4.6.2"
-  resolved "https://registry.yarnpkg.com/oclif/-/oclif-4.6.2.tgz#f4aec6818fad958f0b3f45996c0df31ca74060a4"
-  integrity sha512-k0QUbKBYhG+iam1wL5AJ8AimLemPTX8DhxnRnhrSJnuVn6BciFwrJ19MYKPmt3w47d2MZtyOfKfyZFBlvfr1gA==
+oclif@^4.7.2:
+  version "4.7.2"
+  resolved "https://registry.yarnpkg.com/oclif/-/oclif-4.7.2.tgz#3d74b23f319870508bf8dbefc5147bfd2d46fb2d"
+  integrity sha512-OVBVw3icaC5dJtDcojn61HAtilqqVu9Uae+Cd/EVNVeAOMe2G51MpMg5RDj8B3KKvuq8EudzJkK78OWdhoTZVQ==
   dependencies:
     "@aws-sdk/client-cloudfront" "^3.535.0"
     "@aws-sdk/client-s3" "^3.535.0"
@@ -5091,7 +5091,7 @@ oclif@^4.6.2:
     "@oclif/core" "^3.21.0"
     "@oclif/plugin-help" "^6.0.18"
     "@oclif/plugin-not-found" "^3.0.14"
-    "@oclif/plugin-warn-if-update-available" "^3.0.12"
+    "@oclif/plugin-warn-if-update-available" "^3.0.14"
     async-retry "^1.3.3"
     chalk "^4"
     change-case "^4"
@@ -5104,7 +5104,7 @@ oclif@^4.6.2:
     lodash.template "^4.5.0"
     normalize-package-data "^3.0.3"
     semver "^7.6.0"
-    sort-package-json "^2.8.0"
+    sort-package-json "^2.10.0"
     validate-npm-package-name "^5.0.0"
 
 once@^1.3.0:
@@ -5769,10 +5769,10 @@ sort-object-keys@^1.1.3:
   resolved "https://registry.yarnpkg.com/sort-object-keys/-/sort-object-keys-1.1.3.tgz#bff833fe85cab147b34742e45863453c1e190b45"
   integrity sha512-855pvK+VkU7PaKYPc+Jjnmt4EzejQHyhhF33q31qG8x7maDzkeFhAAThdCYay11CISO+qAMwjOBP+fPZe0IPyg==
 
-sort-package-json@^2.8.0:
-  version "2.8.0"
-  resolved "https://registry.yarnpkg.com/sort-package-json/-/sort-package-json-2.8.0.tgz#6a46439ad0fef77f091e678e103f03ecbea575c8"
-  integrity sha512-PxeNg93bTJWmDGnu0HADDucoxfFiKkIr73Kv85EBThlI1YQPdc0XovBgg2llD0iABZbu2SlKo8ntGmOP9wOj/g==
+sort-package-json@^2.10.0:
+  version "2.10.0"
+  resolved "https://registry.yarnpkg.com/sort-package-json/-/sort-package-json-2.10.0.tgz#6be07424bf3b7db9fbb1bdd69e7945f301026d8a"
+  integrity sha512-MYecfvObMwJjjJskhxYfuOADkXp1ZMMnCFC8yhp+9HDsk7HhR336hd7eiBs96lTXfiqmUNI+WQCeCMRBhl251g==
   dependencies:
     detect-indent "^7.0.1"
     detect-newline "^4.0.0"
@@ -5780,6 +5780,7 @@ sort-package-json@^2.8.0:
     git-hooks-list "^3.0.0"
     globby "^13.1.2"
     is-plain-obj "^4.1.0"
+    semver "^7.6.0"
     sort-object-keys "^1.1.3"
 
 source-map@^0.5.0:
