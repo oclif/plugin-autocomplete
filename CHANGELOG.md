@@ -1,3 +1,9 @@
+## [3.0.14](https://github.com/oclif/plugin-autocomplete/compare/3.0.13...3.0.14) (2024-04-14)
+
+### Bug Fixes
+
+- **deps:** bump ejs from 3.1.9 to 3.1.10 ([#668](https://github.com/oclif/plugin-autocomplete/issues/668)) ([8dc03d1](https://github.com/oclif/plugin-autocomplete/commit/8dc03d1ae51081ff783170e75bcf8a8b28950bf2))
+
 ## [3.0.13](https://github.com/oclif/plugin-autocomplete/compare/3.0.12...3.0.13) (2024-03-10)
 
 ### Bug Fixes
