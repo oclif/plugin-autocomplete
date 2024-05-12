@@ -1658,7 +1658,7 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@oclif/core@^3.21.0", "@oclif/core@^3.26.0", "@oclif/core@^3.26.2", "@oclif/core@^3.26.4", "@oclif/core@^3.26.5":
+"@oclif/core@^3.21.0", "@oclif/core@^3.26.0", "@oclif/core@^3.26.2", "@oclif/core@^3.26.5":
   version "3.26.5"
   resolved "https://registry.yarnpkg.com/@oclif/core/-/core-3.26.5.tgz#6a1962971fcaa4e235c0d6a83d50681ccb2bd0e4"
   integrity sha512-uRmAujGJjLhhgpLylbiuHuPt9Ec7u6aJ72utuSPNTRw47+W5vbQSGnLGPiil1Mt5YDL+zFOyTVH6Uv3NSP2SaQ==
@@ -1724,12 +1724,12 @@
   resolved "https://registry.yarnpkg.com/@oclif/prettier-config/-/prettier-config-0.2.1.tgz#1def9f38134f9bfb229257f48a35f7d0d183dc78"
   integrity sha512-XB8kwQj8zynXjIIWRm+6gO/r8Qft2xKtwBMSmq1JRqtA6TpwpqECqiu8LosBCyg2JBXuUy2lU23/L98KIR7FrQ==
 
-"@oclif/test@^3.2.12":
-  version "3.2.12"
-  resolved "https://registry.yarnpkg.com/@oclif/test/-/test-3.2.12.tgz#a5fc5ecc3e3bc70e04397857102f0ecbf36e54f4"
-  integrity sha512-6DqfPVnCuUaH4VqwAChTWlNla4uPVx3XP5EaxYLjQrSdAzgPn8TMftURDmcfDobU6qQr97Cywec4szfYg4pS7Q==
+"@oclif/test@^3.2.13":
+  version "3.2.13"
+  resolved "https://registry.yarnpkg.com/@oclif/test/-/test-3.2.13.tgz#8dd242d9fe29ff770321fc977918b9b7e4ec1a53"
+  integrity sha512-H/3K2C55d1gW2YetrYK+hF2DDTRt5lpa0uSjARh9kOxDM2aERnS24pWQcCzLDZKsLnG998/bQmPW9mzvpGM2Wg==
   dependencies:
-    "@oclif/core" "^3.26.4"
+    "@oclif/core" "^3.26.5"
     chai "^4.4.1"
     fancy-test "^3.0.14"
 
