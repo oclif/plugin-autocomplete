@@ -77,8 +77,33 @@ autocomplete:foo --bar --baz --dangerous --brackets --double-quotes --multi-line
 foo --bar --baz --dangerous --brackets --double-quotes --multi-line --json
 "
 
+local targetOrgFlags=("--target-org" "-o")
+
+function _isTargetOrgFlag(){
+  local value="$1"
+  for flag in "\${targetOrgFlags[@]}"; do
+    if [[ "$flag" == "$value" ]]; then
+      return 0 # value found
+    fi
+  done
+  return 1 # value not found
+}
+
+function _suggestOrgs(){
+  local orgs="$(sf autocomplete --display-orgs bash 2>/dev/null)"
+
   if [[ "$cur" != "-"* ]]; then
-    opts=$(printf "$commands" | grep -Eo '^[a-zA-Z0-9:_-]+')
+    opts=$(printf "%s " "\${orgs[@]}" | grep -i "\${cur}")
+    COMPREPLY=($(compgen -W "$opts"))
+  fi
+}
+
+  if [[ "$cur" != "-"* ]]; then
+    if _isTargetOrgFlag "\${COMP_WORDS[COMP_CWORD-1]}"; then
+      _suggestOrgs
+    else
+      opts=$(printf "$commands" | grep -Eo '^[a-zA-Z0-9:_-]+')
+    fi
   else
     local __COMP_WORDS
     if [[ \${COMP_WORDS[2]} == ":" ]]; then
@@ -89,9 +114,16 @@ foo --bar --baz --dangerous --brackets --double-quotes --multi-line --json
       __COMP_WORDS="\${COMP_WORDS[@]:1:1}"
     fi
     opts=$(printf "$commands" | grep "\${__COMP_WORDS}" | sed -n "s/^\${__COMP_WORDS} //p")
+
+    if _isTargetOrgFlag "\${COMP_WORDS[COMP_CWORD]}"; then
+      _suggestOrgs
+    fi
   fi
   _get_comp_words_by_ref -n : cur
-  COMPREPLY=( $(compgen -W "\${opts}" -- \${cur}) )
+
+  if [[ -z "$COMPREPLY" ]]; then
+    COMPREPLY=( $(compgen -W "\${opts}" -- \${cur}) )
+  fi
   __ltrim_colon_completions "$cur"
   return 0
 
@@ -131,6 +163,27 @@ autocomplete:foo --bar --baz --dangerous --brackets --double-quotes --multi-line
 foo --bar --baz --dangerous --brackets --double-quotes --multi-line --json
 "
 
+local targetOrgFlags=("--target-org" "-o")
+
+function _isTargetOrgFlag(){
+  local value="$1"
+  for flag in "\${targetOrgFlags[@]}"; do
+    if [[ "$flag" == "$value" ]]; then
+      return 0 # value found
+    fi
+  done
+  return 1 # value not found
+}
+
+function _suggestOrgs(){
+  local orgs="$(sf autocomplete --display-orgs bash 2>/dev/null)"
+
+  if [[ "$cur" != "-"* ]]; then
+    opts=$(printf "%s " "\${orgs[@]}" | grep -i "\${cur}")
+    COMPREPLY=($(compgen -W "$opts"))
+  fi
+}
+
   function __trim_colon_commands()
   {
     # Turn $commands into an array
@@ -155,26 +208,31 @@ foo --bar --baz --dangerous --brackets --double-quotes --multi-line --json
   }
 
   if [[ "$cur" != "-"* ]]; then
-    # Command
-    __COMP_WORDS=( "\${COMP_WORDS[@]:1}" )
-
-    # The command typed by the user but separated by colons (e.g. "mycli command subcom" -> "command:subcom")
-    normalizedCommand="$( printf "%s" "$(join_by ":" "\${__COMP_WORDS[@]}")" )"
-
-    # The command hirarchy, with colons, leading up to the last subcommand entered (e.g. "mycli com subcommand subsubcom" -> "com:subcommand:")
-    colonPrefix="\${normalizedCommand%"\${normalizedCommand##*:}"}"
-
-    if [[ -z "$normalizedCommand" ]]; then
-      # If there is no normalizedCommand yet the user hasn't typed in a full command
-      # So we should trim all subcommands & flags from $commands so we can suggest all top level commands
-      opts=$(printf "%s " "\${commands[@]}" | grep -Eo '^[a-zA-Z0-9_-]+')
+    if _isTargetOrgFlag "\${COMP_WORDS[COMP_CWORD-1]}"; then
+      _suggestOrgs
     else
-      # Filter $commands to just the ones that match the $normalizedCommand and turn into an array
-      commands=( $(compgen -W "$commands" -- "\${normalizedCommand}") )
-      # Trim higher level and subcommands from the subcommands to suggest
-      __trim_colon_commands "$colonPrefix"
 
-      opts=$(printf "%s " "\${commands[@]}") # | grep -Eo '^[a-zA-Z0-9_-]+'
+      # Command
+      __COMP_WORDS=( "\${COMP_WORDS[@]:1}" )
+
+      # The command typed by the user but separated by colons (e.g. "mycli command subcom" -> "command:subcom")
+      normalizedCommand="$( printf "%s" "$(join_by ":" "\${__COMP_WORDS[@]}")" )"
+
+      # The command hirarchy, with colons, leading up to the last subcommand entered (e.g. "mycli com subcommand subsubcom" -> "com:subcommand:")
+      colonPrefix="\${normalizedCommand%"\${normalizedCommand##*:}"}"
+
+      if [[ -z "$normalizedCommand" ]]; then
+        # If there is no normalizedCommand yet the user hasn't typed in a full command
+        # So we should trim all subcommands & flags from $commands so we can suggest all top level commands
+        opts=$(printf "%s " "\${commands[@]}" | grep -Eo '^[a-zA-Z0-9_-]+')
+      else
+        # Filter $commands to just the ones that match the $normalizedCommand and turn into an array
+        commands=( $(compgen -W "$commands" -- "\${normalizedCommand}") )
+        # Trim higher level and subcommands from the subcommands to suggest
+        __trim_colon_commands "$colonPrefix"
+
+        opts=$(printf "%s " "\${commands[@]}") # | grep -Eo '^[a-zA-Z0-9_-]+'
+      fi
     fi
   ${'else '}
     # Flag
@@ -186,9 +244,15 @@ foo --bar --baz --dangerous --brackets --double-quotes --multi-line --json
     # The line below finds the command in $commands using grep
     # Then, using sed, it removes everything from the found command before the --flags (e.g. "command:subcommand:subsubcom --flag1 --flag2" -> "--flag1 --flag2")
     opts=$(printf "%s " "\${commands[@]}" | grep "\${normalizedCommand}" | sed -n "s/^\${normalizedCommand} //p")
+
+    if _isTargetOrgFlag "\${COMP_WORDS[COMP_CWORD]}"; then
+      _suggestOrgs
+    fi
   fi
 
-  COMPREPLY=($(compgen -W "$opts" -- "\${cur}"))
+  if [[ -z "$COMPREPLY" ]]; then
+    COMPREPLY=($(compgen -W "$opts" -- "\${cur}"))
+  fi
 }
 
 complete -F _oclif-example_autocomplete oclif-example\n`)
@@ -203,6 +267,11 @@ _oclif-example () {
   local _cur=\${words[CURRENT]}
   local -a _command_flags=()
 
+  _orgs(){
+    local orgs=(\${(@f)$(sf autocomplete --display-orgs zsh 2>/dev/null)})
+    echo "$orgs"
+  }
+  
   ## public cli commands & flags
   local -a _all_commands=(
 "autocomplete:display autocomplete instructions"

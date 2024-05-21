@@ -199,7 +199,12 @@ export default class Create extends AutocompleteBase {
         const isOption = f.type === 'option'
         const name = isBoolean ? flag : `${flag}=-`
         const multiple = isOption && f.multiple ? '*' : ''
-        const valueCmpl = isBoolean ? '' : ':'
+        let valueCmpl = isBoolean ? '' : ':'
+
+        if (name === 'target-org=-') {
+          valueCmpl += `array_values:((\${(@)$(_orgs)}))`
+        }
+
         const completion = `${multiple}--${name}[${sanitizeDescription(f.summary || f.description)}]${valueCmpl}`
         return `"${completion}"`
       })
@@ -229,6 +234,11 @@ _${cliBin} () {
   local _cur=\${words[CURRENT]}
   local -a _command_flags=()
 
+  _orgs(){
+    local orgs=(\${(@f)$(sf autocomplete --display-orgs zsh 2>/dev/null)})
+    echo "$orgs"
+  }
+  
   ## public cli commands & flags
   local -a _all_commands=(
 ${allCommandsMeta}

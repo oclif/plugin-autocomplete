@@ -1,9 +1,10 @@
-import {Args, Flags, ux} from '@oclif/core'
+import {Args, Flags} from '@oclif/core'
 import chalk from 'chalk'
+import {existsSync, readFileSync, readdirSync} from 'node:fs'
 import {EOL} from 'node:os'
+import {default as path} from 'node:path'
 
 import {AutocompleteBase} from '../../base.js'
-import Create from './create.js'
 
 export default class Index extends AutocompleteBase {
   static args = {
@@ -25,6 +26,7 @@ export default class Index extends AutocompleteBase {
   ]
 
   static flags = {
+    'display-orgs': Flags.boolean({char: 'd', description: 'Display authenticated orgs.'}),
     'refresh-cache': Flags.boolean({char: 'r', description: 'Refresh cache (ignores displaying instructions)'}),
   }
 
@@ -38,9 +40,30 @@ export default class Index extends AutocompleteBase {
       )
     }
 
-    ux.action.start(`${chalk.bold('Building the autocomplete cache')}`)
-    await Create.run([], this.config)
-    ux.action.stop()
+    if (flags['display-orgs']) {
+      const sfDir = path.join(this.config.home, '.sfdx')
+      const orgs: string[] = readdirSync(sfDir)
+        .filter((element) => element.match(/^.*@.*\.json/) !== null)
+        .map((element) => element.replace('.json', ''))
+
+      let orgsAliases = []
+      const aliasFilename = path.join(sfDir, 'alias.json')
+      if (existsSync(aliasFilename)) {
+        orgsAliases = JSON.parse(readFileSync(aliasFilename).toString()).orgs
+        for (const [alias, username] of Object.entries(orgsAliases)) {
+          const i = orgs.indexOf(username as string)
+          if (i > -1) {
+            orgs[i] = alias
+          }
+        }
+      }
+
+      this.log(
+        orgs.join(`
+`),
+      )
+      flags['refresh-cache'] = true
+    }
 
     if (!flags['refresh-cache']) {
       this.printShellInstructions(shell)
