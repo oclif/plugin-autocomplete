@@ -1,27 +1,27 @@
-import {Config, Command} from '@oclif/core'
-import * as path from 'node:path'
+import {Command, Config} from '@oclif/core'
 import {Plugin as IPlugin} from '@oclif/core/lib/interfaces'
 import {expect} from 'chai'
-import Create from '../../src/commands/autocomplete/create.js'
+import path from 'node:path'
+import {fileURLToPath} from 'node:url'
 
+import Create from '../../src/commands/autocomplete/create.js'
 // autocomplete will throw error on windows ci
 import {default as skipWindows} from '../helpers/runtest.js'
-import {fileURLToPath} from 'node:url'
 
 class MyCommandClass implements Command.Cached {
   [key: string]: unknown
 
-  args: {[name: string]: Command.Arg.Cached} = {}
-  hiddenAliases!: string[]
-  _base = ''
-
   aliases: string[] = []
+  args: {[name: string]: Command.Arg.Cached} = {}
+  flags = {}
 
   hidden = false
 
+  hiddenAliases!: string[]
+
   id = 'foo:bar'
 
-  flags = {}
+  _base = ''
 
   new(): Command.Cached {
     // @ts-expect-error this is not the full interface but enough for testing
@@ -38,130 +38,130 @@ class MyCommandClass implements Command.Cached {
 }
 
 const commandPluginA: Command.Loadable = {
-  strict: false,
   aliases: [],
   args: {},
-  hiddenAliases: [],
   flags: {
-    metadata: {
-      name: 'metadata',
-      type: 'option',
-      char: 'm',
-      multiple: true,
-    },
     'api-version': {
-      name: 'api-version',
-      type: 'option',
       char: 'a',
       multiple: false,
-    },
-    json: {
-      name: 'json',
-      type: 'boolean',
-      summary: 'Format output as json.',
-      allowNo: false,
+      name: 'api-version',
+      type: 'option',
     },
     'ignore-errors': {
-      name: 'ignore-errors',
-      type: 'boolean',
-      char: 'i',
-      summary: 'Ignore errors.',
       allowNo: false,
+      char: 'i',
+      name: 'ignore-errors',
+      summary: 'Ignore errors.',
+      type: 'boolean',
+    },
+    json: {
+      allowNo: false,
+      name: 'json',
+      summary: 'Format output as json.',
+      type: 'boolean',
+    },
+    metadata: {
+      char: 'm',
+      multiple: true,
+      name: 'metadata',
+      type: 'option',
     },
   },
   hidden: false,
+  hiddenAliases: [],
   id: 'deploy',
-  summary: 'Deploy a project',
   async load(): Promise<Command.Class> {
     return new MyCommandClass() as unknown as Command.Class
   },
-  pluginType: 'core',
   pluginAlias: '@My/plugina',
+  pluginType: 'core',
+  strict: false,
+  summary: 'Deploy a project',
 }
 
 const commandPluginB: Command.Loadable = {
-  strict: false,
   aliases: [],
-  hiddenAliases: [],
   args: {},
   flags: {
     branch: {
-      name: 'branch',
-      type: 'option',
       char: 'b',
       multiple: false,
+      name: 'branch',
+      type: 'option',
     },
   },
   hidden: false,
+  hiddenAliases: [],
   id: 'deploy:functions',
-  summary: 'Deploy a function.',
   async load(): Promise<Command.Class> {
     return new MyCommandClass() as unknown as Command.Class
   },
-  pluginType: 'core',
   pluginAlias: '@My/pluginb',
+  pluginType: 'core',
+  strict: false,
+  summary: 'Deploy a function.',
 }
 
 const commandPluginC: Command.Loadable = {
-  strict: false,
   aliases: [],
   args: {},
   flags: {},
   hidden: false,
+  hiddenAliases: [],
   id: 'search',
-  summary: 'Search for a command',
   async load(): Promise<Command.Class> {
     return new MyCommandClass() as unknown as Command.Class
   },
-  pluginType: 'core',
   pluginAlias: '@My/pluginc',
-  hiddenAliases: [],
+  pluginType: 'core',
+  strict: false,
+  summary: 'Search for a command',
 }
 
 const commandPluginD: Command.Loadable = {
-  strict: false,
   aliases: [],
-  hiddenAliases: [],
   args: {},
   flags: {},
   hidden: false,
+  hiddenAliases: [],
   id: 'app:execute:code',
-  summary: 'execute code',
   async load(): Promise<Command.Class> {
     return new MyCommandClass() as unknown as Command.Class
   },
-  pluginType: 'core',
   pluginAlias: '@My/plugind',
+  pluginType: 'core',
+  strict: false,
+  summary: 'execute code',
 }
 
 const pluginA: IPlugin = {
-  load: async (): Promise<void> => {},
-  findCommand: async (): Promise<Command.Class> => {
-    return new MyCommandClass() as unknown as Command.Class
-  },
-  name: '@My/plugina',
+  _base: '',
   alias: '@My/plugina',
+  commandIDs: ['deploy'],
   commands: [commandPluginA, commandPluginB, commandPluginC, commandPluginD],
   commandsDir: '',
-  _base: '',
-  pjson: {} as any,
-  commandIDs: ['deploy'],
-  root: '',
-  version: '0.0.0',
-  type: 'core',
+  async findCommand(): Promise<Command.Class> {
+    return new MyCommandClass() as unknown as Command.Class
+  },
+  hasManifest: true,
   hooks: {},
+  isRoot: false,
+  async load(): Promise<void> {},
+  moduleType: 'commonjs',
+  name: '@My/plugina',
+  options: {root: ''},
+  pjson: {} as any,
+  root: '',
+  tag: 'tag',
   topics: [
     {
-      name: 'foo',
       description: 'foo commands',
+      name: 'foo',
     },
   ],
+  type: 'core',
   valid: true,
-  tag: 'tag',
-  moduleType: 'commonjs',
-  options: {root: ''},
-  isRoot: false,
-  hasManifest: true,
+  version: '0.0.0',
 }
 
 const plugins: IPlugin[] = [pluginA]
@@ -188,8 +188,7 @@ skipWindows('bash comp', () => {
       config.bin = 'test-cli'
       const create = new Create([], config)
 
-      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-      // @ts-ignore
+      // @ts-expect-error because it's a private method
       expect(create.bashCompletionFunction.trim()).to.equal(`#!/usr/bin/env bash
 
 _test-cli_autocomplete()
@@ -200,7 +199,7 @@ _test-cli_autocomplete()
 
   local commands="
 autocomplete --refresh-cache
-deploy --metadata --api-version --json --ignore-errors
+deploy --api-version --ignore-errors --json --metadata
 deploy:functions --branch
 ${'search '}
 ${'app:execute:code '}
@@ -232,8 +231,7 @@ complete -o default -F _test-cli_autocomplete test-cli`)
       config.bin = 'test-cli'
       config.binAliases = ['alias']
       const create = new Create([], config)
-      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-      // @ts-ignore
+      // @ts-expect-error because it's a private method
       expect(create.bashCompletionFunction.trim()).to.equal(`#!/usr/bin/env bash
 
 _test-cli_autocomplete()
@@ -244,7 +242,7 @@ _test-cli_autocomplete()
 
   local commands="
 autocomplete --refresh-cache
-deploy --metadata --api-version --json --ignore-errors
+deploy --api-version --ignore-errors --json --metadata
 deploy:functions --branch
 ${'search '}
 ${'app:execute:code '}
@@ -277,8 +275,7 @@ complete -F _test-cli_autocomplete alias`)
       config.bin = 'test-cli'
       config.binAliases = ['alias', 'alias2']
       const create = new Create([], config)
-      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-      // @ts-ignore
+      // @ts-expect-error because it's a private method
       expect(create.bashCompletionFunction).to.equal(`#!/usr/bin/env bash
 
 _test-cli_autocomplete()
@@ -289,7 +286,7 @@ _test-cli_autocomplete()
 
   local commands="
 autocomplete --refresh-cache
-deploy --metadata --api-version --json --ignore-errors
+deploy --api-version --ignore-errors --json --metadata
 deploy:functions --branch
 ${'search '}
 ${'app:execute:code '}
