@@ -1,7 +1,7 @@
 import {Command, Config} from '@oclif/core'
 import {Deprecation, Plugin as IPlugin} from '@oclif/core/lib/interfaces'
 import {expect} from 'chai'
-import * as path from 'node:path'
+import path from 'node:path'
 import {fileURLToPath} from 'node:url'
 
 import ZshCompWithSpaces from '../../src/autocomplete/zsh.js'

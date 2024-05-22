@@ -1,7 +1,7 @@
 import {Config, Plugin} from '@oclif/core'
 import {readJson} from '@oclif/core/lib/util/fs.js'
 import {expect} from 'chai'
-import * as path from 'node:path'
+import path from 'node:path'
 import {fileURLToPath} from 'node:url'
 
 import Create from '../../../src/commands/autocomplete/create.js'

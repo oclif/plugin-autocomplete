@@ -1,7 +1,7 @@
 import {Config} from '@oclif/core'
 import {expect} from 'chai'
 import {readFile, rm} from 'node:fs/promises'
-import * as path from 'node:path'
+import path from 'node:path'
 import {fileURLToPath} from 'node:url'
 
 import {AutocompleteBase} from '../src/base.js'

@@ -11,10 +11,10 @@
     "ejs": "^3.1.10"
   },
   "devDependencies": {
-    "@commitlint/config-conventional": "^18.6.3",
+    "@commitlint/config-conventional": "^19",
     "@oclif/plugin-help": "^6",
     "@oclif/prettier-config": "^0.2.1",
-    "@oclif/test": "^3.2.15",
+    "@oclif/test": "^4",
     "@types/chai": "^4",
     "@types/debug": "^4.1.12",
     "@types/ejs": "^3.1.5",
@@ -22,7 +22,7 @@
     "@types/nock": "^11.1.0",
     "@types/node": "^18",
     "chai": "^4",
-    "commitlint": "^18.6.1",
+    "commitlint": "^19",
     "eslint": "^8.57.0",
     "eslint-config-oclif": "^5.2.0",
     "eslint-config-oclif-typescript": "^3.1.7",
