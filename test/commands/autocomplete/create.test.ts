@@ -1,16 +1,20 @@
-import {Config, Plugin} from '@oclif/core'
-import {readJson} from '@oclif/core/lib/util/fs.js'
+import {Config, Interfaces, Plugin} from '@oclif/core'
 import {expect} from 'chai'
+import {readFile} from 'node:fs/promises'
 import path from 'node:path'
 import {fileURLToPath} from 'node:url'
 
 import Create from '../../../src/commands/autocomplete/create.js'
+// autocomplete will throw error on windows ci
+import {default as skipWindows} from '../../helpers/runtest.js'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../package.json')
 const config = new Config({root})
 
-// autocomplete will throw error on windows ci
-import {default as skipWindows} from '../../helpers/runtest.js'
+const readJson = async (path: string): Promise<Interfaces.Manifest> => {
+  const contents = await readFile(path, 'utf8')
+  return JSON.parse(contents)
+}
 
 skipWindows('Create', () => {
   // Unit test private methods for extra coverage
