@@ -1,3 +1,10 @@
+# [3.1.0](https://github.com/oclif/plugin-autocomplete/compare/3.0.18...3.1.0) (2024-05-31)
+
+### Features
+
+- use @oclif/core v4 ([b14f4a9](https://github.com/oclif/plugin-autocomplete/commit/b14f4a953bfb7fd9a018790ab87d74cd2a7dfc8a))
+- use ansis instead of chalk ([22d3226](https://github.com/oclif/plugin-autocomplete/commit/22d32265c91ae70195f82ec80bba08f8c73bf115))
+
 ## [3.0.18](https://github.com/oclif/plugin-autocomplete/compare/3.0.17...3.0.18) (2024-05-12)
 
 ### Bug Fixes
