@@ -1,5 +1,5 @@
 import {Command, Config} from '@oclif/core'
-import {Plugin as IPlugin} from '@oclif/core/lib/interfaces'
+import {Plugin as IPlugin} from '@oclif/core/interfaces'
 import {expect} from 'chai'
 import path from 'node:path'
 import {fileURLToPath} from 'node:url'
