@@ -7,7 +7,7 @@
   "dependencies": {
     "@oclif/core": "^4.0.0-beta.13",
     "ansis": "^3.2.0",
-    "debug": "^4.3.4",
+    "debug": "^4.3.5",
     "ejs": "^3.1.10"
   },
   "devDependencies": {
