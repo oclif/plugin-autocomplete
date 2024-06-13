@@ -1,3 +1,9 @@
+## [3.1.3](https://github.com/oclif/plugin-autocomplete/compare/3.1.2...3.1.3) (2024-06-13)
+
+### Bug Fixes
+
+- **deps:** bump braces from 3.0.2 to 3.0.3 ([#711](https://github.com/oclif/plugin-autocomplete/issues/711)) ([62169a1](https://github.com/oclif/plugin-autocomplete/commit/62169a1e39a4b8b7c041d50cde0858f6cc3b24c9))
+
 ## [3.1.2](https://github.com/oclif/plugin-autocomplete/compare/3.1.1...3.1.2) (2024-06-04)
 
 ### Bug Fixes
