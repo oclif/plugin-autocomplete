@@ -18,7 +18,7 @@
     "@types/chai": "^4",
     "@types/debug": "^4.1.12",
     "@types/ejs": "^3.1.5",
-    "@types/mocha": "^10.0.6",
+    "@types/mocha": "^10.0.7",
     "@types/nock": "^11.1.0",
     "@types/node": "^18",
     "chai": "^4",
