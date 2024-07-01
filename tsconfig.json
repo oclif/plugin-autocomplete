@@ -8,7 +8,6 @@
     "rootDirs": ["./src"],
     "strict": true,
     "target": "ES2022",
-    "types": ["mocha"],
     "moduleResolution": "Node16"
   },
   "include": ["./src/**/*"],
