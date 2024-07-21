@@ -2280,10 +2280,10 @@ ansicolors@~0.3.2:
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/ansicolors/-/ansicolors-0.3.2.tgz#665597de86a9ffe3aa9bfbe6cae5c6ea426b4979"
 
-ansis@^3.2.0, ansis@^3.2.1:
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/ansis/-/ansis-3.2.1.tgz#abf2de690eb7a74fa4292edf82c7887bda5ee549"
-  integrity sha512-SgzY+k2aa9UqJe3jzrPZhSVzLc2XrE4/h7rk0dMCDwhCq7ipmpPZvyODoxPCms4OpMLTiBTS+Mpl4VZQ6FDitw==
+ansis@^3.2.0, ansis@^3.2.1, ansis@^3.3.1:
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/ansis/-/ansis-3.3.1.tgz#c89b7d3892cc5be0f0f302f17ec84f8d2502da75"
+  integrity sha512-dW/sqnbVeWXW1UMRyKGHiJj+vBrlnnDcvyNMDB8BBI4Gu0tsohweIkvcqb3bNNwcVn70LTyvvnGgjUzUVFnK6Q==
 
 anymatch@~3.1.2:
   version "3.1.3"

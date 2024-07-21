@@ -6,7 +6,7 @@
   "bugs": "https://github.com/oclif/plugin-autocomplete/issues",
   "dependencies": {
     "@oclif/core": "^4",
-    "ansis": "^3.2.0",
+    "ansis": "^3.3.1",
     "debug": "^4.3.5",
     "ejs": "^3.1.10"
   },
