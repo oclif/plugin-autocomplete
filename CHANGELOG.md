@@ -1,3 +1,9 @@
+## [3.1.9](https://github.com/oclif/plugin-autocomplete/compare/3.1.8...3.1.9) (2024-07-22)
+
+### Bug Fixes
+
+- husky 9.1.1 fix ([e44652b](https://github.com/oclif/plugin-autocomplete/commit/e44652b148fb16c849cfdb7513c01fa56cf0401c))
+
 ## [3.1.8](https://github.com/oclif/plugin-autocomplete/compare/3.1.7...3.1.8) (2024-07-21)
 
 ### Bug Fixes
