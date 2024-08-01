@@ -57,7 +57,11 @@
     "devPlugins": [
       "@oclif/plugin-help"
     ],
-    "flexibleTaxonomy": true
+    "flexibleTaxonomy": true,
+    "hooks": {
+      "plugins:postinstall": "./lib/hooks/refresh-cache.js",
+      "plugins:postuninstall": "./lib/hooks/refresh-cache.js"
+    }
   },
   "repository": "oclif/plugin-autocomplete",
   "scripts": {
