@@ -1,3 +1,9 @@
+# [3.2.0](https://github.com/oclif/plugin-autocomplete/compare/3.1.11...3.2.0) (2024-08-01)
+
+### Features
+
+- add `refresh-cache` hook ([cbda936](https://github.com/oclif/plugin-autocomplete/commit/cbda9361ac1a0f0d47110331145eb022b48a2d9b))
+
 ## [3.1.11](https://github.com/oclif/plugin-autocomplete/compare/3.1.10...3.1.11) (2024-07-28)
 
 ### Bug Fixes
