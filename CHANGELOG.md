@@ -1,3 +1,9 @@
+## [3.2.1](https://github.com/oclif/plugin-autocomplete/compare/3.2.0...3.2.1) (2024-08-25)
+
+### Bug Fixes
+
+- **deps:** bump micromatch from 4.0.7 to 4.0.8 ([#776](https://github.com/oclif/plugin-autocomplete/issues/776)) ([58f59b4](https://github.com/oclif/plugin-autocomplete/commit/58f59b456c643e91d67c4e8ca77b1ead51185df9))
+
 # [3.2.0](https://github.com/oclif/plugin-autocomplete/compare/3.1.11...3.2.0) (2024-08-01)
 
 ### Features
