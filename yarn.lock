@@ -1525,9 +1525,9 @@
     fastq "^1.6.0"
 
 "@oclif/core@^4":
-  version "4.0.21"
-  resolved "https://registry.yarnpkg.com/@oclif/core/-/core-4.0.21.tgz#fda25b950572ae7762248a808f141e3e32fb2a57"
-  integrity sha512-SvLTSclf104IVX8BY7nWqess1pBmeNl9qRFTWjOXg7B1/ESemfEtZYBDRAXAp1ILvazDng5IF/7YSbTxDVbwNg==
+  version "4.0.22"
+  resolved "https://registry.yarnpkg.com/@oclif/core/-/core-4.0.22.tgz#acb233c0c18ff4f365caca15e29e2807a4325709"
+  integrity sha512-aXM2O4g7f+kPNzhhOfqGOVRVYDxTVrH7Y720MuH0Twq5WHMxI4XwntnyBaRscoCPG6FWhItZLtiZxsvaUdupGg==
   dependencies:
     ansi-escapes "^4.3.2"
     ansis "^3.3.2"
