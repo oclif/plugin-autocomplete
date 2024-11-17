@@ -1,3 +1,9 @@
+## [3.2.10](https://github.com/oclif/plugin-autocomplete/compare/3.2.9...3.2.10) (2024-11-17)
+
+### Bug Fixes
+
+- **deps:** bump cross-spawn from 7.0.3 to 7.0.5 ([#832](https://github.com/oclif/plugin-autocomplete/issues/832)) ([6ba57fb](https://github.com/oclif/plugin-autocomplete/commit/6ba57fbff9d1b32072d367837fc58cee968a4c1d))
+
 ## [3.2.9](https://github.com/oclif/plugin-autocomplete/compare/3.2.8...3.2.9) (2024-11-17)
 
 ### Bug Fixes
