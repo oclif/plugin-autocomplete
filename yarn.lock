@@ -1511,11 +1511,11 @@
   integrity sha512-XB8kwQj8zynXjIIWRm+6gO/r8Qft2xKtwBMSmq1JRqtA6TpwpqECqiu8LosBCyg2JBXuUy2lU23/L98KIR7FrQ==
 
 "@oclif/test@^4":
-  version "4.1.4"
-  resolved "https://registry.yarnpkg.com/@oclif/test/-/test-4.1.4.tgz#6bfe9f53036bf50a39b89bbf0d304d221a35e76d"
-  integrity sha512-0gUIkJJVDDpM2BNuo1+vBrf71DO3iVSFjUcLo+kma6co5vVOKG1COfVmxV7mB8XCNTuBWAZ4pJ4vsASxTxE5yg==
+  version "4.1.5"
+  resolved "https://registry.yarnpkg.com/@oclif/test/-/test-4.1.5.tgz#b0e7736ab82f8d0eaf745b74b416bc19e806e594"
+  integrity sha512-w4hVfP+Lsz7toaSnj/E3cFH4Y/nHt1k14cCREQXe/nIqnZW7J6xGnjYEmqU9BPk7m0Lsl52AqJ2hGvLarGhfLw==
   dependencies:
-    ansis "^3.4.0"
+    ansis "^3.5.2"
     debug "^4.4.0"
 
 "@pnpm/config.env-replace@^1.1.0":
