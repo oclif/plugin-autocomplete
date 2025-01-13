@@ -62,17 +62,17 @@ Setup Instructions for ${this.config.bin.toUpperCase()} CLI Autocomplete ---
         instructions += `
 1) Run this command in your terminal window:
 
-  ${cyan(`printf "eval \\$(${scriptCommand})" >> ~/.bashrc; source ~/.bashrc`)}
+  ${cyan(`printf "$(${scriptCommand})" >> ~/.bashrc; source ~/.bashrc`)}
 
   The previous command adds the ${cyan(setupEnvVar)} environment variable to your Bash config file and then sources the file.
 
   ${bold('NOTE')}: If you’ve configured your terminal to start as a login shell, you may need to modify the command so it updates either the ~/.bash_profile or ~/.profile file. For example:
 
-  ${cyan(`printf "eval \\$(${scriptCommand}) >> ~/.bash_profile; source ~/.bash_profile`)}
+  ${cyan(`printf "$(${scriptCommand}) >> ~/.bash_profile; source ~/.bash_profile`)}
 
   Or:
 
-  ${cyan(`printf "eval \\$(${scriptCommand})" >> ~/.profile; source ~/.profile`)}
+  ${cyan(`printf "$(${scriptCommand})" >> ~/.profile; source ~/.profile`)}
 
 2) Start using autocomplete:
 
@@ -86,7 +86,7 @@ Setup Instructions for ${this.config.bin.toUpperCase()} CLI Autocomplete ---
         instructions += `
 1) Run this command in your terminal window:
 
-  ${cyan(`printf "eval \$(${scriptCommand})" >> ~/.zshrc; source ~/.zshrc`)}
+  ${cyan(`printf "$(${scriptCommand})" >> ~/.zshrc; source ~/.zshrc`)}
 
   The previous command adds the ${cyan(setupEnvVar)} environment variable to your zsh config file and then sources the file.
 
