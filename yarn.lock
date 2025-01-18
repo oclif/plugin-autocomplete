@@ -1875,11 +1875,11 @@
   integrity sha512-XB8kwQj8zynXjIIWRm+6gO/r8Qft2xKtwBMSmq1JRqtA6TpwpqECqiu8LosBCyg2JBXuUy2lU23/L98KIR7FrQ==
 
 "@oclif/test@^4":
-  version "4.1.6"
-  resolved "https://registry.yarnpkg.com/@oclif/test/-/test-4.1.6.tgz#10ef80555af1b54c7f14c67f881775dcf0b561b5"
-  integrity sha512-1UcMu+5XXGsMgsIZmEbvGKjS6/Z8meu2VNh22Oop9s5dQAHX72Ds70dxwncVbRepFGhIIJ3xzyZbtBIy/sgt3Q==
+  version "4.1.7"
+  resolved "https://registry.yarnpkg.com/@oclif/test/-/test-4.1.7.tgz#310c4e8e666466d11055d887218bd6ce753a7d6f"
+  integrity sha512-KFfPfwCFKOUfqPkBk7Dl204fnQZQUpjib8kG/5RGDLa+IlV11e5d5DQQy3xfJdIGKJ8plg9fP0wjC57a1frt8g==
   dependencies:
-    ansis "^3.6.0"
+    ansis "^3.8.1"
     debug "^4.4.0"
 
 "@pnpm/config.env-replace@^1.1.0":
@@ -3155,10 +3155,10 @@ ansi-styles@^6.0.0, ansi-styles@^6.2.1:
   resolved "https://registry.yarnpkg.com/ansi-styles/-/ansi-styles-6.2.1.tgz#0e62320cf99c21afff3b3012192546aacbfb05c5"
   integrity sha512-bN798gFfQX+viw3R7yrGWRqnrN2oRkEkUjjl4JNn4E8GxxbjtG3FbrEIIY3l8/hrwUwIeCZvi4QuOTP4MErVug==
 
-ansis@^3.5.2, ansis@^3.6.0:
-  version "3.8.1"
-  resolved "https://registry.yarnpkg.com/ansis/-/ansis-3.8.1.tgz#60656ef3f7d60f4aed4bb69ec1429ef393f7b90e"
-  integrity sha512-gzGUTqsBugYCegbhldz7Ox9NrizAlCSAP5Y6rRD9agN76osoyhKznznmaB4G5BAVvrqwksPOGdnYh1Q000cUqw==
+ansis@^3.5.2, ansis@^3.6.0, ansis@^3.8.1:
+  version "3.9.0"
+  resolved "https://registry.yarnpkg.com/ansis/-/ansis-3.9.0.tgz#d195c93c31a333916142ff8f0be4d7e3872f262e"
+  integrity sha512-PcDrVe15ldexeZMsVLBAzBwF2KhZgaU0R+CHxH+x5kqn/pO+UWVBZJ+NEXMPpEOLUFeNsnNdoWYc2gwO+MVkDg==
 
 anymatch@~3.1.2:
   version "3.1.3"
