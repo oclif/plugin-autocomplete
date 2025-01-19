@@ -1,7 +1,7 @@
 {
   "name": "@oclif/plugin-autocomplete",
   "description": "autocomplete plugin for oclif",
-  "version": "3.2.17",
+  "version": "3.2.18",
   "author": "Salesforce",
   "bugs": "https://github.com/oclif/plugin-autocomplete/issues",
   "dependencies": {
