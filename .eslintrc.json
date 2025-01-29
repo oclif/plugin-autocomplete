@@ -1,8 +1,0 @@
-{
-  "extends": ["oclif", "oclif-typescript", "prettier"],
-  "rules": {
-    "@typescript-eslint/no-explicit-any": "off",
-    "max-depth": ["warn", 5],
-    "unicorn/consistent-destructuring": "off"
-  }
-}

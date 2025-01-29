@@ -1,6 +1,6 @@
 import {Command} from '@oclif/core'
 import {mkdirSync, openSync, writeSync} from 'node:fs'
-import * as path from 'node:path'
+import path from 'node:path'
 
 export abstract class AutocompleteBase extends Command {
   public get acLogfilePath(): string {

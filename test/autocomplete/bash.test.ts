@@ -11,17 +11,13 @@ import {default as skipWindows} from '../helpers/runtest.js'
 class MyCommandClass implements Command.Cached {
   [key: string]: unknown
 
+  _base = ''
   aliases: string[] = []
   args: {[name: string]: Command.Arg.Cached} = {}
   flags = {}
-
   hidden = false
-
   hiddenAliases!: string[]
-
   id = 'foo:bar'
-
-  _base = ''
 
   new(): Command.Cached {
     // @ts-expect-error this is not the full interface but enough for testing
@@ -227,6 +223,7 @@ ${'app:execute:code '}
 
 complete -o default -F _test-cli_autocomplete test-cli`)
     })
+
     it('generates a valid completion file with an alias.', async () => {
       config.bin = 'test-cli'
       config.binAliases = ['alias']
@@ -271,6 +268,7 @@ ${'app:execute:code '}
 complete -o default -F _test-cli_autocomplete test-cli
 complete -F _test-cli_autocomplete alias`)
     })
+
     it('generates a valid completion file with multiple aliases.', async () => {
       config.bin = 'test-cli'
       config.binAliases = ['alias', 'alias2']

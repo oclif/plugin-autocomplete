@@ -1,5 +1,5 @@
 import {Args} from '@oclif/core'
-import * as path from 'node:path'
+import path from 'node:path'
 
 import {AutocompleteBase} from '../../base.js'
 
@@ -11,10 +11,16 @@ export default class Script extends AutocompleteBase {
       required: false,
     }),
   }
-
   static description = 'outputs autocomplete config script for shells'
-
   static hidden = true
+
+  private get prefix(): string {
+    return '\n'
+  }
+
+  private get suffix(): string {
+    return ` # ${this.cliBin} autocomplete setup\n`
+  }
 
   async run() {
     const {args} = await this.parse(Script)
@@ -37,13 +43,5 @@ export default class Script extends AutocompleteBase {
         )} && test -f $${this.getSetupEnvVar(shell)} && source $${this.getSetupEnvVar(shell)};${this.suffix}`,
       )
     }
-  }
-
-  private get prefix(): string {
-    return '\n'
-  }
-
-  private get suffix(): string {
-    return ` # ${this.cliBin} autocomplete setup\n`
   }
 }

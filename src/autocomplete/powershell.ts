@@ -1,7 +1,7 @@
 import {Command, Config, Interfaces} from '@oclif/core'
 import * as ejs from 'ejs'
 import {EOL} from 'node:os'
-import * as util from 'node:util'
+import {format} from 'node:util'
 
 type CommandCompletion = {
   flags: CommandFlags
@@ -20,17 +20,32 @@ type Topic = {
 
 export default class PowerShellComp {
   protected config: Config
-
   private _coTopics?: string[]
-
   private commands: CommandCompletion[]
-
   private topics: Topic[]
 
   constructor(config: Config) {
     this.config = config
     this.topics = this.getTopics()
     this.commands = this.getCommands()
+  }
+
+  private get coTopics(): string[] {
+    if (this._coTopics) return this._coTopics
+
+    const coTopics: string[] = []
+
+    for (const topic of this.topics) {
+      for (const cmd of this.commands) {
+        if (topic.name === cmd.id) {
+          coTopics.push(topic.name)
+        }
+      }
+    }
+
+    this._coTopics = coTopics
+
+    return this._coTopics
   }
 
   public generate(): string {
@@ -254,24 +269,6 @@ Register-ArgumentCompleter -Native -CommandName ${
     return compRegister
   }
 
-  private get coTopics(): string[] {
-    if (this._coTopics) return this._coTopics
-
-    const coTopics: string[] = []
-
-    for (const topic of this.topics) {
-      for (const cmd of this.commands) {
-        if (topic.name === cmd.id) {
-          coTopics.push(topic.name)
-        }
-      }
-    }
-
-    this._coTopics = coTopics
-
-    return this._coTopics
-  }
-
   private genCmdHashtable(cmd: CommandCompletion): string {
     const flaghHashtables: string[] = []
 
@@ -334,13 +331,13 @@ ${flaghHashtables.join('\n')}
           childNodes.push(this.genHashtable(newKey, node[key]))
         }
 
-        childTpl = util.format(childTpl, childNodes.join('\n'))
+        childTpl = format(childTpl, childNodes.join('\n'))
 
-        return util.format(leafTpl, childTpl)
+        return format(leafTpl, childTpl)
       }
 
       // last node
-      return util.format(leafTpl, childTpl)
+      return format(leafTpl, childTpl)
     }
 
     const childNodes: string[] = []
@@ -349,12 +346,12 @@ ${flaghHashtables.join('\n')}
         const cmd = this.commands.find((c) => c.id === node[key][k])
         if (!cmd) throw new Error('no command')
 
-        childNodes.push(util.format('"_command" = %s', this.genCmdHashtable(cmd)))
+        childNodes.push(format('"_command" = %s', this.genCmdHashtable(cmd)))
       } else if (node[key][k]._command) {
         const cmd = this.commands.find((c) => c.id === node[key][k]._command)
         if (!cmd) throw new Error('no command')
 
-        childNodes.push(util.format(`"${k}" = @{\n"_command" = %s\n}`, this.genCmdHashtable(cmd)))
+        childNodes.push(format(`"${k}" = @{\n"_command" = %s\n}`, this.genCmdHashtable(cmd)))
       } else {
         const childTpl = `"summary" = "${node[key][k]._summary}"\n"${k}" = @{ \n    %s\n   }`
         childNodes.push(this.genHashtable(k, node[key], childTpl))
@@ -362,7 +359,7 @@ ${flaghHashtables.join('\n')}
     }
 
     if (childNodes.length > 0) {
-      return util.format(leafTpl, childNodes.join('\n'))
+      return format(leafTpl, childNodes.join('\n'))
     }
 
     return leafTpl
