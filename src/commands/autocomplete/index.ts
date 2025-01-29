@@ -13,9 +13,7 @@ export default class Index extends AutocompleteBase {
       required: false,
     }),
   }
-
   static description = 'Display autocomplete installation instructions.'
-
   static examples = [
     '$ <%= config.bin %> autocomplete',
     '$ <%= config.bin %> autocomplete bash',
@@ -23,7 +21,6 @@ export default class Index extends AutocompleteBase {
     '$ <%= config.bin %> autocomplete powershell',
     '$ <%= config.bin %> autocomplete --refresh-cache',
   ]
-
   static flags = {
     'refresh-cache': Flags.boolean({char: 'r', description: 'Refresh cache (ignores displaying instructions)'}),
   }
@@ -82,6 +79,25 @@ Setup Instructions for ${this.config.bin.toUpperCase()} CLI Autocomplete ---
         break
       }
 
+      case 'powershell': {
+        instructions += `
+1) Run these two cmdlets in your PowerShell window in the order shown:
+
+  ${cyan(`New-Item -Type Directory -Path (Split-Path -Parent $PROFILE) -ErrorAction SilentlyContinue
+  Add-Content -Path $PROFILE -Value (Invoke-Expression -Command "${scriptCommand}"); .$PROFILE`)}
+
+2) (Optional) If you want matching completions printed below the command line, run this cmdlet:
+
+  ${cyan('Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete')}
+
+3) Start using autocomplete:
+
+  ${cyan(`${this.config.bin} ${tabStr}`)}                  # Command completion
+  ${cyan(`${this.config.bin} command --${tabStr}`)}        # Flag completion
+  `
+        break
+      }
+
       case 'zsh': {
         instructions += `
 1) Run this command in your terminal window:
@@ -93,25 +109,6 @@ Setup Instructions for ${this.config.bin.toUpperCase()} CLI Autocomplete ---
 2) (Optional) Run this command to ensure that you have no permissions conflicts:
 
   ${cyan('compaudit -D')}
-
-3) Start using autocomplete:
-
-  ${cyan(`${this.config.bin} ${tabStr}`)}                  # Command completion
-  ${cyan(`${this.config.bin} command --${tabStr}`)}        # Flag completion
-  `
-        break
-      }
-
-      case 'powershell': {
-        instructions += `
-1) Run these two cmdlets in your PowerShell window in the order shown:
-
-  ${cyan(`New-Item -Type Directory -Path (Split-Path -Parent $PROFILE) -ErrorAction SilentlyContinue
-  Add-Content -Path $PROFILE -Value (Invoke-Expression -Command "${scriptCommand}"); .$PROFILE`)}
-
-2) (Optional) If you want matching completions printed below the command line, run this cmdlet:
-
-  ${cyan('Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete')}
 
 3) Start using autocomplete:
 

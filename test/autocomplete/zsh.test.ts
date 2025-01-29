@@ -10,6 +10,7 @@ import {default as skipWindows} from '../helpers/runtest.js'
 
 class MyCommandClass implements Command.Cached {
   [key: string]: unknown
+  _base = ''
   aliases: string[] = []
   aliasPermutations?: string[] | undefined
   args: {[name: string]: Command.Arg.Cached} = {}
@@ -28,18 +29,11 @@ class MyCommandClass implements Command.Cached {
   pluginName?: string | undefined
   pluginType?: string | undefined
   relativePath?: string[] | undefined
-
   state?: string | undefined
-
   strict?: boolean | undefined
-
   summary?: string | undefined
-
   type?: string | undefined
-
   usage?: string | string[] | undefined
-
-  _base = ''
 
   new(): Command.Cached {
     // @ts-expect-error this is not the full interface but enough for testing
@@ -338,6 +332,7 @@ esac
 _test-cli
 `)
     })
+
     it('generates a valid completion file with a bin alias.', () => {
       config.bin = 'test-cli'
       config.binAliases = ['testing']
@@ -471,6 +466,7 @@ esac
 _test-cli
 `)
     })
+
     it('generates a valid completion file with multiple bin aliases.', () => {
       config.bin = 'test-cli'
       config.binAliases = ['testing', 'testing2']

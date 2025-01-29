@@ -1,6 +1,6 @@
 import {Command, Config, Interfaces} from '@oclif/core'
 import * as ejs from 'ejs'
-import * as util from 'node:util'
+import {format} from 'node:util'
 
 const argTemplate = '        "%s")\n          %s\n        ;;\n'
 
@@ -21,17 +21,32 @@ type Topic = {
 
 export default class ZshCompWithSpaces {
   protected config: Config
-
   private _coTopics?: string[]
-
   private commands: CommandCompletion[]
-
   private topics: Topic[]
 
   constructor(config: Config) {
     this.config = config
     this.topics = this.getTopics()
     this.commands = this.getCommands()
+  }
+
+  private get coTopics(): string[] {
+    if (this._coTopics) return this._coTopics
+
+    const coTopics: string[] = []
+
+    for (const topic of this.topics) {
+      for (const cmd of this.commands) {
+        if (topic.name === cmd.id) {
+          coTopics.push(topic.name)
+        }
+      }
+    }
+
+    this._coTopics = coTopics
+
+    return this._coTopics
   }
 
   public generate(): string {
@@ -104,24 +119,6 @@ _${this.config.bin}() {
 
 _${this.config.bin}
 `
-  }
-
-  private get coTopics(): string[] {
-    if (this._coTopics) return this._coTopics
-
-    const coTopics: string[] = []
-
-    for (const topic of this.topics) {
-      for (const cmd of this.commands) {
-        if (topic.name === cmd.id) {
-          coTopics.push(topic.name)
-        }
-      }
-    }
-
-    this._coTopics = coTopics
-
-    return this._coTopics
   }
 
   private genZshFlagArgumentsBlock(flags?: CommandFlags): string {
@@ -257,7 +254,7 @@ _${this.config.bin}
           summary: t.description,
         })
 
-        argsBlock += util.format(argTemplate, subArg, `_${this.config.bin}_${underscoreSepId}_${subArg}`)
+        argsBlock += format(argTemplate, subArg, `_${this.config.bin}_${underscoreSepId}_${subArg}`)
       }
 
       for (const c of this.commands.filter((c) => c.id.startsWith(id + ':') && c.id.split(':').length === depth + 1)) {
@@ -269,10 +266,10 @@ _${this.config.bin}
           summary: c.summary,
         })
 
-        argsBlock += util.format(flagArgsTemplate, subArg, this.genZshFlagArgumentsBlock(c.flags))
+        argsBlock += format(flagArgsTemplate, subArg, this.genZshFlagArgumentsBlock(c.flags))
       }
 
-      return util.format(coTopicCompFunc, this.genZshValuesBlock(subArgs), argsBlock)
+      return format(coTopicCompFunc, this.genZshValuesBlock(subArgs), argsBlock)
     }
 
     let argsBlock = ''
@@ -286,7 +283,7 @@ _${this.config.bin}
         summary: t.description,
       })
 
-      argsBlock += util.format(argTemplate, subArg, `_${this.config.bin}_${underscoreSepId}_${subArg}`)
+      argsBlock += format(argTemplate, subArg, `_${this.config.bin}_${underscoreSepId}_${subArg}`)
     }
 
     for (const c of this.commands.filter((c) => c.id.startsWith(id + ':') && c.id.split(':').length === depth + 1)) {
@@ -298,7 +295,7 @@ _${this.config.bin}
         summary: c.summary,
       })
 
-      argsBlock += util.format(flagArgsTemplate, subArg, this.genZshFlagArgumentsBlock(c.flags))
+      argsBlock += format(flagArgsTemplate, subArg, this.genZshFlagArgumentsBlock(c.flags))
     }
 
     const topicCompFunc = `_${this.config.bin}_${underscoreSepId}() {
@@ -319,7 +316,7 @@ _${this.config.bin}
   esac
 }
 `
-    return util.format(topicCompFunc, this.genZshValuesBlock(subArgs), argsBlock)
+    return format(topicCompFunc, this.genZshValuesBlock(subArgs), argsBlock)
   }
 
   private genZshValuesBlock(subArgs: {id: string; summary?: string}[]): string {
