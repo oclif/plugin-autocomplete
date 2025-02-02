@@ -1,3 +1,9 @@
+## [3.2.20](https://github.com/oclif/plugin-autocomplete/compare/3.2.19...3.2.20) (2025-02-02)
+
+### Bug Fixes
+
+- **deps:** bump ansis from 3.9.0 to 3.10.0 ([#891](https://github.com/oclif/plugin-autocomplete/issues/891)) ([f5e2f39](https://github.com/oclif/plugin-autocomplete/commit/f5e2f390eb36951695634e9b861fbadff541ea61))
+
 ## [3.2.19](https://github.com/oclif/plugin-autocomplete/compare/3.2.18...3.2.19) (2025-02-02)
 
 ### Bug Fixes
