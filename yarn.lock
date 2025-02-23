@@ -1492,12 +1492,12 @@
   integrity sha512-nn5ozdjYQpUCZlWGuxcJY/KpxkWQs4DcbMCmKojjyrYDEAGy4Ce19NN4v5MduafTwJlbKc99UA8YhSVqq9yPZA==
 
 "@oclif/core@^4", "@oclif/core@^4.2.3":
-  version "4.2.6"
-  resolved "https://registry.yarnpkg.com/@oclif/core/-/core-4.2.6.tgz#f2f1696be03a815a4c391504312f90fce29fbb4e"
-  integrity sha512-agk1Tlm7qMemWx+qq5aNgkYwX2JCkoVP4M0ruFveJrarmdUPbKZTMW1j/eg8lNKZh1sp68ytZyKhYXYEfRPcww==
+  version "4.2.8"
+  resolved "https://registry.yarnpkg.com/@oclif/core/-/core-4.2.8.tgz#6e71c76b8ea91064ffc8390a3fd2502c5d32a3db"
+  integrity sha512-OWv4Va6bERxIhrYcnUGzyhGRqktc64lJO6cZ3UwkzJDpfR8ZrbCxRfKRBBah1i8kzUlOAeAXnpbMBMah3skKwA==
   dependencies:
     ansi-escapes "^4.3.2"
-    ansis "^3.10.0"
+    ansis "^3.16.0"
     clean-stack "^3.0.1"
     cli-spinners "^2.9.2"
     debug "^4.4.0"
