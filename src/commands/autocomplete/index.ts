@@ -65,7 +65,7 @@ Setup Instructions for ${this.config.bin.toUpperCase()} CLI Autocomplete ---
 
   ${bold('NOTE')}: If you’ve configured your terminal to start as a login shell, you may need to modify the command so it updates either the ~/.bash_profile or ~/.profile file. For example:
 
-  ${cyan(`printf "$(${scriptCommand}) >> ~/.bash_profile; source ~/.bash_profile`)}
+  ${cyan(`printf "$(${scriptCommand})" >> ~/.bash_profile; source ~/.bash_profile`)}
 
   Or:
 
