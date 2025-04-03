@@ -1,3 +1,9 @@
+## [3.2.27](https://github.com/oclif/plugin-autocomplete/compare/3.2.26...3.2.27) (2025-04-03)
+
+### Bug Fixes
+
+- add missing quote ([e99f169](https://github.com/oclif/plugin-autocomplete/commit/e99f1696b031948e1572b44b131b1e5e91e7970a))
+
 ## [3.2.26](https://github.com/oclif/plugin-autocomplete/compare/3.2.25...3.2.26) (2025-03-16)
 
 ### Bug Fixes
