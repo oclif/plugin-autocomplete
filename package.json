@@ -25,7 +25,7 @@
     "chai": "^4",
     "commitlint": "^19",
     "eslint": "^9.27.0",
-    "eslint-config-oclif": "^6.0.56",
+    "eslint-config-oclif": "^6.0.58",
     "eslint-config-prettier": "^10.1.5",
     "husky": "^9.1.7",
     "lint-staged": "^15.5.2",
