@@ -1795,10 +1795,10 @@
   resolved "https://registry.yarnpkg.com/@nolyfill/is-core-module/-/is-core-module-1.0.39.tgz#3dc35ba0f1e66b403c00b39344f870298ebb1c8e"
   integrity sha512-nn5ozdjYQpUCZlWGuxcJY/KpxkWQs4DcbMCmKojjyrYDEAGy4Ce19NN4v5MduafTwJlbKc99UA8YhSVqq9yPZA==
 
-"@oclif/core@^4", "@oclif/core@^4.2.10":
-  version "4.3.2"
-  resolved "https://registry.yarnpkg.com/@oclif/core/-/core-4.3.2.tgz#522d5f94044ebde5f4041b0bad4f1abfe7a73f61"
-  integrity sha512-3OVGENifC2NzYn/t31fYOrZOGJ5WpUfRktz8v/W4QbP4Su3S/BcBuVuIde65B1mHrnAE/62yOFA/kLx4w1Vf8g==
+"@oclif/core@^4", "@oclif/core@^4.3.2":
+  version "4.3.3"
+  resolved "https://registry.yarnpkg.com/@oclif/core/-/core-4.3.3.tgz#a527536b62ef202c58d2b69ce9cd1e64eb3a94b1"
+  integrity sha512-A0mk4nlVE+r34fl91OdglXVPwhhfzM59IhSxnOigqMkwxFgT8z3i2WlUgzmazzvzSccs2KM4N2HkTS3NEvW96g==
   dependencies:
     ansi-escapes "^4.3.2"
     ansis "^3.17.0"
@@ -1814,7 +1814,7 @@
     semver "^7.6.3"
     string-width "^4.2.3"
     supports-color "^8"
-    tinyglobby "^0.2.13"
+    tinyglobby "^0.2.14"
     widest-line "^3.1.0"
     wordwrap "^1.0.0"
     wrap-ansi "^7.0.0"
@@ -5981,17 +5981,17 @@ object.values@^1.2.0:
     define-properties "^1.2.1"
     es-object-atoms "^1.0.0"
 
-oclif@^4.18.0:
-  version "4.18.0"
-  resolved "https://registry.yarnpkg.com/oclif/-/oclif-4.18.0.tgz#4216a87ae947ae233a92f94448e970fce621b11a"
-  integrity sha512-w5b35fT1tIZhJUv+GZLdEo4ZwF/wDeuNVL1cbOcgrQebcg0RMJE0ykFymVlfIPtOZqJzwfO6xeNEwqMy5fVtOw==
+oclif@^4.18.1:
+  version "4.18.1"
+  resolved "https://registry.yarnpkg.com/oclif/-/oclif-4.18.1.tgz#697c10712f022a4d8b596b15868a149fcbca3e8d"
+  integrity sha512-C5w/kUuIH3WxtjSfg3vxbdinT1dZuFoNaU7YhBTRx/FshO4WNHPsRqLgFFdx94dezkbskMJFcESS6i5RM96YSw==
   dependencies:
     "@aws-sdk/client-cloudfront" "^3.787.0"
     "@aws-sdk/client-s3" "^3.787.0"
     "@inquirer/confirm" "^3.1.22"
     "@inquirer/input" "^2.2.4"
     "@inquirer/select" "^2.5.0"
-    "@oclif/core" "^4.2.10"
+    "@oclif/core" "^4.3.2"
     "@oclif/plugin-help" "^6.2.27"
     "@oclif/plugin-not-found" "^3.2.48"
     "@oclif/plugin-warn-if-update-available" "^3.1.38"
@@ -7011,6 +7011,14 @@ tinyglobby@^0.2.13, tinyglobby@^0.2.9:
   version "0.2.13"
   resolved "https://registry.yarnpkg.com/tinyglobby/-/tinyglobby-0.2.13.tgz#a0e46515ce6cbcd65331537e57484af5a7b2ff7e"
   integrity sha512-mEwzpUgrLySlveBwEVDMKk5B57bhLPYovRfPAXD5gA/98Opn0rCDj3GtLwFvCvH5RK9uPCExUROW5NjDwvqkxw==
+  dependencies:
+    fdir "^6.4.4"
+    picomatch "^4.0.2"
+
+tinyglobby@^0.2.14:
+  version "0.2.14"
+  resolved "https://registry.yarnpkg.com/tinyglobby/-/tinyglobby-0.2.14.tgz#5280b0cf3f972b050e74ae88406c0a6a58f4079d"
+  integrity sha512-tX5e7OM1HnYr2+a2C/4V0htOcSQcoSTH9KgJnVvNm5zm/cyEWKJ7j7YutsH9CxMdtOkkLFy2AHrMci9IM8IPZQ==
   dependencies:
     fdir "^6.4.4"
     picomatch "^4.0.2"
