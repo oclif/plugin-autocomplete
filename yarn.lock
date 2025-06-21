@@ -1321,7 +1321,7 @@
   resolved "https://registry.yarnpkg.com/@eslint-community/regexpp/-/regexpp-4.12.1.tgz#cfc6cffe39df390a3841cde2abccf92eaa7ae0e0"
   integrity sha512-CCZCDJuduB9OUkFkY2IgppNZMi2lBQgD2qzwXkEia16cge2pijY/aXi96CJMquDMn3nJdlPV1A5KrJEXwfLNzQ==
 
-"@eslint/compat@^1.2.9", "@eslint/compat@^1.3.0":
+"@eslint/compat@^1.3.0":
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/@eslint/compat/-/compat-1.3.0.tgz#ce9dbd81e06c942a9570fbe3c2e10e3103f12c1c"
   integrity sha512-ZBygRBqpDYiIHsN+d1WyHn3TYgzgpzLEcgJUxTATyiInQbKZz6wZb6+ljwdg8xeeOe4v03z6Uh6lELiw0/mVhQ==
@@ -3995,12 +3995,12 @@ eslint-config-oclif@^5.2.2:
     eslint-plugin-n "^15.1.0"
     eslint-plugin-unicorn "^48.0.1"
 
-eslint-config-oclif@^6.0.70:
-  version "6.0.70"
-  resolved "https://registry.yarnpkg.com/eslint-config-oclif/-/eslint-config-oclif-6.0.70.tgz#6e23c47e375ed9a084339e2b8a2912aa7809f3c8"
-  integrity sha512-UTk4lFVpuMZBgPmvoxn67tiry9VQWdtBUv0qJO8Um9d0d2BYpvow0QTBIjyppaqrMqsZ2FQ24tYFFlkaXkrZVw==
+eslint-config-oclif@^6.0.72:
+  version "6.0.72"
+  resolved "https://registry.yarnpkg.com/eslint-config-oclif/-/eslint-config-oclif-6.0.72.tgz#a63d951339cd953c00f14c1d609a78d488b5851c"
+  integrity sha512-OOdT363dKLhZoXVGqEqcl0/zJbZlJgSW1FSoXffTS/2Xs4Tylbqz+v6JirRhh3aNQg50E4b2yjS2uvJck6hL7g==
   dependencies:
-    "@eslint/compat" "^1.2.9"
+    "@eslint/compat" "^1.3.0"
     "@eslint/eslintrc" "^3.3.1"
     "@eslint/js" "^9.28.0"
     "@stylistic/eslint-plugin" "^3.1.0"
@@ -4011,7 +4011,7 @@ eslint-config-oclif@^6.0.70:
     eslint-config-xo-space "^0.35.0"
     eslint-import-resolver-typescript "^3.10.1"
     eslint-plugin-import "^2.31.0"
-    eslint-plugin-jsdoc "^50.6.17"
+    eslint-plugin-jsdoc "^50.8.0"
     eslint-plugin-mocha "^10.5.0"
     eslint-plugin-n "^17.18.0"
     eslint-plugin-perfectionist "^4"
@@ -4119,10 +4119,10 @@ eslint-plugin-import@^2.31.0:
     string.prototype.trimend "^1.0.8"
     tsconfig-paths "^3.15.0"
 
-eslint-plugin-jsdoc@^50.6.17:
-  version "50.7.1"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-50.7.1.tgz#f3475c5545473f1d3e5fb272ad2f3988283b42e5"
-  integrity sha512-XBnVA5g2kUVokTNUiE1McEPse5n9/mNUmuJcx52psT6zBs2eVcXSmQBvjfa7NZdfLVSy3u1pEDDUxoxpwy89WA==
+eslint-plugin-jsdoc@^50.8.0:
+  version "50.8.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-50.8.0.tgz#a8d192ccca26df368a2fbaff17c9dddefacd773f"
+  integrity sha512-UyGb5755LMFWPrZTEqqvTJ3urLz1iqj+bYOHFNag+sw3NvaMWP9K2z+uIn37XfNALmQLQyrBlJ5mkiVPL7ADEg==
   dependencies:
     "@es-joy/jsdoccomment" "~0.50.2"
     are-docs-informative "^0.0.2"
