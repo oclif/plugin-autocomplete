@@ -24,7 +24,7 @@
     "@types/node": "^18",
     "chai": "^4",
     "commitlint": "^19",
-    "eslint": "^9.31.0",
+    "eslint": "^9.32.0",
     "eslint-config-oclif": "^6.0.86",
     "eslint-config-prettier": "^10.1.5",
     "husky": "^9.1.7",
