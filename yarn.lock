@@ -1560,7 +1560,7 @@
   resolved "https://registry.yarnpkg.com/@nolyfill/is-core-module/-/is-core-module-1.0.39.tgz#3dc35ba0f1e66b403c00b39344f870298ebb1c8e"
   integrity sha512-nn5ozdjYQpUCZlWGuxcJY/KpxkWQs4DcbMCmKojjyrYDEAGy4Ce19NN4v5MduafTwJlbKc99UA8YhSVqq9yPZA==
 
-"@oclif/core@^4", "@oclif/core@^4.5.1", "@oclif/core@^4.5.2":
+"@oclif/core@^4", "@oclif/core@^4.5.2":
   version "4.5.2"
   resolved "https://registry.yarnpkg.com/@oclif/core/-/core-4.5.2.tgz#4db8a365fa7e9e33af272294f710a7f3f25538e2"
   integrity sha512-eQcKyrEcDYeZJKu4vUWiu0ii/1Gfev6GF4FsLSgNez5/+aQyAUCjg3ZWlurf491WiYZTXCWyKAxyPWk8DKv2MA==
@@ -6261,17 +6261,17 @@ object.values@^1.2.1:
     define-properties "^1.2.1"
     es-object-atoms "^1.0.0"
 
-oclif@^4.22.4:
-  version "4.22.4"
-  resolved "https://registry.yarnpkg.com/oclif/-/oclif-4.22.4.tgz#4efe95dc686b9ece8f7ed3aa8c63ed0ae85601fb"
-  integrity sha512-stLgZqaTAiQvVRb3ngl/541r0hD1pEkCT+8xboy6jFqKDK7SflZYDp90nFPWFLSMz19KWvFWaC+MQiZNNjzTrQ==
+oclif@^4.22.5:
+  version "4.22.5"
+  resolved "https://registry.yarnpkg.com/oclif/-/oclif-4.22.5.tgz#5c8171cc45943377dff2e08038770965167e2665"
+  integrity sha512-1TViD9V+y3zLnnBzV3cNsKzXxMY7doEcxwny7eqiW4OHDU3PNTPWngG/aidzlKLDXGbajTdjtUpX69UXF78Ahw==
   dependencies:
     "@aws-sdk/client-cloudfront" "^3.850.0"
     "@aws-sdk/client-s3" "^3.850.0"
     "@inquirer/confirm" "^3.1.22"
     "@inquirer/input" "^2.2.4"
     "@inquirer/select" "^2.5.0"
-    "@oclif/core" "^4.5.1"
+    "@oclif/core" "^4.5.2"
     "@oclif/plugin-help" "^6.2.29"
     "@oclif/plugin-not-found" "^3.2.61"
     "@oclif/plugin-warn-if-update-available" "^3.1.44"
