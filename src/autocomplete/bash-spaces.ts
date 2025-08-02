@@ -30,6 +30,7 @@ export default class BashCompWithSpaces {
   public generate(): string {
     const commandsWithFlags = this.generateCommandsWithFlags()
     const flagCompletionCases = this.generateFlagCompletionCases()
+    const multipleFlagsCases = this.generateMultipleFlagsCases()
     
     return `#!/usr/bin/env bash
 
@@ -46,6 +47,19 @@ _${this.config.bin}_autocomplete()
   local commands="
 ${commandsWithFlags}
 "
+
+  # Function to check if a flag can be specified multiple times
+  function __is_multiple_flag()
+  {
+    local cmd="$1"
+    local flag="$2"
+    case "$cmd" in
+${multipleFlagsCases}
+      *)
+        return 1
+        ;;
+    esac
+  }
 
   function __trim_colon_commands()
   {
@@ -70,14 +84,61 @@ ${commandsWithFlags}
     done
   }
 
-  # Check if we're completing a flag value (only for flags that actually take values)
+  # Check if we're completing a flag value by looking for the last flag that expects a value
+  local last_flag_expecting_value=""
+  local should_complete_flag_value=false
+  
+  # Check if the previous word is a flag (simple case)
   if [[ "$prev" =~ ^(-[a-zA-Z]|--[a-zA-Z0-9-]+)$ ]]; then
-    # Get the command path (everything except the current word and previous flag)
+    last_flag_expecting_value="$prev"
+    should_complete_flag_value=true
+  else
+    # Look backwards through the words to find the last flag that might expect a value
+    for ((i=COMP_CWORD-1; i>=1; i--)); do
+      local word="\${COMP_WORDS[i]}"
+      if [[ "$word" =~ ^(-[a-zA-Z]|--[a-zA-Z0-9-]+)$ ]]; then
+        # Found a flag, check if it expects a value and doesn't have one yet
+        local flag_has_value=false
+        if [[ $((i+1)) -lt COMP_CWORD ]]; then
+          local next_word="\${COMP_WORDS[$((i+1))]}"
+          if [[ "$next_word" != -* && -n "$next_word" ]]; then
+            flag_has_value=true
+          fi
+        fi
+        
+        # If this flag doesn't have a value yet, it might be expecting one
+        if [[ "$flag_has_value" == false ]]; then
+          last_flag_expecting_value="$word"
+          should_complete_flag_value=true
+          break
+        fi
+      elif [[ "$word" != -* ]]; then
+        # Hit a non-flag word, stop looking
+        break
+      fi
+    done
+  fi
+  
+  if [[ "$should_complete_flag_value" == true ]]; then
+    # Get the command path (everything except flags and their values)
     local cmd_words=()
-    for ((i=1; i<COMP_CWORD-1; i++)); do
-      if [[ "\${COMP_WORDS[i]}" != -* ]]; then
+    local i=1
+    while [[ i -lt COMP_CWORD ]]; do
+      if [[ "\${COMP_WORDS[i]}" =~ ^--[a-zA-Z0-9-]+$ ]]; then
+        # Found a long flag, skip it and its potential value
+        if [[ $((i+1)) -lt COMP_CWORD && "\${COMP_WORDS[$((i+1))]}" != -* ]]; then
+          ((i++)) # Skip the flag value
+        fi
+      elif [[ "\${COMP_WORDS[i]}" =~ ^-[a-zA-Z]$ ]]; then
+        # Found a short flag, skip it and its potential value
+        if [[ $((i+1)) -lt COMP_CWORD && "\${COMP_WORDS[$((i+1))]}" != -* ]]; then
+          ((i++)) # Skip the flag value
+        fi
+      elif [[ "\${COMP_WORDS[i]}" != -* ]]; then
+        # This is a command word (not a flag)
         cmd_words+=("\${COMP_WORDS[i]}")
       fi
+      ((i++))
     done
     # Build colon-separated command, then convert to space-separated for case matching
     local colonCommand="$( printf "%s" "$(join_by ":" "\${cmd_words[@]}")" )"
@@ -85,6 +146,7 @@ ${commandsWithFlags}
     
     # Handle flag value completion (only if the flag actually has values to complete)
     local has_flag_values=false
+    local prev="$last_flag_expecting_value"
     case "$normalizedCommand" in
 ${flagCompletionCases}
       *)
@@ -218,26 +280,33 @@ ${flagCompletionCases}
       for flag in $all_flags; do
         local flag_found=false
         
-        # Check direct match
-        for used_flag in "\${used_flags[@]}"; do
-          if [[ "$flag" == "$used_flag" ]]; then
-            flag_found=true
-            break
-          fi
-        done
-        
-        # Check equivalent short/long form
-        if [[ "$flag_found" == false ]]; then
-          for pair in "\${flag_pairs[@]}"; do
-            local short_flag="\${pair%:*}"
-            local long_flag="\${pair#*:}"
-            for used_flag in "\${used_flags[@]}"; do
-              if [[ "$flag" == "$short_flag" && "$used_flag" == "$long_flag" ]] || [[ "$flag" == "$long_flag" && "$used_flag" == "$short_flag" ]]; then
-                flag_found=true
-                break 2
-              fi
-            done
+        # Check if this flag can be specified multiple times
+        if __is_multiple_flag "$normalizedCommand" "$flag"; then
+          # Multiple flags are always available
+          echo "Flag $flag is multiple for command $normalizedCommand" >> /tmp/sf_completion_debug.log
+          flag_found=false
+        else
+          # Check direct match
+          for used_flag in "\${used_flags[@]}"; do
+            if [[ "$flag" == "$used_flag" ]]; then
+              flag_found=true
+              break
+            fi
           done
+          
+          # Check equivalent short/long form
+          if [[ "$flag_found" == false ]]; then
+            for pair in "\${flag_pairs[@]}"; do
+              local short_flag="\${pair%:*}"
+              local long_flag="\${pair#*:}"
+              for used_flag in "\${used_flags[@]}"; do
+                if [[ "$flag" == "$short_flag" && "$used_flag" == "$long_flag" ]] || [[ "$flag" == "$long_flag" && "$used_flag" == "$short_flag" ]]; then
+                  flag_found=true
+                  break 2
+                fi
+              done
+            done
+          fi
         fi
         
         if [[ "$flag_found" == false ]]; then
@@ -321,6 +390,35 @@ ${this.config.binAliases?.map((alias) => `complete -F _${this.config.bin}_autoco
         // Convert colon-separated command IDs to space-separated for SF CLI format
         const spaceId = cmd.id.replaceAll(':', ' ')
         cases.push(`      "${spaceId}")`, ...flagCases, `        ;;`)
+      }
+    }
+    
+    return cases.join('\n')
+  }
+
+  private generateMultipleFlagsCases(): string {
+    const cases: string[] = []
+    
+    for (const cmd of this.commands) {
+      const multipleFlags: string[] = []
+      
+      for (const [flagName, flag] of Object.entries(cmd.flags)) {
+        if (flag.hidden) continue
+        
+        if ((flag as any).multiple) {
+          // Handle both long and short flag forms
+          if (flag.char) {
+            multipleFlags.push(`"--${flagName}"`, `"-${flag.char}"`)
+          } else {
+            multipleFlags.push(`"--${flagName}"`)
+          }
+        }
+      }
+      
+      if (multipleFlags.length > 0) {
+        // Use colon-separated command IDs to match how normalizedCommand is built in flag completion
+        const flagChecks = multipleFlags.map(flag => `[[ "$flag" == ${flag} ]]`).join(' || ')
+        cases.push(`      "${cmd.id}")`, `        if ${flagChecks}; then return 0; fi`, `        return 1`, `        ;;`)
       }
     }
     
