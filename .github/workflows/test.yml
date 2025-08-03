@@ -32,7 +32,7 @@ jobs:
       - name: Build branch
         run: yarn compile
       - name: Link plugin
-        run: sf plugin link --no-install
+        run: sf plugins link --no-install
       - name: Run tests
         run: yarn test:e2e:bash-spaces
 
