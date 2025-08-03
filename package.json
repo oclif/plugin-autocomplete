@@ -72,7 +72,7 @@
     "prepack": "yarn build && oclif manifest && oclif readme",
     "prepare": "husky && yarn build",
     "pretest": "yarn build && tsc -p test --noEmit",
-    "test": "mocha --forbid-only \"test/**/*.test.ts\"",
+    "test": "mocha --forbid-only \"test/**/*.test.ts\" --ignore \"test/e2e/**\"",
     "test:e2e:bash-spaces": "mocha --forbid-only test/e2e/bash-completion.test.ts",
     "version": "oclif readme && git add README.md"
   },
