@@ -31,7 +31,7 @@ export default class BashCompWithSpaces {
     const commandsWithFlags = this.generateCommandsWithFlags()
     const flagCompletionCases = this.generateFlagCompletionCases()
     const multipleFlagsCases = this.generateMultipleFlagsCases()
-    const topicCompletions = this.generateTopicCompletions()
+    const rootTopicsCompletion = this.generateRootLevelTopics()
     const topicsMetadata = this.generateTopicsMetadata()
     const commandSummaries = this.generateCommandSummaries()
 
@@ -458,7 +458,7 @@ __${this.config.bin}_get_command_completions() {
     
     if [[ -z "$current_path" ]]; then
         # At root level - show topics
-${topicCompletions}
+${rootTopicsCompletion}
     else
         # Show matching commands and subtopics
         local matching_commands
@@ -639,7 +639,7 @@ fi`).join('\n') ?? ''}
     return cases.join('\n')
   }
 
-  private generateTopicCompletions(): string {
+  private generateRootLevelTopics(): string {
     const topicLines: string[] = []
     
     // Get root level topics
@@ -688,26 +688,28 @@ fi`).join('\n') ?? ''}
           summary,
         })
 
-        for (const a of c.aliases) {
-          cmds.push({
-            flags,
-            id: a,
-            summary,
-          })
+        if (!c.deprecateAliases) {
+          for (const a of c.aliases) {
+            cmds.push({
+              flags,
+              id: a,
+              summary,
+            })
 
-          const split = a.split(':')
-          let topic = split[0]
+            const split = a.split(':')
+            let topic = split[0]
 
-          // Add missing topics for aliases
-          for (let i = 0; i < split.length - 1; i++) {
-            if (!this.topics.some((t) => t.name === topic)) {
-              this.topics.push({
-                description: `${topic.replaceAll(':', ' ')} commands`,
-                name: topic,
-              })
+            // Add missing topics for aliases
+            for (let i = 0; i < split.length - 1; i++) {
+              if (!this.topics.some((t) => t.name === topic)) {
+                this.topics.push({
+                  description: `${topic.replaceAll(':', ' ')} commands`,
+                  name: topic,
+                })
+              }
+
+              topic += `:${split[i + 1]}`
             }
-
-            topic += `:${split[i + 1]}`
           }
         }
       }
