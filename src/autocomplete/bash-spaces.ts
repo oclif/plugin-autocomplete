@@ -31,305 +31,514 @@ export default class BashCompWithSpaces {
     const commandsWithFlags = this.generateCommandsWithFlags()
     const flagCompletionCases = this.generateFlagCompletionCases()
     const multipleFlagsCases = this.generateMultipleFlagsCases()
+    const topicCompletions = this.generateTopicCompletions()
+    const topicsMetadata = this.generateTopicsMetadata()
+    const commandSummaries = this.generateCommandSummaries()
 
     return `#!/usr/bin/env bash
+
+# bash completion for ${this.config.bin}                        -*- shell-script -*-
+
+__${this.config.bin}_debug()
+{
+    if [[ -n \${BASH_COMP_DEBUG_FILE-} ]]; then
+        echo "$*" >> "\${BASH_COMP_DEBUG_FILE}"
+    fi
+}
+
+# Macs have bash3 for which the bash-completion package doesn't include
+# _init_completion. This is a minimal version of that function.
+__${this.config.bin}_init_completion()
+{
+    COMPREPLY=()
+    if declare -F _get_comp_words_by_ref >/dev/null 2>&1; then
+        _get_comp_words_by_ref "$@" cur prev words cword
+    else
+        # Manual initialization when bash-completion is not available
+        cur="\${COMP_WORDS[COMP_CWORD]}"
+        prev="\${COMP_WORDS[COMP_CWORD-1]}"
+        words=("\${COMP_WORDS[@]}")
+        cword=$COMP_CWORD
+    fi
+}
+
+__${this.config.bin}_handle_completion_types() {
+    __${this.config.bin}_debug "__${this.config.bin}_handle_completion_types: COMP_TYPE is $COMP_TYPE"
+
+    case $COMP_TYPE in
+    37|42)
+        # Type: menu-complete/menu-complete-backward and insert-completions
+        # If the user requested inserting one completion at a time, or all
+        # completions at once on the command-line we must remove the descriptions.
+        local tab=$'\\t' comp
+        while IFS='' read -r comp; do
+            [[ -z $comp ]] && continue
+            # Strip any description
+            comp=\${comp%%$tab*}
+            # Only consider the completions that match
+            if [[ $comp == "$cur"* ]]; then
+                COMPREPLY+=("$comp")
+            fi
+        done < <(printf "%s\\n" "\${completions[@]}")
+        ;;
+
+    *)
+        # Type: complete (normal completion)
+        __${this.config.bin}_handle_standard_completion_case
+        ;;
+    esac
+}
+
+__${this.config.bin}_handle_standard_completion_case() {
+    local tab=$'\\t' comp
+
+    # Short circuit to optimize if we don't have descriptions
+    if [[ "\${completions[*]}" != *$tab* ]]; then
+        IFS=$'\\n' read -ra COMPREPLY -d '' < <(compgen -W "\${completions[*]}" -- "$cur")
+        return 0
+    fi
+
+    local longest=0
+    local compline
+    # Look for the longest completion so that we can format things nicely
+    while IFS='' read -r compline; do
+        [[ -z $compline ]] && continue
+        # Strip any description before checking the length
+        comp=\${compline%%$tab*}
+        # Only consider the completions that match
+        [[ $comp == "$cur"* ]] || continue
+        COMPREPLY+=("$compline")
+        if ((\${#comp}>longest)); then
+            longest=\${#comp}
+        fi
+    done < <(printf "%s\\n" "\${completions[@]}")
+
+    # If there is a single completion left, remove the description text
+    if ((\${#COMPREPLY[*]} == 1)); then
+        __${this.config.bin}_debug "COMPREPLY[0]: \${COMPREPLY[0]}"
+        comp="\${COMPREPLY[0]%%$tab*}"
+        __${this.config.bin}_debug "Removed description from single completion, which is now: $comp"
+        COMPREPLY[0]=$comp
+    else # Format the descriptions
+        __${this.config.bin}_format_comp_descriptions $longest
+    fi
+}
+
+__${this.config.bin}_format_comp_descriptions()
+{
+    local tab=$'\\t'
+    local comp desc maxdesclength
+    local longest=$1
+
+    local i ci
+    for ci in \${!COMPREPLY[*]}; do
+        comp=\${COMPREPLY[ci]}
+        # Properly format the description string which follows a tab character if there is one
+        if [[ "$comp" == *$tab* ]]; then
+            __${this.config.bin}_debug "Original comp: $comp"
+            desc=\${comp#*$tab}
+            comp=\${comp%%$tab*}
+
+            # $COLUMNS stores the current shell width.
+            # Remove an extra 4 because we add 2 spaces and 2 parentheses.
+            maxdesclength=$(( COLUMNS - longest - 4 ))
+
+            # Make sure we can fit a description of at least 8 characters
+            # if we are to align the descriptions.
+            if ((maxdesclength > 8)); then
+                # Add the proper number of spaces to align the descriptions
+                for ((i = \${#comp} ; i < longest ; i++)); do
+                    comp+=" "
+                done
+            else
+                # Don't pad the descriptions so we can fit more text after the completion
+                maxdesclength=$(( COLUMNS - \${#comp} - 4 ))
+            fi
+
+            # If there is enough space for any description text,
+            # truncate the descriptions that are too long for the shell width
+            if ((maxdesclength > 0)); then
+                if ((\${#desc} > maxdesclength)); then
+                    desc=\${desc:0:$(( maxdesclength - 1 ))}
+                    desc+="…"
+                fi
+                comp+="  ($desc)"
+            fi
+            COMPREPLY[ci]=$comp
+            __${this.config.bin}_debug "Final comp: $comp"
+        fi
+    done
+}
 
 # This function joins an array using a character passed in
 # e.g. ARRAY=(one two three) -> join_by ":" \${ARRAY[@]} -> "one:two:three"
 function join_by { local IFS="$1"; shift; echo "$*"; }
 
+
 _${this.config.bin}_autocomplete()
 {
-  local cur="\${COMP_WORDS[COMP_CWORD]}" opts normalizedCommand colonPrefix IFS=$' \\t\\n'
-  local prev="\${COMP_WORDS[COMP_CWORD-1]}"
-  COMPREPLY=()
+    local cur prev words cword split
+    COMPREPLY=()
+    # Call _init_completion from the bash-completion package
+    # to prepare the arguments properly
+    if declare -F _init_completion >/dev/null 2>&1; then
+        _init_completion -n =: || return
+    else
+        __${this.config.bin}_init_completion -n =: || return
+    fi
+    __${this.config.bin}_debug
+    __${this.config.bin}_debug "========= starting completion logic =========="
+    __${this.config.bin}_debug "cur is \${cur}, words[*] is \${words[*]}, #words[@] is \${#words[@]}, cword is $cword"
 
-  local commands="
+    # The user could have moved the cursor backwards on the command-line.
+    # We need to trigger completion from the $cword location, so we need
+    # to truncate the command-line ($words) up to the $cword location.
+    words=("\${words[@]:0:$cword+1}")
+    __${this.config.bin}_debug "Truncated words[*]: \${words[*]},"
+
+    local commands="
 ${commandsWithFlags}
 "
 
-  # Function to check if a flag can be specified multiple times
-  function __is_multiple_flag()
-  {
-    local cmd="$1"
-    local flag="$2"
-    case "$cmd" in
-${multipleFlagsCases}
-      *)
-        return 1
-        ;;
-    esac
-  }
+    local topics="
+${topicsMetadata}
+"
 
-  function __trim_colon_commands()
-  {
-    # Turn $commands into an array
-    commands=("\${commands[@]}")
+    local command_summaries="
+${commandSummaries}
+"
 
-    if [[ -z "$colonPrefix" ]]; then
-      colonPrefix="$normalizedCommand:"
-    fi
-
-    # Remove colon-word prefix from $commands
-    commands=( "\${commands[@]/$colonPrefix}" )
-
-    for i in "\${!commands[@]}"; do
-      if [[ "\${commands[$i]}" == "$normalizedCommand" ]]; then
-        # If the currently typed in command is a topic command we need to remove it to avoid suggesting it again
-        unset "\${commands[$i]}"
-      else
-        # Trim subcommands from each command
-        commands[$i]="\${commands[$i]%%:*}"
-      fi
-    done
-  }
-
-  # Check if we're completing a flag value by looking for the last flag that expects a value
-  local last_flag_expecting_value=""
-  local should_complete_flag_value=false
-  
-  # Check if the previous word is a flag (simple case)
-  if [[ "$prev" =~ ^(-[a-zA-Z]|--[a-zA-Z0-9-]+)$ ]]; then
-    last_flag_expecting_value="$prev"
-    should_complete_flag_value=true
-  else
-    # Look backwards through the words to find the last flag that might expect a value
-    for ((i=COMP_CWORD-1; i>=1; i--)); do
-      local word="\${COMP_WORDS[i]}"
-      if [[ "$word" =~ ^(-[a-zA-Z]|--[a-zA-Z0-9-]+)$ ]]; then
-        # Found a flag, check if it expects a value and doesn't have one yet
-        local flag_has_value=false
-        if [[ $((i+1)) -lt COMP_CWORD ]]; then
-          local next_word="\${COMP_WORDS[$((i+1))]}"
-          if [[ "$next_word" != -* && -n "$next_word" ]]; then
-            flag_has_value=true
-          fi
-        fi
-        
-        # If this flag doesn't have a value yet, it might be expecting one
-        if [[ "$flag_has_value" == false ]]; then
-          last_flag_expecting_value="$word"
-          should_complete_flag_value=true
-          break
-        fi
-      elif [[ "$word" != -* ]]; then
-        # Hit a non-flag word, stop looking
-        break
-      fi
-    done
-  fi
-  
-  if [[ "$should_complete_flag_value" == true ]]; then
-    # Get the command path (everything except flags and their values)
-    local cmd_words=()
-    local i=1
-    while [[ i -lt COMP_CWORD ]]; do
-      if [[ "\${COMP_WORDS[i]}" =~ ^--[a-zA-Z0-9-]+$ ]]; then
-        # Found a long flag, skip it and its potential value
-        if [[ $((i+1)) -lt COMP_CWORD && "\${COMP_WORDS[$((i+1))]}" != -* ]]; then
-          ((i++)) # Skip the flag value
-        fi
-      elif [[ "\${COMP_WORDS[i]}" =~ ^-[a-zA-Z]$ ]]; then
-        # Found a short flag, skip it and its potential value
-        if [[ $((i+1)) -lt COMP_CWORD && "\${COMP_WORDS[$((i+1))]}" != -* ]]; then
-          ((i++)) # Skip the flag value
-        fi
-      elif [[ "\${COMP_WORDS[i]}" != -* ]]; then
-        # This is a command word (not a flag)
-        cmd_words+=("\${COMP_WORDS[i]}")
-      fi
-      ((i++))
-    done
-    # Build colon-separated command, then convert to space-separated for case matching
-    local colonCommand="$( printf "%s" "$(join_by ":" "\${cmd_words[@]}")" )"
-    normalizedCommand="\${colonCommand//:/ }"
+    local completions=()
+    __${this.config.bin}_get_completions
     
-    # Handle flag value completion (only if the flag actually has values to complete)
-    local has_flag_values=false
-    local prev="$last_flag_expecting_value"
-    case "$normalizedCommand" in
-${flagCompletionCases}
-      *)
-        has_flag_values=false
-        ;;
-    esac
-    
-    # If no flag values found, fall through to regular flag completion
-    if [[ "$has_flag_values" == false ]]; then
-      # Treat this as regular flag completion instead
-      normalizedCommand="$colonCommand"
-      # Fall through to flag completion below (don't return here)
-    else
-      # We found flag values, return them and exit early
-      COMPREPLY=($(compgen -W "$opts" -- "\${cur}"))
-      return 0
-    fi
-  fi
-  
-  # Handle command completion
-  if [[ "$cur" != "-"* ]]; then
-    # Command completion
-    __COMP_WORDS=( "\${COMP_WORDS[@]:1}" )
-
-    # Filter out any flags from the command words
-    local clean_words=()
-    for word in "\${__COMP_WORDS[@]}"; do
-      if [[ "$word" != -* ]]; then
-        clean_words+=("$word")
-      fi
-    done
-
-    # The command typed by the user but separated by colons (e.g. "mycli command subcom" -> "command:subcom")
-    normalizedCommand="$( printf "%s" "$(join_by ":" "\${clean_words[@]}")" )"
-
-    # The command hierarchy, with colons, leading up to the last subcommand entered
-    colonPrefix="\${normalizedCommand%"\${normalizedCommand##*:}"}"
-
-    if [[ -z "$normalizedCommand" ]]; then
-      # If there is no normalizedCommand yet the user hasn't typed in a full command
-      # So we should trim all subcommands & flags from $commands so we can suggest all top level commands
-      opts=$(printf "%s " "\${commands[@]}" | grep -Eo '^[a-zA-Z0-9_-]+')
-    else
-      # Filter $commands to just the ones that match the $normalizedCommand and turn into an array
-      commands=( $(compgen -W "$commands" -- "\${normalizedCommand}") )
-      # Trim higher level and subcommands from the subcommands to suggest
-      __trim_colon_commands "$colonPrefix"
-
-      opts=$(printf "%s " "\${commands[@]}")
-    fi
-  else
-    # Handle flag completion OR fallthrough from boolean flag case above
-    # Flag completion
-    
-    # DEBUG: Dump completion state to temp file
-    echo "=== DEBUG FLAG COMPLETION ===" > /tmp/sf_completion_debug.log
-    echo "COMP_WORDS: \${COMP_WORDS[@]}" >> /tmp/sf_completion_debug.log
-    echo "COMP_CWORD: $COMP_CWORD" >> /tmp/sf_completion_debug.log
-    echo "cur: $cur" >> /tmp/sf_completion_debug.log
-    echo "prev: $prev" >> /tmp/sf_completion_debug.log
-    
-    # Get the command path (everything except flags and their values)
-    local cmd_words=()
-    local i=1
-    while [[ i -lt COMP_CWORD ]]; do
-      if [[ "\${COMP_WORDS[i]}" =~ ^--[a-zA-Z0-9-]+$ ]]; then
-        # Found a long flag, skip it and its potential value
-        if [[ $((i+1)) -lt COMP_CWORD && "\${COMP_WORDS[$((i+1))]}" != -* ]]; then
-          ((i++)) # Skip the flag value
-        fi
-      elif [[ "\${COMP_WORDS[i]}" =~ ^-[a-zA-Z]$ ]]; then
-        # Found a short flag, skip it and its potential value
-        if [[ $((i+1)) -lt COMP_CWORD && "\${COMP_WORDS[$((i+1))]}" != -* ]]; then
-          ((i++)) # Skip the flag value
-        fi
-      elif [[ "\${COMP_WORDS[i]}" != -* ]]; then
-        # This is a command word (not a flag)
-        cmd_words+=("\${COMP_WORDS[i]}")
-      fi
-      ((i++))
-    done
-    normalizedCommand="$( printf "%s" "$(join_by ":" "\${cmd_words[@]}")" )"
-    echo "cmd_words: \${cmd_words[@]}" >> /tmp/sf_completion_debug.log
-    echo "normalizedCommand: $normalizedCommand" >> /tmp/sf_completion_debug.log
-
-    # Get already used flags to avoid suggesting them again
-    local used_flags=()
-    local i=1
-    while [[ i -lt COMP_CWORD ]]; do
-      if [[ "\${COMP_WORDS[i]}" =~ ^--[a-zA-Z0-9-]+$ ]]; then
-        used_flags+=("\${COMP_WORDS[i]}")
-        # Only skip next word if it's actually a flag value (not starting with - and not empty)
-        if [[ $((i+1)) -lt COMP_CWORD && "\${COMP_WORDS[$((i+1))]}" != -* && -n "\${COMP_WORDS[$((i+1))]}" ]]; then
-          ((i++))
-        fi
-      elif [[ "\${COMP_WORDS[i]}" =~ ^-[a-zA-Z]$ ]]; then
-        used_flags+=("\${COMP_WORDS[i]}")
-        # Only skip next word if it's actually a flag value (not starting with - and not empty)
-        if [[ $((i+1)) -lt COMP_CWORD && "\${COMP_WORDS[$((i+1))]}" != -* && -n "\${COMP_WORDS[$((i+1))]}" ]]; then
-          ((i++))
-        fi
-      fi
-      ((i++))
-    done
-    
-    echo "used_flags: \${used_flags[@]}" >> /tmp/sf_completion_debug.log
-
-    # Find the command in $commands and extract its flags
-    local cmd_line=$(printf "%s\\n" "\${commands[@]}" | grep "^$normalizedCommand ")
-    if [[ -n "$cmd_line" ]]; then
-      # Extract flags from the command line
-      local all_flags=$(echo "$cmd_line" | sed -n "s/^$normalizedCommand //p")
-      echo "cmd_line: $cmd_line" >> /tmp/sf_completion_debug.log
-      echo "all_flags: $all_flags" >> /tmp/sf_completion_debug.log
-      
-      # Build a mapping of short to long flags for equivalency checking
-      local flag_pairs=()
-      local temp_flags=($all_flags)
-      local j=0
-      while [[ j -lt \${#temp_flags[@]} ]]; do
-        if [[ "\${temp_flags[j]}" =~ ^-[a-zA-Z]$ && $((j+1)) -lt \${#temp_flags[@]} && "\${temp_flags[$((j+1))]}" =~ ^--[a-zA-Z0-9-]+$ ]]; then
-          flag_pairs+=("\${temp_flags[j]}:\${temp_flags[$((j+1))]}")
-          ((j += 2))
-        else
-          ((j++))
-        fi
-      done
-      
-      # Filter out already used flags (including equivalent short/long forms)
-      local available_flags=()
-      for flag in $all_flags; do
-        local flag_found=false
-        
-        # Check if this flag can be specified multiple times
-        if __is_multiple_flag "$normalizedCommand" "$flag"; then
-          # Multiple flags are always available
-          echo "Flag $flag is multiple for command $normalizedCommand" >> /tmp/sf_completion_debug.log
-          flag_found=false
-        else
-          # Check direct match
-          for used_flag in "\${used_flags[@]}"; do
-            if [[ "$flag" == "$used_flag" ]]; then
-              flag_found=true
-              break
-            fi
-          done
-          
-          # Check equivalent short/long form
-          if [[ "$flag_found" == false ]]; then
-            for pair in "\${flag_pairs[@]}"; do
-              local short_flag="\${pair%:*}"
-              local long_flag="\${pair#*:}"
-              for used_flag in "\${used_flags[@]}"; do
-                if [[ "$flag" == "$short_flag" && "$used_flag" == "$long_flag" ]] || [[ "$flag" == "$long_flag" && "$used_flag" == "$short_flag" ]]; then
-                  flag_found=true
-                  break 2
-                fi
-              done
-            done
-          fi
-        fi
-        
-        if [[ "$flag_found" == false ]]; then
-          available_flags+=("$flag")
-        fi
-      done
-      
-      echo "flag_pairs: \${flag_pairs[@]}" >> /tmp/sf_completion_debug.log
-      echo "available_flags: \${available_flags[@]}" >> /tmp/sf_completion_debug.log
-      opts=$(printf "%s " "\${available_flags[@]}")
-    else
-      echo "No cmd_line found for: $normalizedCommand" >> /tmp/sf_completion_debug.log
-      opts=""
+    # Force specific completion options
+    if [[ $(type -t compopt) == builtin ]]; then
+        compopt -o nosort
+        compopt +o default
     fi
     
-    echo "final opts: $opts" >> /tmp/sf_completion_debug.log
-  fi
-
-  COMPREPLY=($(compgen -W "$opts" -- "\${cur}"))
+    __${this.config.bin}_handle_completion_types
 }
 
-complete -F _${this.config.bin}_autocomplete ${this.config.bin}
-${this.config.binAliases?.map((alias) => `complete -F _${this.config.bin}_autocomplete ${alias}`).join('\n') ?? ''}
+__${this.config.bin}_get_completions() {
+    local tab=$'\\t'
+    completions=()
+
+    # Get current position in command
+    local cmd_parts=("\${words[@]:1}")  # Remove '${this.config.bin}' from beginning
+    local num_parts=\${#cmd_parts[@]}
+    
+    # If current word is empty but we have a space, we're completing the next argument
+    if [[ -z "$cur" && $cword -gt 1 ]]; then
+        num_parts=$((cword - 1))
+    else
+        # If we're typing a word, we're still on that position
+        num_parts=$((cword - 1))
+    fi
+
+    __${this.config.bin}_debug "cmd_parts: \${cmd_parts[*]}"
+    __${this.config.bin}_debug "num_parts: $num_parts"
+    __${this.config.bin}_debug "cword: $cword"
+    __${this.config.bin}_debug "cur: '$cur'"
+    
+    # Get clean command words (without flags)
+    local clean_cmd_parts=()
+    local i=1
+    while [[ i -lt cword ]]; do
+        local word="\${words[i]}"
+        if [[ "$word" =~ ^--[a-zA-Z0-9-]+$ ]]; then
+            # Found a long flag, skip it and its potential value
+            if [[ $((i+1)) -lt cword && "\${words[$((i+1))]}" != -* && -n "\${words[$((i+1))]}" ]]; then
+                ((i++)) # Skip the flag value
+            fi
+        elif [[ "$word" =~ ^-[a-zA-Z]$ ]]; then
+            # Found a short flag, skip it and its potential value
+            if [[ $((i+1)) -lt cword && "\${words[$((i+1))]}" != -* && -n "\${words[$((i+1))]}" ]]; then
+                ((i++)) # Skip the flag value
+            fi
+        elif [[ "$word" != -* ]]; then
+            # This is a command word (not a flag)
+            clean_cmd_parts+=("$word")
+        fi
+        ((i++))
+    done
+    
+    local cmd_key="\$(join_by " " "\${clean_cmd_parts[@]}")"
+    __${this.config.bin}_debug "cmd_key: '$cmd_key'"
+    
+    # Check if we should complete flag values
+    if __${this.config.bin}_is_completing_flag_value "$cmd_key"; then
+        local prev_word="\${words[$((cword - 1))]}"
+        local values
+        values=$(__${this.config.bin}_get_flag_values "$prev_word" "$cmd_key")
+        if [[ -n "$values" ]]; then
+            IFS=',' read -ra value_array <<< "$values"
+            local value
+            for value in "\${value_array[@]}"; do
+                completions+=("\${value}\${tab}\${prev_word} option value")
+            done
+            return
+        fi
+        # If no known values, don't suggest anything (let user type)
+        return
+    fi
+    
+    # Check if we should suggest flags
+    if __${this.config.bin}_should_suggest_flags "$cmd_key"; then
+        __${this.config.bin}_get_flag_completions "$cmd_key"
+        return
+    fi
+
+    # Command completion
+    __${this.config.bin}_get_command_completions
+}
+
+__${this.config.bin}_is_completing_flag_value() {
+    # Check if we're completing a value for an option flag
+    local prev_word="\${words[$((cword - 1))]}"
+    local cmd_key="$1"
+    
+    # Look backwards through the words to find the last flag that might expect a value
+    for ((i=cword-1; i>=1; i--)); do
+        local word="\${words[i]}"
+        if [[ "$word" =~ ^(-[a-zA-Z]|--[a-zA-Z0-9-]+)$ ]]; then
+            # Found a flag, check if it expects a value and doesn't have one yet
+            local flag_has_value=false
+            if [[ $((i+1)) -lt cword ]]; then
+                local next_word="\${words[$((i+1))]}"
+                if [[ "$next_word" != -* && -n "$next_word" ]]; then
+                    flag_has_value=true
+                fi
+            fi
+            
+            # If this flag doesn't have a value yet, it might be expecting one
+            if [[ "$flag_has_value" == false ]]; then
+                # Check if this is an option flag (not boolean)
+                if __${this.config.bin}_flag_expects_value "$word" "$cmd_key"; then
+                    return 0
+                fi
+            fi
+            break
+        elif [[ "$word" != -* ]]; then
+            # Hit a non-flag word, stop looking
+            break
+        fi
+    done
+    return 1
+}
+
+__${this.config.bin}_flag_expects_value() {
+    local flag_name="$1"
+    local cmd_key="$2"
+    
+    # Find the command in $commands and check if the flag is an option type
+    local cmd_line
+    cmd_line=$(printf "%s\\n" "$commands" | grep "^\$(echo "$cmd_key" | tr ' ' ':') ")
+    if [[ -n "$cmd_line" ]]; then
+        # Check if flag is present (option flags are listed, boolean flags are not in our simplified format)
+        if [[ "$cmd_line" =~ $flag_name ]]; then
+            # For now, assume all flags listed expect values (we'll enhance this with metadata later)
+            return 0
+        fi
+    fi
+    return 1
+}
+
+__${this.config.bin}_get_flag_values() {
+    local flag_name="$1"
+    local cmd_key="$2"
+    
+    # This would be populated with actual flag values from command metadata
+    # For now, return empty to let the existing flag completion logic handle it
+    echo ""
+    return 1
+}
+
+__${this.config.bin}_should_suggest_flags() {
+    local cmd_key="$1"
+    
+    # Only suggest flags when user explicitly types a dash
+    if [[ "$cur" == -* ]]; then
+        # Check if we have a complete command to show flags for
+        local cmd_line
+        cmd_line=$(printf "%s\\n" "$commands" | grep "^\$(echo "$cmd_key" | tr ' ' ':') ")
+        if [[ -n "$cmd_line" ]]; then
+            return 0
+        fi
+    fi
+    
+    return 1
+}
+
+__${this.config.bin}_get_flag_completions() {
+    local cmd_key="$1"
+    
+    # Get already used flags
+    local used_flags=()
+    local i=1
+    while [[ i -lt cword ]]; do
+        local word="\${words[i]}"
+        if [[ "$word" =~ ^(-[a-zA-Z]|--[a-zA-Z0-9-]+)$ ]]; then
+            used_flags+=("$word")
+            # Skip flag value if present
+            if [[ $((i+1)) -lt cword && "\${words[$((i+1))]}" != -* && -n "\${words[$((i+1))]}" ]]; then
+                ((i++))
+            fi
+        fi
+        ((i++))
+    done
+    
+    # Find the command and get its flags
+    local cmd_line
+    cmd_line=$(printf "%s\\n" "$commands" | grep "^\$(echo "$cmd_key" | tr ' ' ':') ")
+    if [[ -n "$cmd_line" ]]; then
+        # Extract flags from the command line (simplified - we'll enhance this)
+        local all_flags
+        all_flags=$(echo "$cmd_line" | sed -n "s/^\$(echo "$cmd_key" | tr ' ' ':') //p")
+        
+        # Add flag completions with descriptions
+        local flag
+        for flag in $all_flags; do
+            # Check if flag is already used
+            local already_used=false
+            local used_flag
+            for used_flag in "\${used_flags[@]}"; do
+                if [[ "$used_flag" == "$flag" ]]; then
+                    already_used=true
+                    break
+                fi
+            done
+            
+            if [[ "$already_used" == false ]]; then
+                local tab=$'\\t'
+                completions+=("\${flag}\${tab}\${flag} flag")
+            fi
+        done
+    fi
+}
+
+__${this.config.bin}_get_command_completions() {
+    local tab=$'\\t'
+    
+    # Get current position in command - need to handle empty cur properly
+    local clean_cmd_parts=()
+    local i=1
+    
+    # Build clean command parts by filtering out flags and their values
+    while [[ i -lt cword ]]; do
+        local word="\${words[i]}"
+        if [[ "$word" =~ ^--[a-zA-Z0-9-]+$ ]]; then
+            # Found a long flag, skip it and its potential value
+            if [[ $((i+1)) -lt cword && "\${words[$((i+1))]}" != -* && -n "\${words[$((i+1))]}" ]]; then
+                ((i++)) # Skip the flag value
+            fi
+        elif [[ "$word" =~ ^-[a-zA-Z]$ ]]; then
+            # Found a short flag, skip it and its potential value
+            if [[ $((i+1)) -lt cword && "\${words[$((i+1))]}" != -* && -n "\${words[$((i+1))]}" ]]; then
+                ((i++)) # Skip the flag value
+            fi
+        elif [[ "$word" != -* && -n "$word" ]]; then
+            # This is a command word (not a flag and not empty)
+            clean_cmd_parts+=("$word")
+        fi
+        ((i++))
+    done
+    
+    # If we're completing an empty word and not at the beginning, include partially typed cur
+    if [[ -n "$cur" && "$cur" != -* ]]; then
+        # We're in the middle of typing a command/topic name
+        local current_path="\$(join_by ":" "\${clean_cmd_parts[@]}")"
+    else
+        # We're completing the next command/topic after a space
+        local current_path="\$(join_by ":" "\${clean_cmd_parts[@]}")"
+    fi
+    
+    __${this.config.bin}_debug "clean_cmd_parts: \${clean_cmd_parts[*]}"
+    __${this.config.bin}_debug "current_path: '$current_path'"
+    
+    if [[ -z "$current_path" ]]; then
+        # At root level - show topics
+${topicCompletions}
+    else
+        # Show matching commands and subtopics
+        local matching_commands
+        matching_commands=$(printf "%s\\n" "$commands" | grep "^$current_path:" | head -20)
+        
+        __${this.config.bin}_debug "matching_commands for '$current_path:':"
+        __${this.config.bin}_debug "$matching_commands"
+        
+        if [[ -n "$matching_commands" ]]; then
+            while IFS= read -r cmd_line; do
+                local cmd_id="\${cmd_line%% *}"
+                # Remove the current path prefix
+                local remaining="\${cmd_id#$current_path:}"
+                # Get just the next segment
+                local next_segment="\${remaining%%:*}"
+                
+                __${this.config.bin}_debug "Processing cmd_id: '$cmd_id', remaining: '$remaining', next_segment: '$next_segment'"
+                
+                # Get description for this completion (whether topic or command)
+                local completion_desc="\${next_segment}"  # default fallback
+                
+                if [[ -n "$next_segment" && "$next_segment" != "$remaining" ]]; then
+                    # This is a topic/subtopic - look up in topics metadata
+                    local topic_path="\${current_path}:\${next_segment}"
+                    local topic_line
+                    topic_line=$(printf "%s\\\\n" "$topics" | grep "^$topic_path ")
+                    if [[ -n "$topic_line" ]]; then
+                        # Extract description (everything after the topic path and space)
+                        completion_desc="\${topic_line#$topic_path }"
+                    else
+                        completion_desc="\${next_segment} commands"
+                    fi
+                else
+                    # This is a final command - look up in command summaries
+                    local cmd_path="\${current_path}:\${next_segment}"
+                    local cmd_line
+                    cmd_line=$(printf "%s\\\\n" "$command_summaries" | grep "^$cmd_path ")
+                    if [[ -n "$cmd_line" ]]; then
+                        # Extract summary (everything after the command path and space)
+                        completion_desc="\${cmd_line#$cmd_path }"
+                    else
+                        completion_desc="\${next_segment}"
+                    fi
+                fi
+                
+                completions+=("\${next_segment}\${tab}\${completion_desc}")
+            done <<< "$matching_commands"
+            
+            # Remove duplicates
+            local unique_completions=()
+            local seen_completions=()
+            for comp in "\${completions[@]}"; do
+                local comp_name="\${comp%%\$'\\t'*}"
+                local already_seen=false
+                for seen in "\${seen_completions[@]}"; do
+                    if [[ "$seen" == "$comp_name" ]]; then
+                        already_seen=true
+                        break
+                    fi
+                done
+                if [[ "$already_seen" == false ]]; then
+                    unique_completions+=("$comp")
+                    seen_completions+=("$comp_name")
+                fi
+            done
+            completions=("\${unique_completions[@]}")
+        fi
+    fi
+}
+
+if [[ $(type -t compopt) = "builtin" ]]; then
+    complete -o default -F _${this.config.bin}_autocomplete ${this.config.bin}
+else
+    complete -o default -o nospace -F _${this.config.bin}_autocomplete ${this.config.bin}
+fi
+${this.config.binAliases?.map((alias) => `if [[ $(type -t compopt) = "builtin" ]]; then
+    complete -o default -F _${this.config.bin}_autocomplete ${alias}
+else
+    complete -o default -o nospace -F _${this.config.bin}_autocomplete ${alias}
+fi`).join('\n') ?? ''}
 `
   }
 
@@ -428,6 +637,38 @@ ${this.config.binAliases?.map((alias) => `complete -F _${this.config.bin}_autoco
     }
 
     return cases.join('\n')
+  }
+
+  private generateTopicCompletions(): string {
+    const topicLines: string[] = []
+    
+    // Get root level topics
+    const rootTopics = this.topics.filter(t => !t.name.includes(':'))
+    
+    for (const topic of rootTopics) {
+      const description = topic.description || `${topic.name.replaceAll(':', ' ')} commands`
+      topicLines.push(`        completions+=("${topic.name}\${tab}${description}")`)
+    }
+    
+    return topicLines.join('\n')
+  }
+
+  private generateTopicsMetadata(): string {
+    return this.topics
+      .map((topic) => {
+        const description = topic.description || `${topic.name.replaceAll(':', ' ')} commands`
+        return `${topic.name} ${description}`
+      })
+      .join('\n')
+  }
+
+  private generateCommandSummaries(): string {
+    return this.commands
+      .map((cmd) => {
+        const summary = cmd.summary || cmd.id
+        return `${cmd.id} ${summary}`
+      })
+      .join('\n')
   }
 
   private getCommands(): CommandCompletion[] {
