@@ -238,6 +238,13 @@ class BashCompletionHelper {
         // Source the SF completion scripts
         const homeDir = process.env.HOME
         const completionSetup = `${homeDir}/.cache/sf/autocomplete/bash_setup`
+
+        // Debug: Check if completion setup exists
+        this.bashProcess?.stdin?.write(`echo "DEBUG: Checking completion setup at ${completionSetup}"\n`)
+        this.bashProcess?.stdin?.write(
+          `if [ -f "${completionSetup}" ]; then echo "DEBUG: Completion setup found"; else echo "DEBUG: Completion setup NOT found"; fi\n`,
+        )
+
         this.bashProcess?.stdin?.write(`source ${completionSetup}\n`)
 
         setTimeout(() => {
@@ -272,6 +279,11 @@ class BashCompletionHelper {
 
     this.bashProcess.stdin.write(`_sf_autocomplete; echo "COMPLETIONS: \${COMPREPLY[@]}"\n`)
 
+    // Debug: Also output the completion function result
+    this.bashProcess.stdin.write(`echo "DEBUG: COMPREPLY length: \${#COMPREPLY[@]}"\n`)
+    this.bashProcess.stdin.write(`echo "DEBUG: COMP_WORDS were: \${COMP_WORDS[@]}"\n`)
+    this.bashProcess.stdin.write(`echo "DEBUG: Current completion function exists: "; type _sf_autocomplete\n`)
+
     // Wait for completion output
     await sleep(1000)
 
@@ -305,7 +317,16 @@ describe('Bash Completion E2E Tests', () => {
       }
 
       expectations = commandHelper.generateExpectations(command)
-      // console.log('Generated expectations:', expectations)
+
+      // Debug info for CI
+      if (process.env.CI) {
+        console.log('CI Environment detected')
+        console.log('Generated expectations:', expectations)
+        console.log('Command found:', command ? 'yes' : 'no')
+        if (command) {
+          console.log('Command flags count:', Object.keys(command.flags || {}).length)
+        }
+      }
 
       // Refresh autocomplete cache
       await execAsync('sf autocomplete --refresh-cache')
@@ -332,8 +353,10 @@ describe('Bash Completion E2E Tests', () => {
       const output = await helper.triggerCompletion()
       const completions = helper.parseCompletionOutput(output)
 
-      // console.log('Raw output:', JSON.stringify(output))
-      // console.log('Completions found:', completions)
+      if (process.env.CI || completions.length === 0) {
+        console.log('Raw output:', JSON.stringify(output))
+        console.log('Completions found:', completions)
+      }
 
       // Check that all expected flags are present
       const expectedFlags = expectations.allFlags
