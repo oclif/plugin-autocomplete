@@ -36,20 +36,6 @@ jobs:
         run: yarn compile
       - name: Link plugin
         run: sf plugins link --no-install
-      - name: Generate autocomplete cache
-        run: sf autocomplete --refresh-cache
-      - name: Install bash completion
-        run: |
-          # Ensure bash completion is available
-          mkdir -p ~/.cache/sf/autocomplete
-          # Source the completion setup if it exists
-          if [ -f ~/.cache/sf/autocomplete/bash_setup ]; then
-            echo "Bash completion setup found"
-            cat ~/.cache/sf/autocomplete/bash_setup
-          else
-            echo "No bash completion setup found"
-            ls -la ~/.cache/sf/autocomplete/ || echo "Cache directory not found"
-          fi
       - name: Run tests
         run: yarn test:e2e:bash-spaces
 

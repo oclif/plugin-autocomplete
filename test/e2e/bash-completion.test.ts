@@ -198,12 +198,6 @@ class BashCompletionHelper {
     // Clear previous output
     this.output = ''
     this.stderr = ''
-
-    // Send the command (without newline)
-    this.bashProcess.stdin.write(command)
-
-    // Small delay to ensure command is written
-    await sleep(100)
   }
 
   async startBashSession(): Promise<void> {
@@ -221,7 +215,7 @@ class BashCompletionHelper {
       this.bashProcess.stdout?.on('data', (data) => {
         const str = data.toString()
         this.output += str
-        if (process.env.CI) {
+        if (process.env.DEBUG_COMPLETION) {
           console.log('STDOUT:', str)
         }
       })
@@ -229,7 +223,7 @@ class BashCompletionHelper {
       this.bashProcess.stderr?.on('data', (data) => {
         const str = data.toString()
         this.stderr += str
-        if (process.env.CI) {
+        if (process.env.DEBUG_COMPLETION) {
           console.log('STDERR:', str)
         }
       })
@@ -238,31 +232,19 @@ class BashCompletionHelper {
 
       // Wait for bash to initialize and source completion scripts
       setTimeout(() => {
-        // Test basic responsiveness first
-        this.bashProcess?.stdin?.write(`echo "DEBUG: Starting bash initialization"\n`)
+        this.bashProcess?.stdin?.write(`echo "INIT: Starting bash setup"\n`)
 
         // Enable bash completion features for non-interactive mode
         this.bashProcess?.stdin?.write(`set +h\n`)
         this.bashProcess?.stdin?.write(`shopt -s expand_aliases\n`)
         this.bashProcess?.stdin?.write(`shopt -s extglob\n`)
-        this.bashProcess?.stdin?.write(`echo "DEBUG: Bash options set"\n`)
 
         // Source the SF completion scripts
         const homeDir = process.env.HOME
         const completionSetup = `${homeDir}/.cache/sf/autocomplete/bash_setup`
+        this.bashProcess?.stdin?.write(`source ${completionSetup}\n`)
 
-        // Debug: Check if completion setup exists
-        this.bashProcess?.stdin?.write(`echo "DEBUG: Checking completion setup at ${completionSetup}"\n`)
-        this.bashProcess?.stdin?.write(
-          `if [ -f "${completionSetup}" ]; then echo "DEBUG: Completion setup found"; else echo "DEBUG: Completion setup NOT found"; fi\n`,
-        )
-
-        this.bashProcess?.stdin?.write(
-          `source ${completionSetup} 2>&1 || echo "DEBUG: Failed to source completion setup"\n`,
-        )
-
-        // Test that output capture is working
-        this.bashProcess?.stdin?.write(`echo "DEBUG: Bash session initialized successfully"\n`)
+        this.bashProcess?.stdin?.write(`echo "INIT: Bash setup complete"\n`)
 
         setTimeout(() => {
           resolve()
@@ -276,21 +258,14 @@ class BashCompletionHelper {
       throw new Error('Bash session not started')
     }
 
-    // Clear previous output and capture everything
+    // Clear previous output
     this.output = ''
 
-    // Add extensive debugging
-    this.bashProcess.stdin.write(`echo "=== COMPLETION DEBUG START ==="\n`)
-    await sleep(100)
+    // Clear any previous state
+    this.bashProcess.stdin.write(`unset COMPREPLY\n`)
 
-    // Check if completion function exists
-    this.bashProcess.stdin.write(`echo "Checking completion function:"\n`)
-    this.bashProcess.stdin.write(`type _sf_autocomplete 2>&1 || echo "Function not found"\n`)
-    await sleep(200)
-
-    // Set COMP_LINE and COMP_POINT and call completion function directly
+    // Set completion variables and call function directly
     const currentLine = this.lastCommand || ''
-    this.bashProcess.stdin.write(`echo "Setting completion variables for: ${currentLine}"\n`)
     this.bashProcess.stdin.write(
       `COMP_LINE="${currentLine}" COMP_POINT=${currentLine.length} COMP_WORDS=(${currentLine
         .split(' ')
@@ -299,45 +274,27 @@ class BashCompletionHelper {
     )
     await sleep(100)
 
-    // Show the variables
-    this.bashProcess.stdin.write(`echo "COMP_LINE: $COMP_LINE"\n`)
-    this.bashProcess.stdin.write(`echo "COMP_POINT: $COMP_POINT"\n`)
-    this.bashProcess.stdin.write(`echo "COMP_WORDS: \${COMP_WORDS[@]}"\n`)
-    this.bashProcess.stdin.write(`echo "COMP_CWORD: $COMP_CWORD"\n`)
-    await sleep(200)
-
-    // Try to call the completion function
-    this.bashProcess.stdin.write(`echo "Calling completion function..."\n`)
-    this.bashProcess.stdin.write(`_sf_autocomplete 2>&1 || echo "Completion function failed: $?"\n`)
-    await sleep(200)
-
-    // Show results
-    this.bashProcess.stdin.write(`echo "COMPREPLY length: \${#COMPREPLY[@]}"\n`)
-    this.bashProcess.stdin.write(`echo "COMPREPLY contents: \${COMPREPLY[@]}"\n`)
+    // Call completion function and capture results
+    this.bashProcess.stdin.write(`echo "COMP: Calling completion for: ${currentLine}"\n`)
+    this.bashProcess.stdin.write(`_sf_autocomplete 2>/dev/null || echo "COMP: Function failed"\n`)
     this.bashProcess.stdin.write(`echo "COMPLETIONS: \${COMPREPLY[@]}"\n`)
-    this.bashProcess.stdin.write(`echo "=== COMPLETION DEBUG END ==="\n`)
 
-    // Wait for all output
-    await sleep(1500)
+    // Wait for completion output
+    await sleep(1000)
 
     return this.output
   }
 }
 
-describe('Bash Completion E2E Tests', () => {
-  // Skip tests on unsupported platforms
-  const isLinuxOrMac = process.platform === 'linux' || process.platform === 'darwin'
+const isLinuxOrMac = process.platform === 'linux' || process.platform === 'darwin'
 
+;(isLinuxOrMac ? describe : describe.skip)('Bash Completion E2E Tests', () => {
   let helper: BashCompletionHelper
   let commandHelper: CommandInfoHelper
   let expectations: TestExpectations
 
   // Setup command info and refresh cache before all tests
   before(async function () {
-    if (!isLinuxOrMac) {
-      this.skip()
-    }
-
     this.timeout(15_000)
 
     commandHelper = new CommandInfoHelper()
@@ -351,14 +308,9 @@ describe('Bash Completion E2E Tests', () => {
 
       expectations = commandHelper.generateExpectations(command)
 
-      // Debug info for CI
-      if (process.env.CI) {
-        console.log('CI Environment detected')
-        console.log('Generated expectations:', expectations)
-        console.log('Command found:', command ? 'yes' : 'no')
-        if (command) {
-          console.log('Command flags count:', Object.keys(command.flags || {}).length)
-        }
+      // Debug info for CI (minimal)
+      if (process.env.DEBUG_COMPLETION && process.env.CI) {
+        console.log(`CI: Found ${Object.keys(command.flags || {}).length} flags for org:create:scratch`)
       }
 
       // Refresh autocomplete cache
@@ -386,7 +338,8 @@ describe('Bash Completion E2E Tests', () => {
       const output = await helper.triggerCompletion()
       const completions = helper.parseCompletionOutput(output)
 
-      if (process.env.CI || completions.length === 0) {
+      // Only show debug output if test fails
+      if (completions.length === 0) {
         console.log('Raw output:', JSON.stringify(output))
         console.log('Completions found:', completions)
       }
@@ -406,8 +359,6 @@ describe('Bash Completion E2E Tests', () => {
       await helper.sendCommand('sf org create scratch --')
       const output = await helper.triggerCompletion()
       const completions = helper.parseCompletionOutput(output)
-
-      // console.log('Completions found:', completions)
 
       // Should include all long flags
       const expectedLongFlags = expectations.longFlags
@@ -441,8 +392,6 @@ describe('Bash Completion E2E Tests', () => {
       const output = await helper.triggerCompletion()
       const completions = helper.parseCompletionOutput(output)
 
-      // console.log('Completions found:', completions)
-
       const foundValues = expectedValues.filter((value) => completions.includes(value))
 
       expect(foundValues.length).to.equal(
@@ -466,8 +415,6 @@ describe('Bash Completion E2E Tests', () => {
       await helper.sendCommand(`sf org create scratch --json --${testFlag} `)
       const output = await helper.triggerCompletion()
       const completions = helper.parseCompletionOutput(output)
-
-      // console.log('Completions found:', completions)
 
       const foundValues = expectedValues.filter((value) => completions.includes(value))
 
