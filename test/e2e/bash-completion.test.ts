@@ -219,21 +219,33 @@ class BashCompletionHelper {
       this.stderr = ''
 
       this.bashProcess.stdout?.on('data', (data) => {
-        this.output += data.toString()
+        const str = data.toString()
+        this.output += str
+        if (process.env.CI) {
+          console.log('STDOUT:', str)
+        }
       })
 
       this.bashProcess.stderr?.on('data', (data) => {
-        this.stderr += data.toString()
+        const str = data.toString()
+        this.stderr += str
+        if (process.env.CI) {
+          console.log('STDERR:', str)
+        }
       })
 
       this.bashProcess.on('error', reject)
 
       // Wait for bash to initialize and source completion scripts
       setTimeout(() => {
+        // Test basic responsiveness first
+        this.bashProcess?.stdin?.write(`echo "DEBUG: Starting bash initialization"\n`)
+
         // Enable bash completion features for non-interactive mode
         this.bashProcess?.stdin?.write(`set +h\n`)
         this.bashProcess?.stdin?.write(`shopt -s expand_aliases\n`)
         this.bashProcess?.stdin?.write(`shopt -s extglob\n`)
+        this.bashProcess?.stdin?.write(`echo "DEBUG: Bash options set"\n`)
 
         // Source the SF completion scripts
         const homeDir = process.env.HOME
@@ -245,7 +257,12 @@ class BashCompletionHelper {
           `if [ -f "${completionSetup}" ]; then echo "DEBUG: Completion setup found"; else echo "DEBUG: Completion setup NOT found"; fi\n`,
         )
 
-        this.bashProcess?.stdin?.write(`source ${completionSetup}\n`)
+        this.bashProcess?.stdin?.write(
+          `source ${completionSetup} 2>&1 || echo "DEBUG: Failed to source completion setup"\n`,
+        )
+
+        // Test that output capture is working
+        this.bashProcess?.stdin?.write(`echo "DEBUG: Bash session initialized successfully"\n`)
 
         setTimeout(() => {
           resolve()
@@ -259,16 +276,21 @@ class BashCompletionHelper {
       throw new Error('Bash session not started')
     }
 
-    // Clear previous output
+    // Clear previous output and capture everything
     this.output = ''
 
-    // Use compgen to simulate completion more reliably
-    // This approach directly calls the completion function
-    this.bashProcess.stdin.write('\n') // Clear the current line
+    // Add extensive debugging
+    this.bashProcess.stdin.write(`echo "=== COMPLETION DEBUG START ==="\n`)
     await sleep(100)
+
+    // Check if completion function exists
+    this.bashProcess.stdin.write(`echo "Checking completion function:"\n`)
+    this.bashProcess.stdin.write(`type _sf_autocomplete 2>&1 || echo "Function not found"\n`)
+    await sleep(200)
 
     // Set COMP_LINE and COMP_POINT and call completion function directly
     const currentLine = this.lastCommand || ''
+    this.bashProcess.stdin.write(`echo "Setting completion variables for: ${currentLine}"\n`)
     this.bashProcess.stdin.write(
       `COMP_LINE="${currentLine}" COMP_POINT=${currentLine.length} COMP_WORDS=(${currentLine
         .split(' ')
@@ -277,15 +299,26 @@ class BashCompletionHelper {
     )
     await sleep(100)
 
-    this.bashProcess.stdin.write(`_sf_autocomplete; echo "COMPLETIONS: \${COMPREPLY[@]}"\n`)
+    // Show the variables
+    this.bashProcess.stdin.write(`echo "COMP_LINE: $COMP_LINE"\n`)
+    this.bashProcess.stdin.write(`echo "COMP_POINT: $COMP_POINT"\n`)
+    this.bashProcess.stdin.write(`echo "COMP_WORDS: \${COMP_WORDS[@]}"\n`)
+    this.bashProcess.stdin.write(`echo "COMP_CWORD: $COMP_CWORD"\n`)
+    await sleep(200)
 
-    // Debug: Also output the completion function result
-    this.bashProcess.stdin.write(`echo "DEBUG: COMPREPLY length: \${#COMPREPLY[@]}"\n`)
-    this.bashProcess.stdin.write(`echo "DEBUG: COMP_WORDS were: \${COMP_WORDS[@]}"\n`)
-    this.bashProcess.stdin.write(`echo "DEBUG: Current completion function exists: "; type _sf_autocomplete\n`)
+    // Try to call the completion function
+    this.bashProcess.stdin.write(`echo "Calling completion function..."\n`)
+    this.bashProcess.stdin.write(`_sf_autocomplete 2>&1 || echo "Completion function failed: $?"\n`)
+    await sleep(200)
 
-    // Wait for completion output
-    await sleep(1000)
+    // Show results
+    this.bashProcess.stdin.write(`echo "COMPREPLY length: \${#COMPREPLY[@]}"\n`)
+    this.bashProcess.stdin.write(`echo "COMPREPLY contents: \${COMPREPLY[@]}"\n`)
+    this.bashProcess.stdin.write(`echo "COMPLETIONS: \${COMPREPLY[@]}"\n`)
+    this.bashProcess.stdin.write(`echo "=== COMPLETION DEBUG END ==="\n`)
+
+    // Wait for all output
+    await sleep(1500)
 
     return this.output
   }

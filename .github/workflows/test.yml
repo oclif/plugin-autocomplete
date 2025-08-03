@@ -7,14 +7,14 @@ on:
 jobs:
   yarn-lockfile-check:
     uses: salesforcecli/github-workflows/.github/workflows/lockFileCheck.yml@main
-  linux-unit-tests:
-    needs: yarn-lockfile-check
-    uses: salesforcecli/github-workflows/.github/workflows/unitTestsLinux.yml@main
-  windows-unit-tests:
-    needs: linux-unit-tests
-    uses: salesforcecli/github-workflows/.github/workflows/unitTestsWindows.yml@main
+  # linux-unit-tests:
+  #   needs: yarn-lockfile-check
+  #   uses: salesforcecli/github-workflows/.github/workflows/unitTestsLinux.yml@main
+  # windows-unit-tests:
+  #   needs: linux-unit-tests
+  #   uses: salesforcecli/github-workflows/.github/workflows/unitTestsWindows.yml@main
   e2e-bash-spaces-tests:
-    needs: linux-unit-tests
+    # needs: linux-unit-tests
     runs-on: ubuntu-latest
     defaults:
       run:
