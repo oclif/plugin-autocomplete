@@ -13,3 +13,26 @@ jobs:
   windows-unit-tests:
     needs: linux-unit-tests
     uses: salesforcecli/github-workflows/.github/workflows/unitTestsWindows.yml@main
+  e2e-bash-spaces-tests:
+    needs: linux-unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup node
+      # https://github.com/actions/setup-node/releases/tag/v3.8.1
+        uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d
+        with:
+          node-version: lts/*
+          registry-url: 'https://registry.npmjs.org'
+          cache: yarn
+      - name: Install sf CLI
+        run: npm i -g @salesforce/cli
+      - name: Install dependencies
+        run: yarn install
+      - name: Build branch
+        run: yarn compile
+      - name: Link plugin
+        run: sf plugin link --no-install
+      - name: Run tests
+        run: yarn test:e2e:bash-spaces
+

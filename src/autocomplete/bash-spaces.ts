@@ -31,7 +31,7 @@ export default class BashCompWithSpaces {
     const commandsWithFlags = this.generateCommandsWithFlags()
     const flagCompletionCases = this.generateFlagCompletionCases()
     const multipleFlagsCases = this.generateMultipleFlagsCases()
-    
+
     return `#!/usr/bin/env bash
 
 # This function joins an array using a character passed in
@@ -204,7 +204,7 @@ ${flagCompletionCases}
     # DEBUG: Dump completion state to temp file
     echo "=== DEBUG FLAG COMPLETION ===" > /tmp/sf_completion_debug.log
     echo "COMP_WORDS: \${COMP_WORDS[@]}" >> /tmp/sf_completion_debug.log
-    echo "COMP_CWORD: \$COMP_CWORD" >> /tmp/sf_completion_debug.log
+    echo "COMP_CWORD: $COMP_CWORD" >> /tmp/sf_completion_debug.log
     echo "cur: $cur" >> /tmp/sf_completion_debug.log
     echo "prev: $prev" >> /tmp/sf_completion_debug.log
     
@@ -341,7 +341,7 @@ ${this.config.binAliases?.map((alias) => `complete -F _${this.config.bin}_autoco
         const flagStr = f.char ? `-${f.char} --${flag}` : `--${flag}`
         return flagStr
       })
-    
+
     return flags.join(' ')
   }
 
@@ -357,13 +357,13 @@ ${this.config.binAliases?.map((alias) => `complete -F _${this.config.bin}_autoco
 
   private generateFlagCompletionCases(): string {
     const cases: string[] = []
-    
+
     for (const cmd of this.commands) {
       const flagCases: string[] = []
-      
+
       for (const [flagName, flag] of Object.entries(cmd.flags)) {
         if (flag.hidden) continue
-        
+
         if (flag.type === 'option' && flag.options) {
           const options = flag.options.join(' ')
 
@@ -385,26 +385,26 @@ ${this.config.binAliases?.map((alias) => `complete -F _${this.config.bin}_autoco
           }
         }
       }
-      
+
       if (flagCases.length > 0) {
         // Convert colon-separated command IDs to space-separated for SF CLI format
         const spaceId = cmd.id.replaceAll(':', ' ')
         cases.push(`      "${spaceId}")`, ...flagCases, `        ;;`)
       }
     }
-    
+
     return cases.join('\n')
   }
 
   private generateMultipleFlagsCases(): string {
     const cases: string[] = []
-    
+
     for (const cmd of this.commands) {
       const multipleFlags: string[] = []
-      
+
       for (const [flagName, flag] of Object.entries(cmd.flags)) {
         if (flag.hidden) continue
-        
+
         if ((flag as any).multiple) {
           // Handle both long and short flag forms
           if (flag.char) {
@@ -414,14 +414,19 @@ ${this.config.binAliases?.map((alias) => `complete -F _${this.config.bin}_autoco
           }
         }
       }
-      
+
       if (multipleFlags.length > 0) {
         // Use colon-separated command IDs to match how normalizedCommand is built in flag completion
-        const flagChecks = multipleFlags.map(flag => `[[ "$flag" == ${flag} ]]`).join(' || ')
-        cases.push(`      "${cmd.id}")`, `        if ${flagChecks}; then return 0; fi`, `        return 1`, `        ;;`)
+        const flagChecks = multipleFlags.map((flag) => `[[ "$flag" == ${flag} ]]`).join(' || ')
+        cases.push(
+          `      "${cmd.id}")`,
+          `        if ${flagChecks}; then return 0; fi`,
+          `        return 1`,
+          `        ;;`,
+        )
       }
     }
-    
+
     return cases.join('\n')
   }
 
@@ -431,7 +436,7 @@ ${this.config.binAliases?.map((alias) => `complete -F _${this.config.bin}_autoco
     for (const p of this.config.getPluginsList()) {
       // For testing: only include commands from @salesforce/plugin-auth
       // if (p.name !== '@salesforce/plugin-auth') continue
-      
+
       for (const c of p.commands) {
         if (c.hidden) continue
         const summary = this.sanitizeSummary(c.summary ?? c.description)
