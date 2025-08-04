@@ -34,6 +34,7 @@ export default class BashCompWithSpaces {
     const rootTopicsCompletion = this.generateRootLevelTopics()
     const topicsMetadata = this.generateTopicsMetadata()
     const commandSummaries = this.generateCommandSummaries()
+    const flagMetadata = this.generateFlagMetadata()
 
     return `#!/usr/bin/env bash
 
@@ -206,6 +207,10 @@ ${topicsMetadata}
 
     local command_summaries="
 ${commandSummaries}
+"
+
+    local flag_metadata="
+${flagMetadata}
 "
 
     local completions=()
@@ -411,7 +416,18 @@ __${this.config.bin}_get_flag_completions() {
             
             if [[ "$already_used" == false ]]; then
                 local tab=$'\\t'
-                completions+=("\${flag}\${tab}\${flag} flag")
+                local flag_desc="\${flag}"  # default fallback
+                
+                # Look up flag description from metadata
+                local flag_key="\$(echo \"$cmd_key\" | tr ' ' ':') \${flag}"
+                local flag_line
+                flag_line=$(printf "%s\\\\n" "$flag_metadata" | grep "^$flag_key ")
+                if [[ -n "$flag_line" ]]; then
+                    # Extract description (everything after the flag key and space)
+                    flag_desc="\${flag_line#$flag_key }"
+                fi
+                
+                completions+=("\${flag}\${tab}\${flag_desc}")
             fi
         done
     fi
@@ -669,6 +685,28 @@ fi`).join('\n') ?? ''}
         return `${cmd.id} ${summary}`
       })
       .join('\n')
+  }
+
+  private generateFlagMetadata(): string {
+    const flagEntries: string[] = []
+    
+    for (const cmd of this.commands) {
+      for (const [flagName, flag] of Object.entries(cmd.flags)) {
+        if (flag.hidden) continue
+        
+        const description = this.sanitizeSummary(flag.summary || flag.description || `${flagName} flag`)
+        
+        // Add long flag form
+        flagEntries.push(`${cmd.id} --${flagName} ${description}`)
+        
+        // Add short flag form if it exists
+        if (flag.char) {
+          flagEntries.push(`${cmd.id} -${flag.char} ${description}`)
+        }
+      }
+    }
+    
+    return flagEntries.join('\n')
   }
 
   private getCommands(): CommandCompletion[] {
