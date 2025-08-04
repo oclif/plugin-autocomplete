@@ -34,7 +34,7 @@ export default class BashCompWithSpaces {
     const rootTopicsCompletion = this.generateRootLevelTopics()
     const topicsMetadata = this.generateTopicsMetadata()
     const commandSummaries = this.generateCommandSummaries()
-    const flagMetadata = this.generateFlagMetadata()
+    const flagMetadataBlocks = this.generateFlagMetadataBlocks()
 
     return `#!/usr/bin/env bash
 
@@ -209,9 +209,7 @@ ${topicsMetadata}
 ${commandSummaries}
 "
 
-    local flag_metadata="
-${flagMetadata}
-"
+${flagMetadataBlocks}
 
     local completions=()
     __${this.config.bin}_get_completions
@@ -418,13 +416,19 @@ __${this.config.bin}_get_flag_completions() {
                 local tab=$'\\t'
                 local flag_desc="\${flag}"  # default fallback
                 
-                # Look up flag description from metadata
-                local flag_key="\$(echo \"$cmd_key\" | tr ' ' ':') \${flag}"
-                local flag_line
-                flag_line=$(printf "%s\\\\n" "$flag_metadata" | grep "^$flag_key ")
-                if [[ -n "$flag_line" ]]; then
-                    # Extract description (everything after the flag key and space)
-                    flag_desc="\${flag_line#$flag_key }"
+                # Look up flag description from command-specific metadata
+                local cmd_var_name="flag_metadata_\$(echo \"$cmd_key\" | tr ' :' '_')"
+                if [[ -n "\${!cmd_var_name}" ]]; then
+                    # Use pure bash pattern matching - much faster than grep
+                    local metadata=$'\\n'"\${!cmd_var_name}"  # Add newline at start for consistent matching
+                    # Look for lines starting with the flag followed by space  
+                    local pattern=$'\\n'\${flag}' '
+                    if [[ "$metadata" == *\${pattern}* ]]; then
+                        # Extract the line starting with our flag
+                        local after_flag="\${metadata#*\${pattern}}"
+                        # Get just the first line (description)
+                        flag_desc="\${after_flag%%$'\\n'*}"
+                    fi
                 fi
                 
                 completions+=("\${flag}\${tab}\${flag_desc}")
@@ -687,26 +691,37 @@ fi`).join('\n') ?? ''}
       .join('\n')
   }
 
-  private generateFlagMetadata(): string {
-    const flagEntries: string[] = []
+  private generateFlagMetadataBlocks(): string {
+    const blocks: string[] = []
     
     for (const cmd of this.commands) {
+      const flagEntries: string[] = []
+      
       for (const [flagName, flag] of Object.entries(cmd.flags)) {
         if (flag.hidden) continue
         
         const description = this.sanitizeSummary(flag.summary || flag.description || `${flagName} flag`)
         
         // Add long flag form
-        flagEntries.push(`${cmd.id} --${flagName} ${description}`)
+        flagEntries.push(`--${flagName} ${description}`)
         
         // Add short flag form if it exists
         if (flag.char) {
-          flagEntries.push(`${cmd.id} -${flag.char} ${description}`)
+          flagEntries.push(`-${flag.char} ${description}`)
         }
+      }
+      
+      if (flagEntries.length > 0) {
+        // Create a valid bash variable name from command ID
+        const varName = `flag_metadata_${cmd.id.replaceAll(/[^a-zA-Z0-9]/g, '_')}`
+        
+        blocks.push(`    local ${varName}="
+${flagEntries.join('\n')}
+"`)
       }
     }
     
-    return flagEntries.join('\n')
+    return blocks.join('\n\n')
   }
 
   private getCommands(): CommandCompletion[] {
