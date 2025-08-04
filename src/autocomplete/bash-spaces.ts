@@ -18,9 +18,9 @@ type Topic = {
 
 export default class BashCompWithSpaces {
   protected config: Config
+  private _coTopics?: string[]
   private commands: CommandCompletion[]
   private topics: Topic[]
-  private _coTopics?: string[]
 
   constructor(config: Config) {
     this.config = config
@@ -47,13 +47,12 @@ export default class BashCompWithSpaces {
 
   public generate(): string {
     const commandsWithFlags = this.generateCommandsWithFlags()
-    const flagCompletionCases = this.generateFlagCompletionCases()
-    const multipleFlagsCases = this.generateMultipleFlagsCases()
     const rootTopicsCompletion = this.generateRootLevelTopics()
     const topicsMetadata = this.generateTopicsMetadata()
     const commandSummaries = this.generateCommandSummaries()
     const flagMetadataBlocks = this.generateFlagMetadataBlocks()
 
+    /* eslint-disable no-useless-escape */
     return `#!/usr/bin/env bash
 
 # bash completion for ${this.config.bin}                        -*- shell-script -*-
@@ -646,11 +645,17 @@ if [[ $(type -t compopt) = "builtin" ]]; then
 else
     complete -o default -o nospace -F _${this.config.bin}_autocomplete ${this.config.bin}
 fi
-${this.config.binAliases?.map((alias) => `if [[ $(type -t compopt) = "builtin" ]]; then
+${
+  this.config.binAliases
+    ?.map(
+      (alias) => `if [[ $(type -t compopt) = "builtin" ]]; then
     complete -o default -F _${this.config.bin}_autocomplete ${alias}
 else
     complete -o default -o nospace -F _${this.config.bin}_autocomplete ${alias}
-fi`).join('\n') ?? ''}
+fi`,
+    )
+    .join('\n') ?? ''
+}
 `
   }
 
@@ -666,6 +671,15 @@ fi`).join('\n') ?? ''}
     return flags.join(' ')
   }
 
+  private generateCommandSummaries(): string {
+    return this.commands
+      .map((cmd) => {
+        const summary = cmd.summary || cmd.id
+        return `${cmd.id} ${summary}`
+      })
+      .join('\n')
+  }
+
   private generateCommandsWithFlags(): string {
     return this.commands
       .map((c) => {
@@ -676,88 +690,61 @@ fi`).join('\n') ?? ''}
       .join('\n')
   }
 
-  private generateFlagCompletionCases(): string {
-    const cases: string[] = []
+  private generateFlagMetadataBlocks(): string {
+    const blocks: string[] = []
 
     for (const cmd of this.commands) {
-      const flagCases: string[] = []
+      const flagEntries: string[] = []
 
       for (const [flagName, flag] of Object.entries(cmd.flags)) {
         if (flag.hidden) continue
 
-        if (flag.type === 'option' && flag.options) {
-          const options = flag.options.join(' ')
+        const description = this.sanitizeSummary(flag.summary || flag.description || `${flagName} flag`)
 
-          // Handle both long and short flag forms
-          if (flag.char) {
-            flagCases.push(
-              `        if [[ "$prev" == "--${flagName}" || "$prev" == "-${flag.char}" ]]; then`,
-              `          opts="${options}"`,
-              `          has_flag_values=true`,
-              `        fi`,
-            )
-          } else {
-            flagCases.push(
-              `        if [[ "$prev" == "--${flagName}" ]]; then`,
-              `          opts="${options}"`,
-              `          has_flag_values=true`,
-              `        fi`,
-            )
-          }
+        // Build metadata entry with flag type information
+        let metadataEntry = description
+
+        // Add option values if they exist
+        if (flag.type === 'option' && flag.options && flag.options.length > 0) {
+          metadataEntry += `|${flag.options.join(',')}`
+        }
+
+        // Add flag type marker: @boolean or @option or @option-multiple
+        if (flag.type === 'boolean') {
+          metadataEntry += '|@boolean'
+        } else if (flag.type === 'option') {
+          metadataEntry += (flag as any).multiple ? '|@option-multiple' : '|@option'
+        }
+
+        // Add long flag form
+        flagEntries.push(`--${flagName} ${metadataEntry}`)
+
+        // Add short flag form if it exists
+        if (flag.char) {
+          flagEntries.push(`-${flag.char} ${metadataEntry}`)
         }
       }
 
-      if (flagCases.length > 0) {
-        // Convert colon-separated command IDs to space-separated for SF CLI format
-        const spaceId = cmd.id.replaceAll(':', ' ')
-        cases.push(`      "${spaceId}")`, ...flagCases, `        ;;`)
+      if (flagEntries.length > 0) {
+        // Create a valid bash variable name from command ID
+        const varName = `flag_metadata_${cmd.id.replaceAll(/[^a-zA-Z0-9]/g, '_')}`
+
+        blocks.push(`    local ${varName}="
+${flagEntries.join('\n')}
+"`)
       }
     }
 
-    return cases.join('\n')
-  }
-
-  private generateMultipleFlagsCases(): string {
-    const cases: string[] = []
-
-    for (const cmd of this.commands) {
-      const multipleFlags: string[] = []
-
-      for (const [flagName, flag] of Object.entries(cmd.flags)) {
-        if (flag.hidden) continue
-
-        if ((flag as any).multiple) {
-          // Handle both long and short flag forms
-          if (flag.char) {
-            multipleFlags.push(`"--${flagName}"`, `"-${flag.char}"`)
-          } else {
-            multipleFlags.push(`"--${flagName}"`)
-          }
-        }
-      }
-
-      if (multipleFlags.length > 0) {
-        // Use colon-separated command IDs to match how normalizedCommand is built in flag completion
-        const flagChecks = multipleFlags.map((flag) => `[[ "$flag" == ${flag} ]]`).join(' || ')
-        cases.push(
-          `      "${cmd.id}")`,
-          `        if ${flagChecks}; then return 0; fi`,
-          `        return 1`,
-          `        ;;`,
-        )
-      }
-    }
-
-    return cases.join('\n')
+    return blocks.join('\n\n')
   }
 
   private generateRootLevelTopics(): string {
     const topicLines: string[] = []
     const addedItems = new Set<string>()
-    
+
     // Get root level topics
-    const rootTopics = this.topics.filter(t => !t.name.includes(':'))
-    
+    const rootTopics = this.topics.filter((t) => !t.name.includes(':'))
+
     for (const topic of rootTopics) {
       if (!addedItems.has(topic.name)) {
         const description = topic.description || `${topic.name.replaceAll(':', ' ')} commands`
@@ -765,10 +752,10 @@ fi`).join('\n') ?? ''}
         addedItems.add(topic.name)
       }
     }
-    
+
     // Also add root-level commands (commands without colons) - avoid duplicates
-    const rootCommands = this.commands.filter(c => !c.id.includes(':'))
-    
+    const rootCommands = this.commands.filter((c) => !c.id.includes(':'))
+
     for (const command of rootCommands) {
       if (!addedItems.has(command.id)) {
         const description = command.summary || `${command.id} command`
@@ -776,89 +763,28 @@ fi`).join('\n') ?? ''}
         addedItems.add(command.id)
       }
     }
-    
+
     return topicLines.join('\n')
   }
 
   private generateTopicsMetadata(): string {
     const topicsMetadata: string[] = []
-    
+
     for (const topic of this.topics) {
       let description = topic.description || `${topic.name.replaceAll(':', ' ')} commands`
-      
+
       // If this is a coTopic (both topic and command), prefer the command description
       if (this.coTopics.includes(topic.name)) {
-        const command = this.commands.find(cmd => cmd.id === topic.name)
+        const command = this.commands.find((cmd) => cmd.id === topic.name)
         if (command && command.summary) {
           description = command.summary
         }
       }
-      
+
       topicsMetadata.push(`${topic.name} ${description}`)
     }
-    
+
     return topicsMetadata.join('\n')
-  }
-
-  private generateCommandSummaries(): string {
-    return this.commands
-      .map((cmd) => {
-        const summary = cmd.summary || cmd.id
-        return `${cmd.id} ${summary}`
-      })
-      .join('\n')
-  }
-
-  private generateFlagMetadataBlocks(): string {
-    const blocks: string[] = []
-    
-    for (const cmd of this.commands) {
-      const flagEntries: string[] = []
-      
-      for (const [flagName, flag] of Object.entries(cmd.flags)) {
-        if (flag.hidden) continue
-        
-        const description = this.sanitizeSummary(flag.summary || flag.description || `${flagName} flag`)
-        
-        // Build metadata entry with flag type information
-        let metadataEntry = description
-        
-        // Add option values if they exist
-        if (flag.type === 'option' && flag.options && flag.options.length > 0) {
-          metadataEntry += `|${flag.options.join(',')}`
-        }
-        
-        // Add flag type marker: @boolean or @option or @option-multiple
-        if (flag.type === 'boolean') {
-          metadataEntry += '|@boolean'
-        } else if (flag.type === 'option') {
-          if ((flag as any).multiple) {
-            metadataEntry += '|@option-multiple'
-          } else {
-            metadataEntry += '|@option'
-          }
-        }
-        
-        // Add long flag form
-        flagEntries.push(`--${flagName} ${metadataEntry}`)
-        
-        // Add short flag form if it exists
-        if (flag.char) {
-          flagEntries.push(`-${flag.char} ${metadataEntry}`)
-        }
-      }
-      
-      if (flagEntries.length > 0) {
-        // Create a valid bash variable name from command ID
-        const varName = `flag_metadata_${cmd.id.replaceAll(/[^a-zA-Z0-9]/g, '_')}`
-        
-        blocks.push(`    local ${varName}="
-${flagEntries.join('\n')}
-"`)
-      }
-    }
-    
-    return blocks.join('\n\n')
   }
 
   private getCommands(): CommandCompletion[] {
@@ -910,20 +836,20 @@ ${flagEntries.join('\n')}
 
   private getTopics(): Topic[] {
     // First get explicitly defined topics
-    const explicitTopics = this.config.topics
-      .filter((topic: Interfaces.Topic) => {
-        const hasChild = this.config.topics.some((subTopic) => subTopic.name.includes(`${topic.name}:`))
-        return hasChild
-      })
-    
+    const explicitTopics = this.config.topics.filter((topic: Interfaces.Topic) => {
+      const hasChild = this.config.topics.some((subTopic) => subTopic.name.includes(`${topic.name}:`))
+      return hasChild
+    })
+
     // Then derive additional topics from command structure
     const derivedTopics = new Map<string, Topic>()
-    
+
     // Get commands directly to avoid circular dependency
-    const commands = this.config.getPluginsList()
-      .flatMap(p => p.commands)
-      .filter(c => !c.hidden)
-    
+    const commands = this.config
+      .getPluginsList()
+      .flatMap((p) => p.commands)
+      .filter((c) => !c.hidden)
+
     for (const command of commands) {
       const parts = command.id.split(':')
       // Generate all intermediate topic paths
@@ -931,25 +857,25 @@ ${flagEntries.join('\n')}
         const topicPath = parts.slice(0, i).join(':')
         if (!derivedTopics.has(topicPath)) {
           // Check if this topic already exists in explicit topics
-          const existingTopic = explicitTopics.find(t => t.name === topicPath)
+          const existingTopic = explicitTopics.find((t) => t.name === topicPath)
           if (existingTopic) {
             derivedTopics.set(topicPath, {
               description: existingTopic.description || `${topicPath.replaceAll(':', ' ')} commands`,
-              name: topicPath
+              name: topicPath,
             })
           } else {
             // Create a new topic for this path
             derivedTopics.set(topicPath, {
               description: `${topicPath.replaceAll(':', ' ')} commands`,
-              name: topicPath
+              name: topicPath,
             })
           }
         }
       }
     }
-    
+
     // Combine and sort all topics
-    const allTopics = Array.from(derivedTopics.values())
+    const allTopics = [...derivedTopics.values()]
       .sort((a, b) => {
         if (a.name < b.name) {
           return -1
@@ -980,10 +906,12 @@ ${flagEntries.join('\n')}
       return ''
     }
 
-    return ejs
-      .render(summary, {config: this.config})
-      .replaceAll(/(["`])/g, '\\$1') // backticks and double-quotes require backslashes
-      // .replaceAll(/([[\]])/g, '\\\\$1') // square brackets require double-backslashes
-      .split('\n')[0] // only use the first line
+    return (
+      ejs
+        .render(summary, {config: this.config})
+        .replaceAll(/(["`])/g, '\\$1') // backticks and double-quotes require backslashes
+        // .replaceAll(/([[\]])/g, '\\\\$1') // square brackets require double-backslashes
+        .split('\n')[0]
+    ) // only use the first line
   }
 }

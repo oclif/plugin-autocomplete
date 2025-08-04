@@ -123,7 +123,7 @@ class CommandInfoHelper {
   async getRootLevelCompletions(): Promise<string[]> {
     const commands = await this.fetchCommandInfo()
     const rootItems = new Set<string>()
-    
+
     for (const command of commands) {
       if (command.id && typeof command.id === 'string') {
         const parts = command.id.split(':')
@@ -136,14 +136,14 @@ class CommandInfoHelper {
         }
       }
     }
-    
-    return Array.from(rootItems).sort()
+
+    return [...rootItems].sort()
   }
 
   async getTopicCommands(topic: string): Promise<string[]> {
     const commands = await this.fetchCommandInfo()
     const topicCommands = new Set<string>()
-    
+
     for (const command of commands) {
       if (command.id && typeof command.id === 'string') {
         const parts = command.id.split(':')
@@ -153,8 +153,8 @@ class CommandInfoHelper {
         }
       }
     }
-    
-    return Array.from(topicCommands).sort()
+
+    return [...topicCommands].sort()
   }
 }
 
@@ -171,7 +171,7 @@ class BashCompletionHelper {
     }
   }
 
-  parseCompletionOutput(output: string): {completions: string[], descriptions: string[]} {
+  parseCompletionOutput(output: string): {completions: string[]; descriptions: string[]} {
     // Look for our specific completion output pattern
     const lines = output.split('\n')
     const completions: string[] = []
@@ -186,7 +186,7 @@ class BashCompletionHelper {
           if (completionsStr) {
             return {
               completions: completionsStr.split(/\s+/).filter((c) => c.length > 0),
-              descriptions: []
+              descriptions: [],
             }
           }
         }
@@ -221,13 +221,13 @@ class BashCompletionHelper {
       }
 
       // Look for simple flag completions without descriptions
-      if (trimmedLine.match(/^--?[\w-]+$/)) {
+      if (/^--?[\w-]+$/.test(trimmedLine)) {
         completions.push(trimmedLine)
         continue
       }
 
       // Look for simple flag values (no dashes)
-      if (trimmedLine.match(/^[a-zA-Z][\w]*$/)) {
+      if (/^[a-zA-Z][\w]*$/.test(trimmedLine)) {
         completions.push(trimmedLine)
         continue
       }
@@ -248,7 +248,7 @@ class BashCompletionHelper {
     // Remove duplicates and return
     return {
       completions: [...new Set(completions)],
-      descriptions: [...new Set(descriptions)]
+      descriptions: [...new Set(descriptions)],
     }
   }
 
@@ -351,9 +351,9 @@ class BashCompletionHelper {
   }
 }
 
-const isLinuxOrMac = process.platform === 'linux' || process.platform === 'darwin';
+const isLinuxOrMac = process.platform === 'linux' || process.platform === 'darwin'
 
-(isLinuxOrMac ? describe : describe.skip)('Bash Completion E2E Tests', () => {
+;(isLinuxOrMac ? describe : describe.skip)('Bash Completion E2E Tests', () => {
   let helper: BashCompletionHelper
   let commandHelper: CommandInfoHelper
   let expectations: TestExpectations
@@ -401,7 +401,7 @@ const isLinuxOrMac = process.platform === 'linux' || process.platform === 'darwi
 
     it('completes all root-level topics and commands', async () => {
       const expectedTopics = await commandHelper.getRootLevelCompletions()
-      
+
       await helper.startBashSession()
       await helper.sendCommand('sf ')
       const output = await helper.triggerCompletion()
@@ -410,18 +410,21 @@ const isLinuxOrMac = process.platform === 'linux' || process.platform === 'darwi
       // Assert that ALL root topics are present in completions
       const foundTopics = expectedTopics.filter((topic) => result.completions.includes(topic))
       const missingTopics = expectedTopics.filter((topic) => !result.completions.includes(topic))
-      
+
       // Sort both arrays for comparison since order may differ
       const expectedSorted = [...expectedTopics].sort()
       const actualSorted = [...result.completions].sort()
 
-      expect(actualSorted).to.deep.equal(expectedSorted, `Expected all ${expectedTopics.length} root topics: ${expectedTopics.join(', ')} but found: ${foundTopics.join(', ')}. Missing: ${missingTopics.join(', ')}`)
+      expect(actualSorted).to.deep.equal(
+        expectedSorted,
+        `Expected all ${expectedTopics.length} root topics: ${expectedTopics.join(', ')} but found: ${foundTopics.join(', ')}. Missing: ${missingTopics.join(', ')}`,
+      )
     })
 
-    it('completes commands', async () => {  
+    it('completes commands', async () => {
       // Get all actual org commands from command metadata
       const expectedCommands = await commandHelper.getTopicCommands('org')
-      
+
       await helper.startBashSession()
       await helper.sendCommand('sf org ')
       const output = await helper.triggerCompletion()
@@ -431,8 +434,9 @@ const isLinuxOrMac = process.platform === 'linux' || process.platform === 'darwi
       const expectedSorted = [...expectedCommands].sort()
       const actualSorted = [...result.completions].sort()
 
-      expect(actualSorted).to.deep.equal(expectedSorted, 
-        `Expected all ${expectedCommands.length} org commands: ${expectedCommands.join(', ')} but found: ${result.completions.join(', ')}`
+      expect(actualSorted).to.deep.equal(
+        expectedSorted,
+        `Expected all ${expectedCommands.length} org commands: ${expectedCommands.join(', ')} but found: ${result.completions.join(', ')}`,
       )
     })
   })
@@ -449,7 +453,10 @@ const isLinuxOrMac = process.platform === 'linux' || process.platform === 'darwi
       // Check that all expected flags are present
       const expectedFlags = expectations.allFlags.sort()
       const foundFlags = [...result.completions].sort()
-      expect(foundFlags).to.deep.equal(expectedFlags, `Expected all flags ${expectedFlags.join(', ')} but found: ${foundFlags.join(', ')}.`)
+      expect(foundFlags).to.deep.equal(
+        expectedFlags,
+        `Expected all flags ${expectedFlags.join(', ')} but found: ${foundFlags.join(', ')}.`,
+      )
     })
 
     it('completes only long flags with descriptions on double dash', async () => {
@@ -461,16 +468,28 @@ const isLinuxOrMac = process.platform === 'linux' || process.platform === 'darwi
       // Should include all long flags
       const expectedLongFlags = expectations.longFlags.sort()
       const foundFlags = result.completions.sort()
-      expect(foundFlags).to.deep.equal(expectedLongFlags, `Expected only long flags ${expectedLongFlags.join(', ')} but found: ${foundFlags.join(', ')}.`)
+      expect(foundFlags).to.deep.equal(
+        expectedLongFlags,
+        `Expected only long flags ${expectedLongFlags.join(', ')} but found: ${foundFlags.join(', ')}.`,
+      )
     })
 
-    it('completes known flag values', async function () {
+    it('completes known flag values', async () => {
       await helper.startBashSession()
       await helper.sendCommand(`sf org create scratch --edition `)
       const output = await helper.triggerCompletion()
       const result = helper.parseCompletionOutput(output)
 
-      const expectedValues = ['developer', 'enterprise', 'group', 'professional', 'partner-developer', 'partner-enterprise', 'partner-group', 'partner-professional'].sort()
+      const expectedValues = [
+        'developer',
+        'enterprise',
+        'group',
+        'professional',
+        'partner-developer',
+        'partner-enterprise',
+        'partner-group',
+        'partner-professional',
+      ].sort()
       const foundValues = result.completions.sort()
 
       expect(foundValues.length).to.equal(
@@ -479,7 +498,7 @@ const isLinuxOrMac = process.platform === 'linux' || process.platform === 'darwi
       )
     })
 
-    it('completes flags that can be specified multiple times', async function () {
+    it('completes flags that can be specified multiple times', async () => {
       // Test with `sf project deploy start --metadata` which supports being passed multiple times.
       await helper.startBashSession()
       await helper.sendCommand('sf project deploy start --metadata ApexClass --m')
@@ -499,7 +518,7 @@ const isLinuxOrMac = process.platform === 'linux' || process.platform === 'darwi
       const result = helper.parseCompletionOutput(output)
 
       // Should still suggest other flags after boolean --json flag
-      const expectedFlags = expectations.longFlags.filter(flag => flag !== '--json').sort()
+      const expectedFlags = expectations.longFlags.filter((flag) => flag !== '--json').sort()
       const foundFlags = result.completions.sort()
 
       expect(foundFlags).to.be.deep.equal(expectedFlags, 'Should suggest other flags after boolean flag')
