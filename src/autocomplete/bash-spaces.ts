@@ -810,8 +810,8 @@ ${flagEntries.join('\n')}
 
     return ejs
       .render(summary, {config: this.config})
-      .replaceAll(/(["`])/g, '\\\\\\$1') // backticks and double-quotes require triple-backslashes
-      .replaceAll(/([[\]])/g, '\\\\$1') // square brackets require double-backslashes
+      .replaceAll(/(["`])/g, '\\$1') // backticks and double-quotes require backslashes
+      // .replaceAll(/([[\]])/g, '\\\\$1') // square brackets require double-backslashes
       .split('\n')[0] // only use the first line
   }
 }
