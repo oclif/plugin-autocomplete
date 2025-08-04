@@ -341,15 +341,19 @@ __${this.config.bin}_flag_expects_value() {
         local metadata=$'\\n'"\${!cmd_var_name}"
         local pattern=$'\\n'\${flag_name}' '
         if [[ "$metadata" == *\${pattern}* ]]; then
-            # Flag is present in metadata, check if it's an option flag by looking for "|" (has values)
+            # Flag is present in metadata, check if it expects a value
             local after_flag="\${metadata#*\${pattern}}"
             local flag_line="\${after_flag%%$'\\n'*}"
-            # If the flag line contains "|", it's an option flag with values
-            if [[ "$flag_line" == *"|"* ]]; then
-                return 0  # Flag has option values, definitely expects a value
+            
+            # Check flag type from metadata
+            if [[ "$flag_line" == *"|@boolean"* ]]; then
+                return 1  # Boolean flags don't expect values
+            elif [[ "$flag_line" == *"|@option"* ]] || [[ "$flag_line" == *"|@option-multiple"* ]]; then
+                return 0  # Option flags expect values
+            elif [[ "$flag_line" == *"|"* ]]; then
+                return 0  # Has option values, definitely expects a value
             else
-                # Flag exists but no "|" - could be boolean or option without predefined values
-                # For now, assume it expects a value if it's in our metadata (conservative approach)
+                # No type marker - fallback: assume option flags expect values
                 return 0
             fi
         fi
@@ -374,10 +378,15 @@ __${this.config.bin}_get_flag_values() {
             
             # Check if flag has option values (contains "|")
             if [[ "$flag_line" == *"|"* ]]; then
-                # Extract values after "|"
+                # Extract values after first "|" but before any "|@" type markers
                 local values="\${flag_line#*|}"
-                echo "$values"
-                return 0
+                # Remove type markers (everything from "|@" onwards)
+                values="\${values%%|@*}"
+                # Only return values if they exist and don't start with "@"
+                if [[ -n "$values" && "$values" != @* ]]; then
+                    echo "$values"
+                    return 0
+                fi
             fi
         fi
     fi
@@ -432,15 +441,32 @@ __${this.config.bin}_get_flag_completions() {
         # Add flag completions with descriptions
         local flag
         for flag in $all_flags; do
-            # Check if flag is already used
+            # Check if flag is already used (skip if multiple allowed)
             local already_used=false
-            local used_flag
-            for used_flag in "\${used_flags[@]}"; do
-                if [[ "$used_flag" == "$flag" ]]; then
-                    already_used=true
-                    break
+            local flag_allows_multiple=false
+            
+            # Check if this flag allows multiple values using pure bash pattern matching
+            local cmd_var_name="flag_metadata_\$(echo \"$cmd_key\" | tr ' :' '_')"
+            local metadata=$'\\n'"\${!cmd_var_name}"
+            local pattern=$'\\n'\${flag}' '
+            if [[ "$metadata" == *\${pattern}* ]]; then
+                local after_flag="\${metadata#*\${pattern}}"
+                local flag_line="\${after_flag%%$'\\n'*}"
+                if [[ "$flag_line" == *"|@option-multiple"* ]]; then
+                    flag_allows_multiple=true
                 fi
-            done
+            fi
+            
+            # Only check for previous usage if flag doesn't allow multiple
+            if [[ "$flag_allows_multiple" == false ]]; then
+                local used_flag
+                for used_flag in "\${used_flags[@]}"; do
+                    if [[ "$used_flag" == "$flag" ]]; then
+                        already_used=true
+                        break
+                    fi
+                done
+            fi
             
             if [[ "$already_used" == false ]]; then
                 local tab=$'\\t'
@@ -458,7 +484,7 @@ __${this.config.bin}_get_flag_completions() {
                         local after_flag="\${metadata#*\${pattern}}"
                         # Get just the first line (description)
                         local flag_line="\${after_flag%%$'\\n'*}"
-                        # Remove option values (everything after "|") for display
+                        # Remove everything after first "|" (option values and type markers) for display
                         flag_desc="\${flag_line%%|*}"
                     fi
                 fi
@@ -734,10 +760,23 @@ fi`).join('\n') ?? ''}
         
         const description = this.sanitizeSummary(flag.summary || flag.description || `${flagName} flag`)
         
-        // Append option values if they exist
+        // Build metadata entry with flag type information
         let metadataEntry = description
+        
+        // Add option values if they exist
         if (flag.type === 'option' && flag.options && flag.options.length > 0) {
           metadataEntry += `|${flag.options.join(',')}`
+        }
+        
+        // Add flag type marker: @boolean or @option or @option-multiple
+        if (flag.type === 'boolean') {
+          metadataEntry += '|@boolean'
+        } else if (flag.type === 'option') {
+          if ((flag as any).multiple) {
+            metadataEntry += '|@option-multiple'
+          } else {
+            metadataEntry += '|@option'
+          }
         }
         
         // Add long flag form
