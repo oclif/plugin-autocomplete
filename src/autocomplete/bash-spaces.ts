@@ -20,11 +20,29 @@ export default class BashCompWithSpaces {
   protected config: Config
   private commands: CommandCompletion[]
   private topics: Topic[]
+  private _coTopics?: string[]
 
   constructor(config: Config) {
     this.config = config
     this.topics = this.getTopics()
     this.commands = this.getCommands()
+  }
+
+  private get coTopics(): string[] {
+    if (this._coTopics) return this._coTopics
+
+    const coTopics: string[] = []
+
+    for (const topic of this.topics) {
+      for (const cmd of this.commands) {
+        if (topic.name === cmd.id) {
+          coTopics.push(topic.name)
+        }
+      }
+    }
+
+    this._coTopics = coTopics
+    return this._coTopics
   }
 
   public generate(): string {
@@ -542,10 +560,26 @@ ${rootTopicsCompletion}
         local matching_commands
         matching_commands=$(printf "%s\\n" "$commands" | grep "^$current_path:" | head -20)
         
+        # Also include matching topics (for derived topics like org:assign from org:assign:permset)
+        local matching_topics
+        matching_topics=$(printf "%s\\n" "$topics" | grep "^$current_path:" | head -20)
+        
+        # Combine commands and topics
+        local all_matches
+        if [[ -n "$matching_commands" && -n "$matching_topics" ]]; then
+            all_matches=$(printf "%s\\n%s\\n" "$matching_commands" "$matching_topics")
+        elif [[ -n "$matching_commands" ]]; then
+            all_matches="$matching_commands"
+        elif [[ -n "$matching_topics" ]]; then
+            all_matches="$matching_topics"
+        fi
+        
         __${this.config.bin}_debug "matching_commands for '$current_path:':"
         __${this.config.bin}_debug "$matching_commands"
+        __${this.config.bin}_debug "matching_topics for '$current_path:':" 
+        __${this.config.bin}_debug "$matching_topics"
         
-        if [[ -n "$matching_commands" ]]; then
+        if [[ -n "$all_matches" ]]; then
             while IFS= read -r cmd_line; do
                 local cmd_id="\${cmd_line%% *}"
                 # Remove the current path prefix
@@ -583,7 +617,7 @@ ${rootTopicsCompletion}
                 fi
                 
                 completions+=("\${next_segment}\${tab}\${completion_desc}")
-            done <<< "$matching_commands"
+            done <<< "$all_matches"
             
             # Remove duplicates
             local unique_completions=()
@@ -719,25 +753,51 @@ fi`).join('\n') ?? ''}
 
   private generateRootLevelTopics(): string {
     const topicLines: string[] = []
+    const addedItems = new Set<string>()
     
     // Get root level topics
     const rootTopics = this.topics.filter(t => !t.name.includes(':'))
     
     for (const topic of rootTopics) {
-      const description = topic.description || `${topic.name.replaceAll(':', ' ')} commands`
-      topicLines.push(`        completions+=("${topic.name}\${tab}${description}")`)
+      if (!addedItems.has(topic.name)) {
+        const description = topic.description || `${topic.name.replaceAll(':', ' ')} commands`
+        topicLines.push(`        completions+=("${topic.name}\${tab}${description}")`)
+        addedItems.add(topic.name)
+      }
+    }
+    
+    // Also add root-level commands (commands without colons) - avoid duplicates
+    const rootCommands = this.commands.filter(c => !c.id.includes(':'))
+    
+    for (const command of rootCommands) {
+      if (!addedItems.has(command.id)) {
+        const description = command.summary || `${command.id} command`
+        topicLines.push(`        completions+=("${command.id}\${tab}${description}")`)
+        addedItems.add(command.id)
+      }
     }
     
     return topicLines.join('\n')
   }
 
   private generateTopicsMetadata(): string {
-    return this.topics
-      .map((topic) => {
-        const description = topic.description || `${topic.name.replaceAll(':', ' ')} commands`
-        return `${topic.name} ${description}`
-      })
-      .join('\n')
+    const topicsMetadata: string[] = []
+    
+    for (const topic of this.topics) {
+      let description = topic.description || `${topic.name.replaceAll(':', ' ')} commands`
+      
+      // If this is a coTopic (both topic and command), prefer the command description
+      if (this.coTopics.includes(topic.name)) {
+        const command = this.commands.find(cmd => cmd.id === topic.name)
+        if (command && command.summary) {
+          description = command.summary
+        }
+      }
+      
+      topicsMetadata.push(`${topic.name} ${description}`)
+    }
+    
+    return topicsMetadata.join('\n')
   }
 
   private generateCommandSummaries(): string {
@@ -849,12 +909,47 @@ ${flagEntries.join('\n')}
   }
 
   private getTopics(): Topic[] {
-    const topics = this.config.topics
+    // First get explicitly defined topics
+    const explicitTopics = this.config.topics
       .filter((topic: Interfaces.Topic) => {
-        // it is assumed a topic has a child if it has children
         const hasChild = this.config.topics.some((subTopic) => subTopic.name.includes(`${topic.name}:`))
         return hasChild
       })
+    
+    // Then derive additional topics from command structure
+    const derivedTopics = new Map<string, Topic>()
+    
+    // Get commands directly to avoid circular dependency
+    const commands = this.config.getPluginsList()
+      .flatMap(p => p.commands)
+      .filter(c => !c.hidden)
+    
+    for (const command of commands) {
+      const parts = command.id.split(':')
+      // Generate all intermediate topic paths
+      for (let i = 1; i < parts.length; i++) {
+        const topicPath = parts.slice(0, i).join(':')
+        if (!derivedTopics.has(topicPath)) {
+          // Check if this topic already exists in explicit topics
+          const existingTopic = explicitTopics.find(t => t.name === topicPath)
+          if (existingTopic) {
+            derivedTopics.set(topicPath, {
+              description: existingTopic.description || `${topicPath.replaceAll(':', ' ')} commands`,
+              name: topicPath
+            })
+          } else {
+            // Create a new topic for this path
+            derivedTopics.set(topicPath, {
+              description: `${topicPath.replaceAll(':', ' ')} commands`,
+              name: topicPath
+            })
+          }
+        }
+      }
+    }
+    
+    // Combine and sort all topics
+    const allTopics = Array.from(derivedTopics.values())
       .sort((a, b) => {
         if (a.name < b.name) {
           return -1
@@ -877,7 +972,7 @@ ${flagEntries.join('\n')}
         }
       })
 
-    return topics
+    return allTopics
   }
 
   private sanitizeSummary(summary?: string): string {

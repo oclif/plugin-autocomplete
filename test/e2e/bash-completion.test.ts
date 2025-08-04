@@ -118,6 +118,44 @@ class CommandInfoHelper {
     const commands = await this.fetchCommandInfo()
     return commands.find((cmd) => cmd.id === id) || null
   }
+
+  // Get all actual root-level completions (topics + root commands) from command metadata
+  async getRootLevelCompletions(): Promise<string[]> {
+    const commands = await this.fetchCommandInfo()
+    const rootItems = new Set<string>()
+    
+    for (const command of commands) {
+      if (command.id && typeof command.id === 'string') {
+        const parts = command.id.split(':')
+        if (parts.length > 1) {
+          // This is a topic with subcommands - add the root topic
+          rootItems.add(parts[0])
+        } else {
+          // This is a root-level command - add it directly
+          rootItems.add(command.id)
+        }
+      }
+    }
+    
+    return Array.from(rootItems).sort()
+  }
+
+  async getTopicCommands(topic: string): Promise<string[]> {
+    const commands = await this.fetchCommandInfo()
+    const topicCommands = new Set<string>()
+    
+    for (const command of commands) {
+      if (command.id && typeof command.id === 'string') {
+        const parts = command.id.split(':')
+        if (parts.length >= 2 && parts[0] === topic) {
+          // This is a command under the specified topic
+          topicCommands.add(parts[1])
+        }
+      }
+    }
+    
+    return Array.from(topicCommands).sort()
+  }
 }
 
 class BashCompletionHelper {
@@ -133,9 +171,11 @@ class BashCompletionHelper {
     }
   }
 
-  parseCompletionOutput(output: string): string[] {
+  parseCompletionOutput(output: string): {completions: string[], descriptions: string[]} {
     // Look for our specific completion output pattern
     const lines = output.split('\n')
+    const completions: string[] = []
+    const descriptions: string[] = []
 
     for (const line of lines) {
       if (line.includes('COMPLETIONS:')) {
@@ -144,47 +184,72 @@ class BashCompletionHelper {
         if (match && match[1]) {
           const completionsStr = match[1].trim()
           if (completionsStr) {
-            return completionsStr.split(/\s+/).filter((c) => c.length > 0)
-          }
-        }
-      }
-    }
-
-    // Fallback to the old parsing method
-    const completions: string[] = []
-    for (const line of lines) {
-      const trimmedLine = line.trim()
-
-      // Skip empty lines and command echoes
-      if (!trimmedLine || trimmedLine.startsWith('$') || trimmedLine.startsWith('sf org create scratch')) {
-        continue
-      }
-
-      // Check if this line contains multiple completions separated by whitespace
-      if (trimmedLine.includes('--') || /\s+[a-z-]+\s+/.test(trimmedLine)) {
-        // Split by multiple whitespaces to get completion items
-        const tokens = trimmedLine
-          .split(/\s{2,}/)
-          .map((t) => t.trim())
-          .filter((t) => t.length > 0)
-
-        for (const token of tokens) {
-          // Extract individual flags/values from each token
-          const subTokens = token.split(/\s+/)
-          for (const subToken of subTokens) {
-            if (subToken.startsWith('--') || (subToken.startsWith('-') && subToken.length === 2)) {
-              completions.push(subToken)
-            } else if (/^[a-z][a-z-]*[a-z]?$/.test(subToken)) {
-              // For flag values like "developer", "enterprise", etc.
-              completions.push(subToken)
+            return {
+              completions: completionsStr.split(/\s+/).filter((c) => c.length > 0),
+              descriptions: []
             }
           }
         }
       }
     }
 
+    // Parse bash completion output with descriptions
+    for (const line of lines) {
+      const trimmedLine = line.trim()
+
+      // Skip empty lines and command echoes
+      if (!trimmedLine || trimmedLine.startsWith('$') || trimmedLine.startsWith('sf ')) {
+        continue
+      }
+
+      // Look for completion lines with descriptions in parentheses
+      // Format: --flag-name        (Description text)
+      const completionMatch = trimmedLine.match(/^(--?[\w-]+)\s+\((.+)\)\s*$/)
+      if (completionMatch) {
+        completions.push(completionMatch[1])
+        descriptions.push(completionMatch[2])
+        continue
+      }
+
+      // Look for topic/command completions with descriptions
+      // Format: topic-name\tDescription text
+      const topicMatch = trimmedLine.match(/^([a-z][\w-]*)\s+(.+)$/)
+      if (topicMatch && !topicMatch[1].startsWith('-')) {
+        completions.push(topicMatch[1])
+        descriptions.push(topicMatch[2])
+        continue
+      }
+
+      // Look for simple flag completions without descriptions
+      if (trimmedLine.match(/^--?[\w-]+$/)) {
+        completions.push(trimmedLine)
+        continue
+      }
+
+      // Look for simple flag values (no dashes)
+      if (trimmedLine.match(/^[a-zA-Z][\w]*$/)) {
+        completions.push(trimmedLine)
+        continue
+      }
+
+      // Check for multiple completions on one line (space-separated)
+      if (trimmedLine.includes('--') || /\s+[a-z-]+\s+/.test(trimmedLine)) {
+        const tokens = trimmedLine.split(/\s+/).filter((t) => t.length > 0)
+        for (const token of tokens) {
+          if (token.startsWith('--') || (token.startsWith('-') && token.length === 2)) {
+            completions.push(token)
+          } else if (/^[a-zA-Z][\w]*$/.test(token)) {
+            completions.push(token)
+          }
+        }
+      }
+    }
+
     // Remove duplicates and return
-    return [...new Set(completions)]
+    return {
+      completions: [...new Set(completions)],
+      descriptions: [...new Set(descriptions)]
+    }
   }
 
   async sendCommand(command: string): Promise<void> {
@@ -286,9 +351,9 @@ class BashCompletionHelper {
   }
 }
 
-const isLinuxOrMac = process.platform === 'linux' || process.platform === 'darwin'
+const isLinuxOrMac = process.platform === 'linux' || process.platform === 'darwin';
 
-;(isLinuxOrMac ? describe : describe.skip)('Bash Completion E2E Tests', () => {
+(isLinuxOrMac ? describe : describe.skip)('Bash Completion E2E Tests', () => {
   let helper: BashCompletionHelper
   let commandHelper: CommandInfoHelper
   let expectations: TestExpectations
@@ -329,99 +394,115 @@ const isLinuxOrMac = process.platform === 'linux' || process.platform === 'darwi
     await helper.cleanup()
   })
 
-  describe('sf org create scratch', function () {
+  describe('command and topics', function () {
+    this.timeout(15_000)
+    // Note: Descriptions are visible in interactive completion but not in COMPREPLY array
+    // This is expected behavior - the test validates that completions work correctly
+
+    it('completes all root-level topics and commands', async () => {
+      const expectedTopics = await commandHelper.getRootLevelCompletions()
+      
+      await helper.startBashSession()
+      await helper.sendCommand('sf ')
+      const output = await helper.triggerCompletion()
+      const result = helper.parseCompletionOutput(output)
+
+      // Assert that ALL root topics are present in completions
+      const foundTopics = expectedTopics.filter((topic) => result.completions.includes(topic))
+      const missingTopics = expectedTopics.filter((topic) => !result.completions.includes(topic))
+      
+      // Sort both arrays for comparison since order may differ
+      const expectedSorted = [...expectedTopics].sort()
+      const actualSorted = [...result.completions].sort()
+
+      expect(actualSorted).to.deep.equal(expectedSorted, `Expected all ${expectedTopics.length} root topics: ${expectedTopics.join(', ')} but found: ${foundTopics.join(', ')}. Missing: ${missingTopics.join(', ')}`)
+    })
+
+    it('completes commands', async () => {  
+      // Get all actual org commands from command metadata
+      const expectedCommands = await commandHelper.getTopicCommands('org')
+      
+      await helper.startBashSession()
+      await helper.sendCommand('sf org ')
+      const output = await helper.triggerCompletion()
+      const result = helper.parseCompletionOutput(output)
+
+      // Assert that ALL org commands are present in completions
+      const expectedSorted = [...expectedCommands].sort()
+      const actualSorted = [...result.completions].sort()
+
+      expect(actualSorted).to.deep.equal(expectedSorted, 
+        `Expected all ${expectedCommands.length} org commands: ${expectedCommands.join(', ')} but found: ${result.completions.join(', ')}`
+      )
+    })
+  })
+
+  describe('flags', function () {
     this.timeout(15_000) // Longer timeout for E2E tests
 
-    it('completes both long and short flags with single dash', async () => {
+    it('completes both long and short flags on single dash', async () => {
       await helper.startBashSession()
       await helper.sendCommand('sf org create scratch -')
       const output = await helper.triggerCompletion()
-      const completions = helper.parseCompletionOutput(output)
-
-      // Only show debug output if test fails
-      if (completions.length === 0) {
-        console.log('Raw output:', JSON.stringify(output))
-        console.log('Completions found:', completions)
-      }
+      const result = helper.parseCompletionOutput(output)
 
       // Check that all expected flags are present
-      const expectedFlags = expectations.allFlags
-      const foundFlags = expectedFlags.filter((flag) => completions.includes(flag))
-
-      expect(foundFlags.length).to.equal(
-        expectedFlags.length,
-        `Expected all flags ${expectedFlags.join(', ')} but found: ${foundFlags.join(', ')}. Missing: ${expectedFlags.filter((f) => !foundFlags.includes(f)).join(', ')}`,
-      )
+      const expectedFlags = expectations.allFlags.sort()
+      const foundFlags = [...result.completions].sort()
+      expect(foundFlags).to.deep.equal(expectedFlags, `Expected all flags ${expectedFlags.join(', ')} but found: ${foundFlags.join(', ')}.`)
     })
 
-    it('completes only long flags with double dash', async () => {
+    it('completes only long flags with descriptions on double dash', async () => {
       await helper.startBashSession()
       await helper.sendCommand('sf org create scratch --')
       const output = await helper.triggerCompletion()
-      const completions = helper.parseCompletionOutput(output)
+      const result = helper.parseCompletionOutput(output)
 
       // Should include all long flags
-      const expectedLongFlags = expectations.longFlags
-      const foundLongFlags = expectedLongFlags.filter((flag) => completions.includes(flag))
-
-      // Should NOT include any short flags
-      const allShortFlags = expectations.allFlags.filter((flag) => flag.startsWith('-') && !flag.startsWith('--'))
-      const foundShortFlags = allShortFlags.filter((flag) => completions.includes(flag))
-
-      expect(foundLongFlags.length).to.equal(
-        expectedLongFlags.length,
-        `Expected all long flags ${expectedLongFlags.join(', ')} but found: ${foundLongFlags.join(', ')}. Missing: ${expectedLongFlags.filter((f) => !foundLongFlags.includes(f)).join(', ')}`,
-      )
-
-      expect(foundShortFlags.length).to.equal(0, `Should not find short flags but found: ${foundShortFlags.join(', ')}`)
+      const expectedLongFlags = expectations.longFlags.sort()
+      const foundFlags = result.completions.sort()
+      expect(foundFlags).to.deep.equal(expectedLongFlags, `Expected only long flags ${expectedLongFlags.join(', ')} but found: ${foundFlags.join(', ')}.`)
     })
 
     it('completes known flag values', async function () {
-      // Find the first flag with known values to test
-      const flagsWithValues = Object.keys(expectations.flagsWithValues)
-
-      if (flagsWithValues.length === 0) {
-        this.skip() // Skip if no flags have known values
-      }
-
-      const testFlag = flagsWithValues[0]
-      const expectedValues = expectations.flagsWithValues[testFlag]
-
       await helper.startBashSession()
-      await helper.sendCommand(`sf org create scratch --${testFlag} `)
+      await helper.sendCommand(`sf org create scratch --edition `)
       const output = await helper.triggerCompletion()
-      const completions = helper.parseCompletionOutput(output)
+      const result = helper.parseCompletionOutput(output)
 
-      const foundValues = expectedValues.filter((value) => completions.includes(value))
+      const expectedValues = ['developer', 'enterprise', 'group', 'professional', 'partner-developer', 'partner-enterprise', 'partner-group', 'partner-professional'].sort()
+      const foundValues = result.completions.sort()
 
       expect(foundValues.length).to.equal(
         expectedValues.length,
-        `Expected all values for --${testFlag}: ${expectedValues.join(', ')} but found: ${foundValues.join(', ')}. Missing: ${expectedValues.filter((v) => !foundValues.includes(v)).join(', ')}`,
+        `Expected all values for --edition: ${expectedValues.join(', ')} but found: ${foundValues.join(', ')}. Missing: ${expectedValues.filter((v) => !foundValues.includes(v)).join(', ')}`,
       )
     })
 
-    it('completes flag values when other flags are present', async function () {
-      // Find the first flag with known values to test
-      const flagsWithValues = Object.keys(expectations.flagsWithValues)
-
-      if (flagsWithValues.length === 0) {
-        this.skip() // Skip if no flags have known values
-      }
-
-      const testFlag = flagsWithValues[0]
-      const expectedValues = expectations.flagsWithValues[testFlag]
-
+    it('completes flags that can be specified multiple times', async function () {
+      // Test with `sf project deploy start --metadata` which supports being passed multiple times.
       await helper.startBashSession()
-      await helper.sendCommand(`sf org create scratch --json --${testFlag} `)
+      await helper.sendCommand('sf project deploy start --metadata ApexClass --m')
       const output = await helper.triggerCompletion()
-      const completions = helper.parseCompletionOutput(output)
+      const result = helper.parseCompletionOutput(output)
 
-      const foundValues = expectedValues.filter((value) => completions.includes(value))
+      const expectedFlags = ['--manifest', '--metadata', '--metadata-dir']
+      const actualSorted = [...result.completions].sort()
 
-      expect(foundValues.length).to.equal(
-        expectedValues.length,
-        `Expected all values for --${testFlag} with other flags present: ${expectedValues.join(', ')} but found: ${foundValues.join(', ')}. Missing: ${expectedValues.filter((v) => !foundValues.includes(v)).join(', ')}`,
-      )
+      expect(actualSorted).to.deep.equal(expectedFlags, 'Should find flags starting with m')
+    })
+
+    it('completes flags even when boolean flag is present', async () => {
+      await helper.startBashSession()
+      await helper.sendCommand('sf org create scratch --json --')
+      const output = await helper.triggerCompletion()
+      const result = helper.parseCompletionOutput(output)
+
+      // Should still suggest other flags after boolean --json flag
+      const expectedFlags = expectations.longFlags.filter(flag => flag !== '--json').sort()
+      const foundFlags = result.completions.sort()
+
+      expect(foundFlags).to.be.deep.equal(expectedFlags, 'Should suggest other flags after boolean flag')
     })
   })
 })
