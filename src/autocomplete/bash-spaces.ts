@@ -278,7 +278,7 @@ __${this.config.bin}_get_completions() {
             IFS=',' read -ra value_array <<< "$values"
             local value
             for value in "\${value_array[@]}"; do
-                completions+=("\${value}\${tab}\${prev_word} option value")
+                completions+=("\${value}")
             done
             return
         fi
@@ -334,14 +334,24 @@ __${this.config.bin}_flag_expects_value() {
     local flag_name="$1"
     local cmd_key="$2"
     
-    # Find the command in $commands and check if the flag is an option type
-    local cmd_line
-    cmd_line=$(printf "%s\\n" "$commands" | grep "^\$(echo "$cmd_key" | tr ' ' ':') ")
-    if [[ -n "$cmd_line" ]]; then
-        # Check if flag is present (option flags are listed, boolean flags are not in our simplified format)
-        if [[ "$cmd_line" =~ $flag_name ]]; then
-            # For now, assume all flags listed expect values (we'll enhance this with metadata later)
-            return 0
+    # Use the flag metadata to check if flag expects a value
+    local cmd_var_name="flag_metadata_\$(echo \"$cmd_key\" | tr ' :' '_')"
+    if [[ -n "\${!cmd_var_name}" ]]; then
+        # Use pure bash pattern matching to find the flag
+        local metadata=$'\\n'"\${!cmd_var_name}"
+        local pattern=$'\\n'\${flag_name}' '
+        if [[ "$metadata" == *\${pattern}* ]]; then
+            # Flag is present in metadata, check if it's an option flag by looking for "|" (has values)
+            local after_flag="\${metadata#*\${pattern}}"
+            local flag_line="\${after_flag%%$'\\n'*}"
+            # If the flag line contains "|", it's an option flag with values
+            if [[ "$flag_line" == *"|"* ]]; then
+                return 0  # Flag has option values, definitely expects a value
+            else
+                # Flag exists but no "|" - could be boolean or option without predefined values
+                # For now, assume it expects a value if it's in our metadata (conservative approach)
+                return 0
+            fi
         fi
     fi
     return 1
@@ -351,8 +361,28 @@ __${this.config.bin}_get_flag_values() {
     local flag_name="$1"
     local cmd_key="$2"
     
-    # This would be populated with actual flag values from command metadata
-    # For now, return empty to let the existing flag completion logic handle it
+    # Extract flag option values from the enhanced metadata
+    local cmd_var_name="flag_metadata_\$(echo \"$cmd_key\" | tr ' :' '_')"
+    if [[ -n "\${!cmd_var_name}" ]]; then
+        # Use pure bash pattern matching to find the flag
+        local metadata=$'\\n'"\${!cmd_var_name}"
+        local pattern=$'\\n'\${flag_name}' '
+        if [[ "$metadata" == *\${pattern}* ]]; then
+            # Extract the flag line
+            local after_flag="\${metadata#*\${pattern}}"
+            local flag_line="\${after_flag%%$'\\n'*}"
+            
+            # Check if flag has option values (contains "|")
+            if [[ "$flag_line" == *"|"* ]]; then
+                # Extract values after "|"
+                local values="\${flag_line#*|}"
+                echo "$values"
+                return 0
+            fi
+        fi
+    fi
+    
+    # No predefined values found
     echo ""
     return 1
 }
@@ -427,7 +457,9 @@ __${this.config.bin}_get_flag_completions() {
                         # Extract the line starting with our flag
                         local after_flag="\${metadata#*\${pattern}}"
                         # Get just the first line (description)
-                        flag_desc="\${after_flag%%$'\\n'*}"
+                        local flag_line="\${after_flag%%$'\\n'*}"
+                        # Remove option values (everything after "|") for display
+                        flag_desc="\${flag_line%%|*}"
                     fi
                 fi
                 
@@ -702,12 +734,18 @@ fi`).join('\n') ?? ''}
         
         const description = this.sanitizeSummary(flag.summary || flag.description || `${flagName} flag`)
         
+        // Append option values if they exist
+        let metadataEntry = description
+        if (flag.type === 'option' && flag.options && flag.options.length > 0) {
+          metadataEntry += `|${flag.options.join(',')}`
+        }
+        
         // Add long flag form
-        flagEntries.push(`--${flagName} ${description}`)
+        flagEntries.push(`--${flagName} ${metadataEntry}`)
         
         // Add short flag form if it exists
         if (flag.char) {
-          flagEntries.push(`-${flag.char} ${description}`)
+          flagEntries.push(`-${flag.char} ${metadataEntry}`)
         }
       }
       
