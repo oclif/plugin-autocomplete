@@ -212,6 +212,7 @@ $scriptblock = {
 "_summary" = "execute code"
 "code" = @{
 "_command" = @{
+  "id" = "app:execute:code"
   "summary" = "execute code"
   "flags" = @{
     "help" = @{ "summary" = "Show help for command" }
@@ -225,6 +226,7 @@ $scriptblock = {
 
 "deploy" = @{
 "_command" = @{
+  "id" = "deploy"
   "summary" = "Deploy a project"
   "flags" = @{
     "help" = @{ "summary" = "Show help for command" }
@@ -239,6 +241,7 @@ $scriptblock = {
 }
 "functions" = @{
 "_command" = @{
+  "id" = "deploy:functions"
   "summary" = "Deploy a function."
   "flags" = @{
     "help" = @{ "summary" = "Show help for command" }
@@ -250,6 +253,7 @@ $scriptblock = {
 
 "autocomplete" = @{
 "_command" = @{
+  "id" = "autocomplete"
   "summary" = "Display autocomplete installation instructions."
   "flags" = @{
     "help" = @{ "summary" = "Show help for command" }
@@ -260,6 +264,7 @@ $scriptblock = {
 
 "search" = @{
 "_command" = @{
+  "id" = "search"
   "summary" = "Search for a command"
   "flags" = @{
     "help" = @{ "summary" = "Show help for command" }
@@ -329,9 +334,35 @@ $scriptblock = {
 
       # Start completing command.
       if ($NextArg._command -ne $null) {
-          # Complete flags
-          # \`cli config list -<TAB>\`
-          if ($WordToComplete -like '-*') {
+          # Check if we're completing a flag value
+          $PrevWord = if ($CurrentLine.Count -gt 0) { $CurrentLine[-1] } else { "" }
+          $IsCompletingFlagValue = $PrevWord -like '--*' -and $WordToComplete -notlike '-*'
+
+          if ($IsCompletingFlagValue) {
+              # Try dynamic flag value completion
+              $FlagName = $PrevWord.TrimStart('-')
+              $CommandId = $NextArg._command.id
+              $CurrentLineStr = $CommandAst.ToString()
+
+              try {
+                  $DynamicOptions = & test-cli autocomplete options $CommandId $FlagName --current-line="$CurrentLineStr" 2>$null
+                  if ($DynamicOptions) {
+                      $DynamicOptions | Where-Object {
+                          $_.StartsWith("$WordToComplete")
+                      } | ForEach-Object {
+                          New-Object -Type CompletionResult -ArgumentList \`
+                              $($Mode -eq "MenuComplete" ? "$_ " : "$_"),
+                              $_,
+                              "ParameterValue",
+                              " "
+                      }
+                  }
+              } catch {
+                  # Fall back to no completions if dynamic completion fails
+              }
+          } elseif ($WordToComplete -like '-*') {
+              # Complete flags
+              # \`cli config list -<TAB>\`
               $NextArg._command.flags.GetEnumerator() | Sort-Object -Property key
                   | Where-Object {
                       # Filter out already used flags (unless \`flag.multiple = true\`).
@@ -405,6 +436,7 @@ $scriptblock = {
 "_summary" = "execute code"
 "code" = @{
 "_command" = @{
+  "id" = "app:execute:code"
   "summary" = "execute code"
   "flags" = @{
     "help" = @{ "summary" = "Show help for command" }
@@ -418,6 +450,7 @@ $scriptblock = {
 
 "deploy" = @{
 "_command" = @{
+  "id" = "deploy"
   "summary" = "Deploy a project"
   "flags" = @{
     "help" = @{ "summary" = "Show help for command" }
@@ -432,6 +465,7 @@ $scriptblock = {
 }
 "functions" = @{
 "_command" = @{
+  "id" = "deploy:functions"
   "summary" = "Deploy a function."
   "flags" = @{
     "help" = @{ "summary" = "Show help for command" }
@@ -443,6 +477,7 @@ $scriptblock = {
 
 "autocomplete" = @{
 "_command" = @{
+  "id" = "autocomplete"
   "summary" = "Display autocomplete installation instructions."
   "flags" = @{
     "help" = @{ "summary" = "Show help for command" }
@@ -453,6 +488,7 @@ $scriptblock = {
 
 "search" = @{
 "_command" = @{
+  "id" = "search"
   "summary" = "Search for a command"
   "flags" = @{
     "help" = @{ "summary" = "Show help for command" }
@@ -522,9 +558,35 @@ $scriptblock = {
 
       # Start completing command.
       if ($NextArg._command -ne $null) {
-          # Complete flags
-          # \`cli config list -<TAB>\`
-          if ($WordToComplete -like '-*') {
+          # Check if we're completing a flag value
+          $PrevWord = if ($CurrentLine.Count -gt 0) { $CurrentLine[-1] } else { "" }
+          $IsCompletingFlagValue = $PrevWord -like '--*' -and $WordToComplete -notlike '-*'
+
+          if ($IsCompletingFlagValue) {
+              # Try dynamic flag value completion
+              $FlagName = $PrevWord.TrimStart('-')
+              $CommandId = $NextArg._command.id
+              $CurrentLineStr = $CommandAst.ToString()
+
+              try {
+                  $DynamicOptions = & test-cli autocomplete options $CommandId $FlagName --current-line="$CurrentLineStr" 2>$null
+                  if ($DynamicOptions) {
+                      $DynamicOptions | Where-Object {
+                          $_.StartsWith("$WordToComplete")
+                      } | ForEach-Object {
+                          New-Object -Type CompletionResult -ArgumentList \`
+                              $($Mode -eq "MenuComplete" ? "$_ " : "$_"),
+                              $_,
+                              "ParameterValue",
+                              " "
+                      }
+                  }
+              } catch {
+                  # Fall back to no completions if dynamic completion fails
+              }
+          } elseif ($WordToComplete -like '-*') {
+              # Complete flags
+              # \`cli config list -<TAB>\`
               $NextArg._command.flags.GetEnumerator() | Sort-Object -Property key
                   | Where-Object {
                       # Filter out already used flags (unless \`flag.multiple = true\`).
@@ -598,6 +660,7 @@ $scriptblock = {
 "_summary" = "execute code"
 "code" = @{
 "_command" = @{
+  "id" = "app:execute:code"
   "summary" = "execute code"
   "flags" = @{
     "help" = @{ "summary" = "Show help for command" }
@@ -611,6 +674,7 @@ $scriptblock = {
 
 "deploy" = @{
 "_command" = @{
+  "id" = "deploy"
   "summary" = "Deploy a project"
   "flags" = @{
     "help" = @{ "summary" = "Show help for command" }
@@ -625,6 +689,7 @@ $scriptblock = {
 }
 "functions" = @{
 "_command" = @{
+  "id" = "deploy:functions"
   "summary" = "Deploy a function."
   "flags" = @{
     "help" = @{ "summary" = "Show help for command" }
@@ -636,6 +701,7 @@ $scriptblock = {
 
 "autocomplete" = @{
 "_command" = @{
+  "id" = "autocomplete"
   "summary" = "Display autocomplete installation instructions."
   "flags" = @{
     "help" = @{ "summary" = "Show help for command" }
@@ -646,6 +712,7 @@ $scriptblock = {
 
 "search" = @{
 "_command" = @{
+  "id" = "search"
   "summary" = "Search for a command"
   "flags" = @{
     "help" = @{ "summary" = "Show help for command" }
@@ -715,9 +782,35 @@ $scriptblock = {
 
       # Start completing command.
       if ($NextArg._command -ne $null) {
-          # Complete flags
-          # \`cli config list -<TAB>\`
-          if ($WordToComplete -like '-*') {
+          # Check if we're completing a flag value
+          $PrevWord = if ($CurrentLine.Count -gt 0) { $CurrentLine[-1] } else { "" }
+          $IsCompletingFlagValue = $PrevWord -like '--*' -and $WordToComplete -notlike '-*'
+
+          if ($IsCompletingFlagValue) {
+              # Try dynamic flag value completion
+              $FlagName = $PrevWord.TrimStart('-')
+              $CommandId = $NextArg._command.id
+              $CurrentLineStr = $CommandAst.ToString()
+
+              try {
+                  $DynamicOptions = & test-cli autocomplete options $CommandId $FlagName --current-line="$CurrentLineStr" 2>$null
+                  if ($DynamicOptions) {
+                      $DynamicOptions | Where-Object {
+                          $_.StartsWith("$WordToComplete")
+                      } | ForEach-Object {
+                          New-Object -Type CompletionResult -ArgumentList \`
+                              $($Mode -eq "MenuComplete" ? "$_ " : "$_"),
+                              $_,
+                              "ParameterValue",
+                              " "
+                      }
+                  }
+              } catch {
+                  # Fall back to no completions if dynamic completion fails
+              }
+          } elseif ($WordToComplete -like '-*') {
+              # Complete flags
+              # \`cli config list -<TAB>\`
               $NextArg._command.flags.GetEnumerator() | Sort-Object -Property key
                   | Where-Object {
                       # Filter out already used flags (unless \`flag.multiple = true\`).

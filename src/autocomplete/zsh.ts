@@ -82,7 +82,7 @@ export default class ZshCompWithSpaces {
             // if it's a command and has flags, inline flag completion statement.
             // skip it from the args statement if it doesn't accept any flag.
             if (Object.keys(cmd.flags).length > 0) {
-              caseBlock += `${arg.id})\n${this.genZshFlagArgumentsBlock(cmd.flags)} ;; \n`
+              caseBlock += `${arg.id})\n${this.genZshFlagArgumentsBlock(cmd.flags, cmd.id)} ;; \n`
             }
           } else {
             // it's a topic, redirect to its completion function.
@@ -121,7 +121,7 @@ _${this.config.bin}
 `
   }
 
-  private genZshFlagArgumentsBlock(flags?: CommandFlags): string {
+  private genZshFlagArgumentsBlock(flags?: CommandFlags, commandId?: string): string {
     // if a command doesn't have flags make it only complete files
     // also add comp for the global `--help` flag.
     if (!flags) return '_arguments -S \\\n --help"[Show help for command]" "*: :_files'
@@ -129,9 +129,9 @@ _${this.config.bin}
     const flagNames = Object.keys(flags)
 
     // `-S`:
-    // Do not complete flags after a ‘--’ appearing on the line, and ignore the ‘--’. For example, with -S, in the line:
+    // Do not complete flags after a '--' appearing on the line, and ignore the '--'. For example, with -S, in the line:
     // foobar -x -- -y
-    // the ‘-x’ is considered a flag, the ‘-y’ is considered an argument, and the ‘--’ is considered to be neither.
+    // the '-x' is considered a flag, the '-y' is considered an argument, and the '--' is considered to be neither.
     let argumentsBlock = '_arguments -S \\\n'
 
     for (const flagName of flagNames) {
@@ -145,6 +145,10 @@ _${this.config.bin}
       let flagSpec = ''
 
       if (f.type === 'option') {
+        // Always try dynamic completion for option flags
+        // The autocomplete:options command will check if the flag actually has a completion function
+        const hasCompletion = true
+
         if (f.char) {
           // eslint-disable-next-line unicorn/prefer-ternary
           if (f.multiple) {
@@ -156,7 +160,14 @@ _${this.config.bin}
 
           flagSpec += `"[${flagSummary}]`
 
-          flagSpec += f.options ? `:${f.name} options:(${f.options?.join(' ')})"` : ':file:_files"'
+          if (hasCompletion && commandId) {
+            // Use dynamic completion
+            flagSpec += `:${f.name}:(\`${this.config.bin} autocomplete${this.config.topicSeparator}options ${commandId} ${f.name} --current-line="$words" 2>/dev/null\`)"`
+          } else if (f.options) {
+            flagSpec += `:${f.name} options:(${f.options?.join(' ')})"`
+          } else {
+            flagSpec += ':file:_files"'
+          }
         } else {
           if (f.multiple) {
             // this flag can be present multiple times on the line
@@ -165,7 +176,14 @@ _${this.config.bin}
 
           flagSpec += `--${f.name}"[${flagSummary}]:`
 
-          flagSpec += f.options ? `${f.name} options:(${f.options.join(' ')})"` : 'file:_files"'
+          if (hasCompletion && commandId) {
+            // Use dynamic completion
+            flagSpec += `${f.name}:(\`${this.config.bin} autocomplete${this.config.topicSeparator}options ${commandId} ${f.name} --current-line="$words" 2>/dev/null\`)"`
+          } else if (f.options) {
+            flagSpec += `${f.name} options:(${f.options.join(' ')})"`
+          } else {
+            flagSpec += 'file:_files"'
+          }
         }
       } else if (f.char) {
         // Flag.Boolean
@@ -213,7 +231,7 @@ _${this.config.bin}
     local context state state_descr line
     typeset -A opt_args
 
-    ${this.genZshFlagArgumentsBlock(this.commands.find((c) => c.id === id)?.flags)}
+    ${this.genZshFlagArgumentsBlock(this.commands.find((c) => c.id === id)?.flags, id)}
   }
 
   local context state state_descr line
@@ -266,7 +284,7 @@ _${this.config.bin}
           summary: c.summary,
         })
 
-        argsBlock += format(flagArgsTemplate, subArg, this.genZshFlagArgumentsBlock(c.flags))
+        argsBlock += format(flagArgsTemplate, subArg, this.genZshFlagArgumentsBlock(c.flags, c.id))
       }
 
       return format(coTopicCompFunc, this.genZshValuesBlock(subArgs), argsBlock)
@@ -295,7 +313,7 @@ _${this.config.bin}
         summary: c.summary,
       })
 
-      argsBlock += format(flagArgsTemplate, subArg, this.genZshFlagArgumentsBlock(c.flags))
+      argsBlock += format(flagArgsTemplate, subArg, this.genZshFlagArgumentsBlock(c.flags, c.id))
     }
 
     const topicCompFunc = `_${this.config.bin}_${underscoreSepId}() {

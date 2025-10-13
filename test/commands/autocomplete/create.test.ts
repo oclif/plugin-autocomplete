@@ -85,15 +85,41 @@ foo --bar --baz --dangerous --brackets --double-quotes --multi-line --json
   if [[ "$cur" != "-"* ]]; then
     opts=$(printf "$commands" | grep -Eo '^[a-zA-Z0-9:_-]+')
   else
-    local __COMP_WORDS
-    if [[ \${COMP_WORDS[2]} == ":" ]]; then
-      #subcommand
-      __COMP_WORDS=$(printf "%s" "\${COMP_WORDS[@]:1:3}")
+    # Check if we're completing a flag value (previous word is a flag)
+    local prev="\${COMP_WORDS[COMP_CWORD-1]}"
+    if [[ "$prev" == --* ]] && [[ "$cur" != "-"* ]]; then
+      # We're completing a flag value, try dynamic completion
+      local __COMP_WORDS
+      if [[ \${COMP_WORDS[2]} == ":" ]]; then
+        #subcommand
+        __COMP_WORDS=$(printf "%s" "\${COMP_WORDS[@]:1:3}")
+      else
+        #simple command
+        __COMP_WORDS="\${COMP_WORDS[@]:1:1}"
+      fi
+
+      local flagName="\${prev#--}"
+      # Try to get dynamic completions
+      local dynamicOpts=$(oclif-example autocomplete:options "\${__COMP_WORDS}" "\${flagName}" --current-line="\${COMP_LINE}" 2>/dev/null)
+
+      if [[ -n "$dynamicOpts" ]]; then
+        opts="$dynamicOpts"
+      else
+        # Fall back to file completion
+        COMPREPLY=($(compgen -f -- "\${cur}"))
+        return 0
+      fi
     else
-      #simple command
-      __COMP_WORDS="\${COMP_WORDS[@]:1:1}"
+      local __COMP_WORDS
+      if [[ \${COMP_WORDS[2]} == ":" ]]; then
+        #subcommand
+        __COMP_WORDS=$(printf "%s" "\${COMP_WORDS[@]:1:3}")
+      else
+        #simple command
+        __COMP_WORDS="\${COMP_WORDS[@]:1:1}"
+      fi
+      opts=$(printf "$commands" | grep "\${__COMP_WORDS}" | sed -n "s/^\${__COMP_WORDS} //p")
     fi
-    opts=$(printf "$commands" | grep "\${__COMP_WORDS}" | sed -n "s/^\${__COMP_WORDS} //p")
   fi
   _get_comp_words_by_ref -n : cur
   COMPREPLY=( $(compgen -W "\${opts}" -- \${cur}) )
@@ -184,13 +210,33 @@ foo --bar --baz --dangerous --brackets --double-quotes --multi-line --json
   ${'else '}
     # Flag
 
-    # The full CLI command separated by colons (e.g. "mycli command subcommand --fl" -> "command:subcommand")
-    # This needs to be defined with $COMP_CWORD-1 as opposed to above because the current "word" on the command line is a flag and the command is everything before the flag
-    normalizedCommand="$( printf "%s" "$(join_by ":" "\${COMP_WORDS[@]:1:($COMP_CWORD - 1)}")" )"
+    # Check if we're completing a flag value (previous word is a flag)
+    local prev="\${COMP_WORDS[COMP_CWORD-1]}"
+    if [[ "$prev" == --* ]] && [[ "$cur" != "-"* ]]; then
+      # We're completing a flag value, try dynamic completion
+      # The full CLI command separated by colons
+      normalizedCommand="$( printf "%s" "$(join_by ":" "\${COMP_WORDS[@]:1:($COMP_CWORD - 2)}")" )"
+      local flagName="\${prev#--}"
 
-    # The line below finds the command in $commands using grep
-    # Then, using sed, it removes everything from the found command before the --flags (e.g. "command:subcommand:subsubcom --flag1 --flag2" -> "--flag1 --flag2")
-    opts=$(printf "%s " "\${commands[@]}" | grep "\${normalizedCommand}" | sed -n "s/^\${normalizedCommand} //p")
+      # Try to get dynamic completions
+      local dynamicOpts=$(oclif-example autocomplete options "\${normalizedCommand}" "\${flagName}" --current-line="\${COMP_LINE}" 2>/dev/null)
+
+      if [[ -n "$dynamicOpts" ]]; then
+        opts="$dynamicOpts"
+      else
+        # Fall back to file completion
+        COMPREPLY=($(compgen -f -- "\${cur}"))
+        return 0
+      fi
+    else
+      # The full CLI command separated by colons (e.g. "mycli command subcommand --fl" -> "command:subcommand")
+      # This needs to be defined with $COMP_CWORD-1 as opposed to above because the current "word" on the command line is a flag and the command is everything before the flag
+      normalizedCommand="$( printf "%s" "$(join_by ":" "\${COMP_WORDS[@]:1:($COMP_CWORD - 1)}")" )"
+
+      # The line below finds the command in $commands using grep
+      # Then, using sed, it removes everything from the found command before the --flags (e.g. "command:subcommand:subsubcom --flag1 --flag2" -> "--flag1 --flag2")
+      opts=$(printf "%s " "\${commands[@]}" | grep "\${normalizedCommand}" | sed -n "s/^\${normalizedCommand} //p")
+    fi
   fi
 
   COMPREPLY=($(compgen -W "$opts" -- "\${cur}"))

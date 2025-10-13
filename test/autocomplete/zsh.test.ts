@@ -260,10 +260,10 @@ _test-cli_deploy() {
     typeset -A opt_args
 
     _arguments -S \\
-"(-a --api-version)"{-a,--api-version}"[]:file:_files" \\
+"(-a --api-version)"{-a,--api-version}"[]:api-version:(\`test-cli autocomplete:options deploy api-version --current-line="$words" 2>/dev/null\`)" \\
 "(-i --ignore-errors)"{-i,--ignore-errors}"[Ignore errors.]" \\
 --json"[Format output as json.]" \\
-"*"{-m,--metadata}"[]:file:_files" \\
+"*"{-m,--metadata}"[]:metadata:(\`test-cli autocomplete:options deploy metadata --current-line="$words" 2>/dev/null\`)" \\
 --help"[Show help for command]" \\
 "*: :_files"
   }
@@ -287,7 +287,7 @@ _values "completions" \\
       case $line[1] in
         "functions")
           _arguments -S \\
-"(-b --branch)"{-b,--branch}"[]:file:_files" \\
+"(-b --branch)"{-b,--branch}"[]:branch:(\`test-cli autocomplete:options deploy:functions branch --current-line="$words" 2>/dev/null\`)" \\
 --help"[Show help for command]" \\
 "*: :_files"
         ;;
@@ -394,10 +394,10 @@ _test-cli_deploy() {
     typeset -A opt_args
 
     _arguments -S \\
-"(-a --api-version)"{-a,--api-version}"[]:file:_files" \\
+"(-a --api-version)"{-a,--api-version}"[]:api-version:(\`test-cli autocomplete:options deploy api-version --current-line="$words" 2>/dev/null\`)" \\
 "(-i --ignore-errors)"{-i,--ignore-errors}"[Ignore errors.]" \\
 --json"[Format output as json.]" \\
-"*"{-m,--metadata}"[]:file:_files" \\
+"*"{-m,--metadata}"[]:metadata:(\`test-cli autocomplete:options deploy metadata --current-line="$words" 2>/dev/null\`)" \\
 --help"[Show help for command]" \\
 "*: :_files"
   }
@@ -421,7 +421,7 @@ _values "completions" \\
       case $line[1] in
         "functions")
           _arguments -S \\
-"(-b --branch)"{-b,--branch}"[]:file:_files" \\
+"(-b --branch)"{-b,--branch}"[]:branch:(\`test-cli autocomplete:options deploy:functions branch --current-line="$words" 2>/dev/null\`)" \\
 --help"[Show help for command]" \\
 "*: :_files"
         ;;
@@ -529,10 +529,10 @@ _test-cli_deploy() {
     typeset -A opt_args
 
     _arguments -S \\
-"(-a --api-version)"{-a,--api-version}"[]:file:_files" \\
+"(-a --api-version)"{-a,--api-version}"[]:api-version:(\`test-cli autocomplete:options deploy api-version --current-line="$words" 2>/dev/null\`)" \\
 "(-i --ignore-errors)"{-i,--ignore-errors}"[Ignore errors.]" \\
 --json"[Format output as json.]" \\
-"*"{-m,--metadata}"[]:file:_files" \\
+"*"{-m,--metadata}"[]:metadata:(\`test-cli autocomplete:options deploy metadata --current-line="$words" 2>/dev/null\`)" \\
 --help"[Show help for command]" \\
 "*: :_files"
   }
@@ -556,7 +556,7 @@ _values "completions" \\
       case $line[1] in
         "functions")
           _arguments -S \\
-"(-b --branch)"{-b,--branch}"[]:file:_files" \\
+"(-b --branch)"{-b,--branch}"[]:branch:(\`test-cli autocomplete:options deploy:functions branch --current-line="$words" 2>/dev/null\`)" \\
 --help"[Show help for command]" \\
 "*: :_files"
         ;;

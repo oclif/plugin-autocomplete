@@ -206,9 +206,35 @@ $scriptblock = {
 
       # Start completing command.
       if ($NextArg._command -ne $null) {
-          # Complete flags
-          # \`cli config list -<TAB>\`
-          if ($WordToComplete -like '-*') {
+          # Check if we're completing a flag value
+          $PrevWord = if ($CurrentLine.Count -gt 0) { $CurrentLine[-1] } else { "" }
+          $IsCompletingFlagValue = $PrevWord -like '--*' -and $WordToComplete -notlike '-*'
+
+          if ($IsCompletingFlagValue) {
+              # Try dynamic flag value completion
+              $FlagName = $PrevWord.TrimStart('-')
+              $CommandId = $NextArg._command.id
+              $CurrentLineStr = $CommandAst.ToString()
+
+              try {
+                  $DynamicOptions = & ${this.config.bin} autocomplete options $CommandId $FlagName --current-line="$CurrentLineStr" 2>$null
+                  if ($DynamicOptions) {
+                      $DynamicOptions | Where-Object {
+                          $_.StartsWith("$WordToComplete")
+                      } | ForEach-Object {
+                          New-Object -Type CompletionResult -ArgumentList \`
+                              $($Mode -eq "MenuComplete" ? "$_ " : "$_"),
+                              $_,
+                              "ParameterValue",
+                              " "
+                      }
+                  }
+              } catch {
+                  # Fall back to no completions if dynamic completion fails
+              }
+          } elseif ($WordToComplete -like '-*') {
+              # Complete flags
+              # \`cli config list -<TAB>\`
               $NextArg._command.flags.GetEnumerator() | Sort-Object -Property key
                   | Where-Object {
                       # Filter out already used flags (unless \`flag.multiple = true\`).
@@ -301,6 +327,7 @@ Register-ArgumentCompleter -Native -CommandName ${
     }
 
     const cmdHashtable = `@{
+  "id" = "${cmd.id}"
   "summary" = "${cmd.summary}"
   "flags" = @{
 ${flaghHashtables.join('\n')}
