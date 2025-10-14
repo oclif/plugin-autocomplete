@@ -55,6 +55,9 @@ const commandPluginA: Command.Loadable = {
   flags: {
     'api-version': {
       char: 'a',
+      completion: {
+        options: async () => ['50.0', '51.0', '52.0'],
+      },
       multiple: false,
       name: 'api-version',
       type: 'option',
@@ -74,6 +77,9 @@ const commandPluginA: Command.Loadable = {
     },
     metadata: {
       char: 'm',
+      completion: {
+        options: async () => ['ApexClass', 'CustomObject', 'Profile'],
+      },
       multiple: true,
       name: 'metadata',
       type: 'option',
@@ -97,6 +103,9 @@ const commandPluginB: Command.Loadable = {
   flags: {
     branch: {
       char: 'b',
+      completion: {
+        options: async () => ['main', 'develop', 'feature'],
+      },
       multiple: false,
       name: 'branch',
       type: 'option',
@@ -206,6 +215,69 @@ skipWindows('zsh comp', () => {
       expect(zshCompWithSpaces.generate()).to.equal(`#compdef test-cli
 
 
+
+# Dynamic completion helper with timestamp-based caching
+_test-cli_dynamic_comp() {
+  local cmd_id="$1"
+  local flag_name="$2"
+  local cache_duration="$3"
+  local cache_dir="$HOME/.cache/test-cli/autocomplete/flag_completions"
+  local cache_file="$cache_dir/\${cmd_id//[:]/_}_\${flag_name}.cache"
+  local -a opts
+  
+  # Check if cache file exists and is valid
+  if [[ -f "$cache_file" ]]; then
+    # Read timestamp from first line
+    local cache_timestamp=$(head -n 1 "$cache_file" 2>/dev/null)
+    local current_timestamp=$(date +%s)
+    local age=$((current_timestamp - cache_timestamp))
+    
+    # Check if cache is still valid
+    if [[ -n "$cache_timestamp" ]] && (( age < cache_duration )); then
+      # Cache valid - read options (skip first line)
+      opts=("\${(@f)$(tail -n +2 "$cache_file")}")
+      
+      # Check if this is a "no completion" marker
+      if [[ "\${opts[1]}" == "__NO_COMPLETION__" ]]; then
+        # No completion available - use file completion
+        _files
+        return 0
+      fi
+      
+      if [[ \${#opts[@]} -gt 0 ]]; then
+        _describe "\${flag_name} options" opts
+        return 0
+      fi
+    fi
+  fi
+  
+  # Cache miss or expired - call Node.js
+  mkdir -p "$cache_dir" 2>/dev/null
+  local raw_output=$(test-cli autocomplete:options \${cmd_id} \${flag_name} --current-line="$words" 2>/dev/null)
+  
+  if [[ -n "$raw_output" ]]; then
+    # Save to cache with timestamp
+    {
+      echo "$(date +%s)"
+      echo "$raw_output"
+    } > "$cache_file"
+    
+    # Provide completions
+    opts=("\${(@f)$raw_output}")
+    _describe "\${flag_name} options" opts
+  else
+    # No completion available - cache empty result to avoid repeated Node.js calls
+    {
+      echo "$(date +%s)"
+      echo "__NO_COMPLETION__"
+    } > "$cache_file"
+    
+    # Fall back to file completion
+    _files
+  fi
+}
+
+
 _test-cli_app() {
   local context state state_descr line
   typeset -A opt_args
@@ -215,7 +287,7 @@ _test-cli_app() {
   case "$state" in
     cmds)
 _values "completions" \\
-"execute[execute code]" \\
+"execute[execute code]"
 
       ;;
     args)
@@ -260,10 +332,10 @@ _test-cli_deploy() {
     typeset -A opt_args
 
     _arguments -S \\
-"(-a --api-version)"{-a,--api-version}"[]:api-version:(\`test-cli autocomplete:options deploy api-version --current-line="$words" 2>/dev/null\`)" \\
+"(-a --api-version)"{-a,--api-version}"[]": :_test-cli_dynamic_comp deploy api-version 86400" \\
 "(-i --ignore-errors)"{-i,--ignore-errors}"[Ignore errors.]" \\
 --json"[Format output as json.]" \\
-"*"{-m,--metadata}"[]:metadata:(\`test-cli autocomplete:options deploy metadata --current-line="$words" 2>/dev/null\`)" \\
+"*"{-m,--metadata}"[]": :_test-cli_dynamic_comp deploy metadata 86400" \\
 --help"[Show help for command]" \\
 "*: :_files"
   }
@@ -287,7 +359,7 @@ _values "completions" \\
       case $line[1] in
         "functions")
           _arguments -S \\
-"(-b --branch)"{-b,--branch}"[]:branch:(\`test-cli autocomplete:options deploy:functions branch --current-line="$words" 2>/dev/null\`)" \\
+"(-b --branch)"{-b,--branch}"[]": :_test-cli_dynamic_comp deploy:functions branch 86400" \\
 --help"[Show help for command]" \\
 "*: :_files"
         ;;
@@ -312,7 +384,7 @@ _test-cli() {
       _values "completions" \\
 "app[execute code]" \\
 "deploy[Deploy a project]" \\
-"search[Search for a command]" \\
+"search[Search for a command]"
 
     ;;
     args)
@@ -340,6 +412,69 @@ _test-cli
       expect(zshCompWithSpaces.generate()).to.equal(`#compdef test-cli
 compdef testing=test-cli
 
+
+# Dynamic completion helper with timestamp-based caching
+_test-cli_dynamic_comp() {
+  local cmd_id="$1"
+  local flag_name="$2"
+  local cache_duration="$3"
+  local cache_dir="$HOME/.cache/test-cli/autocomplete/flag_completions"
+  local cache_file="$cache_dir/\${cmd_id//[:]/_}_\${flag_name}.cache"
+  local -a opts
+  
+  # Check if cache file exists and is valid
+  if [[ -f "$cache_file" ]]; then
+    # Read timestamp from first line
+    local cache_timestamp=$(head -n 1 "$cache_file" 2>/dev/null)
+    local current_timestamp=$(date +%s)
+    local age=$((current_timestamp - cache_timestamp))
+    
+    # Check if cache is still valid
+    if [[ -n "$cache_timestamp" ]] && (( age < cache_duration )); then
+      # Cache valid - read options (skip first line)
+      opts=("\${(@f)$(tail -n +2 "$cache_file")}")
+      
+      # Check if this is a "no completion" marker
+      if [[ "\${opts[1]}" == "__NO_COMPLETION__" ]]; then
+        # No completion available - use file completion
+        _files
+        return 0
+      fi
+      
+      if [[ \${#opts[@]} -gt 0 ]]; then
+        _describe "\${flag_name} options" opts
+        return 0
+      fi
+    fi
+  fi
+  
+  # Cache miss or expired - call Node.js
+  mkdir -p "$cache_dir" 2>/dev/null
+  local raw_output=$(test-cli autocomplete:options \${cmd_id} \${flag_name} --current-line="$words" 2>/dev/null)
+  
+  if [[ -n "$raw_output" ]]; then
+    # Save to cache with timestamp
+    {
+      echo "$(date +%s)"
+      echo "$raw_output"
+    } > "$cache_file"
+    
+    # Provide completions
+    opts=("\${(@f)$raw_output}")
+    _describe "\${flag_name} options" opts
+  else
+    # No completion available - cache empty result to avoid repeated Node.js calls
+    {
+      echo "$(date +%s)"
+      echo "__NO_COMPLETION__"
+    } > "$cache_file"
+    
+    # Fall back to file completion
+    _files
+  fi
+}
+
+
 _test-cli_app() {
   local context state state_descr line
   typeset -A opt_args
@@ -349,7 +484,7 @@ _test-cli_app() {
   case "$state" in
     cmds)
 _values "completions" \\
-"execute[execute code]" \\
+"execute[execute code]"
 
       ;;
     args)
@@ -394,10 +529,10 @@ _test-cli_deploy() {
     typeset -A opt_args
 
     _arguments -S \\
-"(-a --api-version)"{-a,--api-version}"[]:api-version:(\`test-cli autocomplete:options deploy api-version --current-line="$words" 2>/dev/null\`)" \\
+"(-a --api-version)"{-a,--api-version}"[]": :_test-cli_dynamic_comp deploy api-version 86400" \\
 "(-i --ignore-errors)"{-i,--ignore-errors}"[Ignore errors.]" \\
 --json"[Format output as json.]" \\
-"*"{-m,--metadata}"[]:metadata:(\`test-cli autocomplete:options deploy metadata --current-line="$words" 2>/dev/null\`)" \\
+"*"{-m,--metadata}"[]": :_test-cli_dynamic_comp deploy metadata 86400" \\
 --help"[Show help for command]" \\
 "*: :_files"
   }
@@ -421,7 +556,7 @@ _values "completions" \\
       case $line[1] in
         "functions")
           _arguments -S \\
-"(-b --branch)"{-b,--branch}"[]:branch:(\`test-cli autocomplete:options deploy:functions branch --current-line="$words" 2>/dev/null\`)" \\
+"(-b --branch)"{-b,--branch}"[]": :_test-cli_dynamic_comp deploy:functions branch 86400" \\
 --help"[Show help for command]" \\
 "*: :_files"
         ;;
@@ -446,7 +581,7 @@ _test-cli() {
       _values "completions" \\
 "app[execute code]" \\
 "deploy[Deploy a project]" \\
-"search[Search for a command]" \\
+"search[Search for a command]"
 
     ;;
     args)
@@ -475,6 +610,69 @@ _test-cli
 compdef testing=test-cli
 compdef testing2=test-cli
 
+
+# Dynamic completion helper with timestamp-based caching
+_test-cli_dynamic_comp() {
+  local cmd_id="$1"
+  local flag_name="$2"
+  local cache_duration="$3"
+  local cache_dir="$HOME/.cache/test-cli/autocomplete/flag_completions"
+  local cache_file="$cache_dir/\${cmd_id//[:]/_}_\${flag_name}.cache"
+  local -a opts
+  
+  # Check if cache file exists and is valid
+  if [[ -f "$cache_file" ]]; then
+    # Read timestamp from first line
+    local cache_timestamp=$(head -n 1 "$cache_file" 2>/dev/null)
+    local current_timestamp=$(date +%s)
+    local age=$((current_timestamp - cache_timestamp))
+    
+    # Check if cache is still valid
+    if [[ -n "$cache_timestamp" ]] && (( age < cache_duration )); then
+      # Cache valid - read options (skip first line)
+      opts=("\${(@f)$(tail -n +2 "$cache_file")}")
+      
+      # Check if this is a "no completion" marker
+      if [[ "\${opts[1]}" == "__NO_COMPLETION__" ]]; then
+        # No completion available - use file completion
+        _files
+        return 0
+      fi
+      
+      if [[ \${#opts[@]} -gt 0 ]]; then
+        _describe "\${flag_name} options" opts
+        return 0
+      fi
+    fi
+  fi
+  
+  # Cache miss or expired - call Node.js
+  mkdir -p "$cache_dir" 2>/dev/null
+  local raw_output=$(test-cli autocomplete:options \${cmd_id} \${flag_name} --current-line="$words" 2>/dev/null)
+  
+  if [[ -n "$raw_output" ]]; then
+    # Save to cache with timestamp
+    {
+      echo "$(date +%s)"
+      echo "$raw_output"
+    } > "$cache_file"
+    
+    # Provide completions
+    opts=("\${(@f)$raw_output}")
+    _describe "\${flag_name} options" opts
+  else
+    # No completion available - cache empty result to avoid repeated Node.js calls
+    {
+      echo "$(date +%s)"
+      echo "__NO_COMPLETION__"
+    } > "$cache_file"
+    
+    # Fall back to file completion
+    _files
+  fi
+}
+
+
 _test-cli_app() {
   local context state state_descr line
   typeset -A opt_args
@@ -484,7 +682,7 @@ _test-cli_app() {
   case "$state" in
     cmds)
 _values "completions" \\
-"execute[execute code]" \\
+"execute[execute code]"
 
       ;;
     args)
@@ -529,10 +727,10 @@ _test-cli_deploy() {
     typeset -A opt_args
 
     _arguments -S \\
-"(-a --api-version)"{-a,--api-version}"[]:api-version:(\`test-cli autocomplete:options deploy api-version --current-line="$words" 2>/dev/null\`)" \\
+"(-a --api-version)"{-a,--api-version}"[]": :_test-cli_dynamic_comp deploy api-version 86400" \\
 "(-i --ignore-errors)"{-i,--ignore-errors}"[Ignore errors.]" \\
 --json"[Format output as json.]" \\
-"*"{-m,--metadata}"[]:metadata:(\`test-cli autocomplete:options deploy metadata --current-line="$words" 2>/dev/null\`)" \\
+"*"{-m,--metadata}"[]": :_test-cli_dynamic_comp deploy metadata 86400" \\
 --help"[Show help for command]" \\
 "*: :_files"
   }
@@ -556,7 +754,7 @@ _values "completions" \\
       case $line[1] in
         "functions")
           _arguments -S \\
-"(-b --branch)"{-b,--branch}"[]:branch:(\`test-cli autocomplete:options deploy:functions branch --current-line="$words" 2>/dev/null\`)" \\
+"(-b --branch)"{-b,--branch}"[]": :_test-cli_dynamic_comp deploy:functions branch 86400" \\
 --help"[Show help for command]" \\
 "*: :_files"
         ;;
@@ -581,7 +779,7 @@ _test-cli() {
       _values "completions" \\
 "app[execute code]" \\
 "deploy[Deploy a project]" \\
-"search[Search for a command]" \\
+"search[Search for a command]"
 
     ;;
     args)

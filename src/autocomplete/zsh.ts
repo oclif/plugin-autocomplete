@@ -99,6 +99,9 @@ export default class ZshCompWithSpaces {
     return `#compdef ${this.config.bin}
 ${this.config.binAliases?.map((a) => `compdef ${a}=${this.config.bin}`).join('\n') ?? ''}
 
+
+${this.genDynamicCompletionHelper()}
+
 ${this.topics.map((t) => this.genZshTopicCompFun(t.name)).join('\n')}
 
 _${this.config.bin}() {
@@ -121,6 +124,106 @@ _${this.config.bin}
 `
   }
 
+  private genDynamicCompletionHelper(): string {
+    // Using ${'$'} instead of \$ to avoid linter errors
+    return `# Dynamic completion helper with timestamp-based caching
+_${this.config.bin}_dynamic_comp() {
+  local cmd_id="$1"
+  local flag_name="$2"
+  local cache_duration="$3"
+  local cache_dir="$HOME/.cache/${this.config.bin}/autocomplete/flag_completions"
+  local cache_file="$cache_dir/${'$'}{cmd_id//[:]/_}_${'$'}{flag_name}.cache"
+  local -a opts
+  
+  # Check if cache file exists and is valid
+  if [[ -f "$cache_file" ]]; then
+    # Read timestamp from first line
+    local cache_timestamp=${'$'}(head -n 1 "$cache_file" 2>/dev/null)
+    local current_timestamp=${'$'}(date +%s)
+    local age=${'$'}((current_timestamp - cache_timestamp))
+    
+    # Check if cache is still valid
+    if [[ -n "$cache_timestamp" ]] && (( age < cache_duration )); then
+      # Cache valid - read options (skip first line)
+      opts=("${'$'}{(@f)${'$'}(tail -n +2 "$cache_file")}")
+      
+      # Check if this is a "no completion" marker
+      if [[ "${'$'}{opts[1]}" == "__NO_COMPLETION__" ]]; then
+        # No completion available - use file completion
+        _files
+        return 0
+      fi
+      
+      if [[ ${'$'}{#opts[@]} -gt 0 ]]; then
+        _describe "${'$'}{flag_name} options" opts
+        return 0
+      fi
+    fi
+  fi
+  
+  # Cache miss or expired - call Node.js
+  mkdir -p "$cache_dir" 2>/dev/null
+  local raw_output=${'$'}(${this.config.bin} autocomplete${this.config.topicSeparator}options ${'$'}{cmd_id} ${'$'}{flag_name} --current-line="$words" 2>/dev/null)
+  
+  if [[ -n "$raw_output" ]]; then
+    # Save to cache with timestamp
+    {
+      echo "${'$'}(date +%s)"
+      echo "$raw_output"
+    } > "$cache_file"
+    
+    # Provide completions
+    opts=("${'$'}{(@f)$raw_output}")
+    _describe "${'$'}{flag_name} options" opts
+  else
+    # No completion available - cache empty result to avoid repeated Node.js calls
+    {
+      echo "${'$'}(date +%s)"
+      echo "__NO_COMPLETION__"
+    } > "$cache_file"
+    
+    # Fall back to file completion
+    _files
+  fi
+}
+`
+  }
+
+  private genZshCompletionSuffix(f: Command.Flag.Cached, commandId: string | undefined): string {
+    // Only handle option flags
+    if (f.type !== 'option') return ''
+
+    // Check completion type: static, dynamic, or none
+    // @ts-expect-error - completion.type may not exist yet in types
+    const completionType = f.completion?.type
+    const hasStaticCompletion = completionType === 'static' && Array.isArray(f.completion?.options)
+    // @ts-expect-error - completion.cacheDuration may not exist yet in types
+    const cacheDuration = f.completion?.cacheDuration || 86_400 // Default: 24 hours
+
+    if (hasStaticCompletion && commandId) {
+      // STATIC: Embed options directly (instant!)
+      // @ts-expect-error - we checked it's an array above
+      const options = f.completion.options.join(' ')
+      return f.char ? `:${f.name}:(${options})` : `${f.name}:(${options})`
+    }
+
+    if (f.options) {
+      // Legacy static options
+      return f.char ? `:${f.name} options:(${f.options?.join(' ')})` : `${f.name} options:(${f.options.join(' ')})`
+    }
+
+    // ALWAYS try dynamic completion for option flags if we have a command ID
+    // The autocomplete:options command will return empty if no completion is defined,
+    // and the shell script will fall back to _files
+    if (commandId) {
+      // For both char and non-char flags: format is ": :action" (no closing quote!)
+      return `: :_${this.config.bin}_dynamic_comp ${commandId} ${f.name} ${cacheDuration}`
+    }
+
+    // No command ID - fall back to file completion
+    return f.char ? ':file:_files' : 'file:_files'
+  }
+
   private genZshFlagArgumentsBlock(flags?: CommandFlags, commandId?: string): string {
     // if a command doesn't have flags make it only complete files
     // also add comp for the global `--help` flag.
@@ -141,60 +244,9 @@ _${this.config.bin}
       if (f.hidden) continue
 
       const flagSummary = this.sanitizeSummary(f.summary ?? f.description)
+      const flagSpec = this.genZshFlagSpec(f, flagSummary, commandId)
 
-      let flagSpec = ''
-
-      if (f.type === 'option') {
-        // Always try dynamic completion for option flags
-        // The autocomplete:options command will check if the flag actually has a completion function
-        const hasCompletion = true
-
-        if (f.char) {
-          // eslint-disable-next-line unicorn/prefer-ternary
-          if (f.multiple) {
-            // this flag can be present multiple times on the line
-            flagSpec += `"*"{-${f.char},--${f.name}}`
-          } else {
-            flagSpec += `"(-${f.char} --${f.name})"{-${f.char},--${f.name}}`
-          }
-
-          flagSpec += `"[${flagSummary}]`
-
-          if (hasCompletion && commandId) {
-            // Use dynamic completion
-            flagSpec += `:${f.name}:(\`${this.config.bin} autocomplete${this.config.topicSeparator}options ${commandId} ${f.name} --current-line="$words" 2>/dev/null\`)"`
-          } else if (f.options) {
-            flagSpec += `:${f.name} options:(${f.options?.join(' ')})"`
-          } else {
-            flagSpec += ':file:_files"'
-          }
-        } else {
-          if (f.multiple) {
-            // this flag can be present multiple times on the line
-            flagSpec += '"*"'
-          }
-
-          flagSpec += `--${f.name}"[${flagSummary}]:`
-
-          if (hasCompletion && commandId) {
-            // Use dynamic completion
-            flagSpec += `${f.name}:(\`${this.config.bin} autocomplete${this.config.topicSeparator}options ${commandId} ${f.name} --current-line="$words" 2>/dev/null\`)"`
-          } else if (f.options) {
-            flagSpec += `${f.name} options:(${f.options.join(' ')})"`
-          } else {
-            flagSpec += 'file:_files"'
-          }
-        }
-      } else if (f.char) {
-        // Flag.Boolean
-        flagSpec += `"(-${f.char} --${f.name})"{-${f.char},--${f.name}}"[${flagSummary}]"`
-      } else {
-        // Flag.Boolean
-        flagSpec += `--${f.name}"[${flagSummary}]"`
-      }
-
-      flagSpec += ' \\\n'
-      argumentsBlock += flagSpec
+      argumentsBlock += flagSpec + ' \\\n'
     }
 
     // add global `--help` flag
@@ -203,6 +255,35 @@ _${this.config.bin}
     argumentsBlock += '"*: :_files"'
 
     return argumentsBlock
+  }
+
+  private genZshFlagSpec(f: Command.Flag.Any, flagSummary: string, commandId?: string): string {
+    if (f.type === 'option') {
+      return this.genZshOptionFlagSpec(f, flagSummary, commandId)
+    }
+
+    // Boolean flag
+    if (f.char) {
+      return `"(-${f.char} --${f.name})"{-${f.char},--${f.name}}"[${flagSummary}]"`
+    }
+
+    return `--${f.name}"[${flagSummary}]"`
+  }
+
+  private genZshOptionFlagSpec(f: Command.Flag.Cached, flagSummary: string, commandId?: string): string {
+    // TypeScript doesn't narrow f to option type, so we cast
+    const optionFlag = f as Command.Flag.Cached & {multiple?: boolean}
+    const completionSuffix = this.genZshCompletionSuffix(f, commandId)
+
+    if (f.char) {
+      const multiplePart = optionFlag.multiple
+        ? `"*"{-${f.char},--${f.name}}`
+        : `"(-${f.char} --${f.name})"{-${f.char},--${f.name}}`
+      return `${multiplePart}"[${flagSummary}]"${completionSuffix}"`
+    }
+
+    const multiplePart = optionFlag.multiple ? '"*"' : ''
+    return `${multiplePart}--${f.name}"[${flagSummary}]"${completionSuffix}"`
   }
 
   private genZshTopicCompFun(id: string): string {
@@ -340,8 +421,10 @@ _${this.config.bin}
   private genZshValuesBlock(subArgs: {id: string; summary?: string}[]): string {
     let valuesBlock = '_values "completions" \\\n'
 
-    for (const subArg of subArgs) {
-      valuesBlock += `"${subArg.id}[${subArg.summary}]" \\\n`
+    for (let i = 0; i < subArgs.length; i++) {
+      const subArg = subArgs[i]
+      const isLast = i === subArgs.length - 1
+      valuesBlock += `"${subArg.id}[${subArg.summary}]"${isLast ? '\n' : ' \\\n'}`
     }
 
     return valuesBlock
@@ -424,6 +507,26 @@ _${this.config.bin}
       })
 
     return topics
+  }
+
+  private hasDynamicCompletions(): boolean {
+    // Check if any command has dynamic completions
+    for (const command of this.commands) {
+      const flags = command.flags || {}
+      for (const flag of Object.values(flags)) {
+        if (
+          flag.type === 'option' &&
+          flag.completion && // If completion doesn't have a type, assume dynamic (backward compatibility)
+          // If it has type === 'dynamic', it's dynamic
+          // @ts-expect-error - completion.type may not exist yet in types
+          (!flag.completion.type || flag.completion.type === 'dynamic')
+        ) {
+          return true
+        }
+      }
+    }
+
+    return false
   }
 
   private sanitizeSummary(summary?: string): string {
