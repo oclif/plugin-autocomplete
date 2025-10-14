@@ -194,10 +194,11 @@ describe('powershell completion', () => {
     }
   })
 
-  it('generates a valid completion file.', () => {
+  it('generates a valid completion file.', async () => {
     config.bin = 'test-cli'
     const powerShellComp = new PowerShellComp(config as Config)
-    expect(powerShellComp.generate()).to.equal(`
+    const script = await powerShellComp.generate()
+    expect(script).to.equal(`
 using namespace System.Management.Automation
 using namespace System.Management.Automation.Language
 
@@ -417,11 +418,11 @@ Register-ArgumentCompleter -Native -CommandName test-cli -ScriptBlock $scriptblo
 `)
   })
 
-  it('generates a valid completion file with a bin alias.', () => {
+  it('generates a valid completion file with a bin alias.', async () => {
     config.bin = 'test-cli'
     config.binAliases = ['test']
     const powerShellComp = new PowerShellComp(config as Config)
-    expect(powerShellComp.generate()).to.equal(`
+    expect(await powerShellComp.generate()).to.equal(`
 using namespace System.Management.Automation
 using namespace System.Management.Automation.Language
 
@@ -641,11 +642,11 @@ Register-ArgumentCompleter -Native -CommandName @("test","test-cli") -ScriptBloc
 `)
   })
 
-  it('generates a valid completion file with multiple bin aliases.', () => {
+  it('generates a valid completion file with multiple bin aliases.', async () => {
     config.bin = 'test-cli'
     config.binAliases = ['test', 'test1']
     const powerShellComp = new PowerShellComp(config as Config)
-    expect(powerShellComp.generate()).to.equal(`
+    expect(await powerShellComp.generate()).to.equal(`
 using namespace System.Management.Automation
 using namespace System.Management.Automation.Language
 

@@ -39,18 +39,18 @@ export default class Index extends AutocompleteBase {
     ux.action.start(`${bold('Building the autocomplete cache')}`)
     await Create.run([], this.config)
 
-
-    ux.action.status = 'Pre-warming dynamic completion caches'
+    ux.action.status = 'Generating dynamic completion caches'
     // Pre-warm dynamic completion caches
-    await this.prewarmCompletionCaches()
+    await this.generateCompletionCaches()
 
     if (!flags['refresh-cache']) {
       this.printShellInstructions(shell)
-    }  
+    }
+
     ux.action.stop()
   }
 
-  private async prewarmCompletionCaches(): Promise<void> {
+  private async generateCompletionCaches(): Promise<void> {
     const commandsWithDynamicCompletions: Array<{commandId: string; flagName: string}> = []
 
     // Find all commands with flags that have completion functions
@@ -108,8 +108,9 @@ export default class Index extends AutocompleteBase {
           // Suppress stdout by temporarily replacing console.log and process.stdout.write
           const originalLog = console.log
           const originalWrite = process.stdout.write.bind(process.stdout)
-          // eslint-disable-next-line @typescript-eslint/no-empty-function
-          console.log = () => { }
+
+          console.log = () => {}
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore - intentionally suppressing stdout
           process.stdout.write = () => true
 

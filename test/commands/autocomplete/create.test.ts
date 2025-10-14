@@ -67,8 +67,11 @@ compinit;
 `)
     })
 
-    it('#bashCompletionFunction', () => {
-      expect(cmd.bashCompletionFunction).to.eq(`#!/usr/bin/env bash
+    it('#bashCompletionFunction', async () => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore - accessing private method for testing
+      const bashCompletionFunction = await cmd.getBashCompletionFunction()
+      expect(bashCompletionFunction).to.eq(`#!/usr/bin/env bash
 
 _oclif-example_autocomplete()
 {
@@ -77,7 +80,7 @@ _oclif-example_autocomplete()
   COMPREPLY=()
 
   local commands="
-autocomplete --skip-instructions
+autocomplete --refresh-cache
 autocomplete:foo --bar --baz --dangerous --brackets --double-quotes --multi-line --json
 foo --bar --baz --dangerous --brackets --double-quotes --multi-line --json
 "
@@ -144,7 +147,8 @@ complete -o default -F _oclif-example_autocomplete oclif-example\n`)
         readJson(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../test.oclif.manifest.json'))
       await spacedPlugin.load()
 
-      expect(spacedCmd.bashCompletionFunction).to.eq(`#!/usr/bin/env bash
+      const bashCompletionFunction = await spacedCmd.getBashCompletionFunction()
+      expect(bashCompletionFunction).to.eq(`#!/usr/bin/env bash
 
 # This function joins an array using a character passed in
 # e.g. ARRAY=(one two three) -> join_by ":" \${ARRAY[@]} -> "one:two:three"
@@ -157,7 +161,7 @@ _oclif-example_autocomplete()
   COMPREPLY=()
 
   local commands="
-autocomplete --skip-instructions
+autocomplete --refresh-cache
 autocomplete:foo --bar --baz --dangerous --brackets --double-quotes --multi-line --json
 foo --bar --baz --dangerous --brackets --double-quotes --multi-line --json
 "
@@ -245,9 +249,12 @@ foo --bar --baz --dangerous --brackets --double-quotes --multi-line --json
 complete -F _oclif-example_autocomplete oclif-example\n`)
     })
 
-    it('#zshCompletionFunction', () => {
+    it('#zshCompletionFunction', async () => {
       /* eslint-disable no-useless-escape */
-      expect(cmd.zshCompletionFunction).to.eq(`#compdef oclif-example
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore - accessing private method for testing
+      const zshCompletionFunction = await cmd.getZshCompletionFunction()
+      expect(zshCompletionFunction).to.eq(`#compdef oclif-example
 
 _oclif-example () {
   local _command_id=\${words[2]}
@@ -265,7 +272,7 @@ _oclif-example () {
     case $_command_id in
 autocomplete)
   _command_flags=(
-    "--skip-instructions[don't show installation instructions]"
+    "--refresh-cache[Refresh cache (ignores displaying instructions)]"
   )
 ;;
 

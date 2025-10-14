@@ -33,33 +33,6 @@ export default class Create extends AutocompleteBase {
   static hidden = true
   private _commands?: CommandCompletion[]
 
-  private get bashCommandsWithFlagsList(): string {
-    return this.commands
-      .map((c) => {
-        const publicFlags = this.genCmdPublicFlags(c).trim()
-        return `${c.id} ${publicFlags}`
-      })
-      .join('\n')
-  }
-
-  private get bashCompletionFunction(): string {
-    const {cliBin} = this
-    const supportSpaces = this.config.topicSeparator === ' '
-    const bashScript =
-      process.env.OCLIF_AUTOCOMPLETE_TOPIC_SEPARATOR === 'colon' || !supportSpaces
-        ? bashAutocomplete
-        : bashAutocompleteWithSpaces
-    return (
-      bashScript
-        // eslint-disable-next-line unicorn/prefer-spread
-        .concat(
-          ...(this.config.binAliases?.map((alias) => `complete -F _<CLI_BIN>_autocomplete ${alias}`).join('\n') ?? []),
-        )
-        .replaceAll('<CLI_BIN>', cliBin)
-        .replaceAll('<BASH_COMMANDS_WITH_FLAGS_LIST>', this.bashCommandsWithFlagsList)
-    )
-  }
-
   private get bashCompletionFunctionPath(): string {
     // <cachedir>/autocomplete/functions/bash/<bin>.bash
     return path.join(this.bashFunctionsDir, `${this.cliBin}.bash`)
@@ -83,7 +56,179 @@ export default class Create extends AutocompleteBase {
     return path.join(this.autocompleteCacheDir, 'bash_setup')
   }
 
-  private get commands(): CommandCompletion[] {
+  private get pwshCompletionFunctionPath(): string {
+    // <cachedir>/autocomplete/functions/powershell/<bin>.ps1
+    return path.join(this.pwshFunctionsDir, `${this.cliBin}.ps1`)
+  }
+
+  private get pwshFunctionsDir(): string {
+    // <cachedir>/autocomplete/functions/powershell
+    return path.join(this.autocompleteCacheDir, 'functions', 'powershell')
+  }
+
+  private get zshCompletionFunctionPath(): string {
+    // <cachedir>/autocomplete/functions/zsh/_<bin>
+    return path.join(this.zshFunctionsDir, `_${this.cliBin}`)
+  }
+
+  private get zshFunctionsDir(): string {
+    // <cachedir>/autocomplete/functions/zsh
+    return path.join(this.autocompleteCacheDir, 'functions', 'zsh')
+  }
+
+  private get zshSetupScript(): string {
+    return `
+fpath=(
+${this.zshFunctionsDir}
+$fpath
+);
+autoload -Uz compinit;
+compinit;\n`
+  }
+
+  private get zshSetupScriptPath(): string {
+    // <cachedir>/autocomplete/zsh_setup
+    return path.join(this.autocompleteCacheDir, 'zsh_setup')
+  }
+
+  async run() {
+    // 1. ensure needed dirs
+    await this.ensureDirs()
+    // 2. save (generated) autocomplete files
+    await this.createFiles()
+  }
+
+  private async createFiles() {
+    // zsh
+    const supportSpaces = this.config.topicSeparator === ' '
+
+    // Generate completion scripts (all in parallel for performance)
+    const [zshScript, bashCompletionFunction, pwshScript, oldZshScript] = await Promise.all([
+      // Modern Zsh (with spaces support)
+      (async () => {
+        const zshGenerator = new ZshCompWithSpaces(this.config)
+        return zshGenerator.generate()
+      })(),
+      // Bash
+      this.getBashCompletionFunction(),
+      // PowerShell
+      (async () => {
+        const pwshGenerator = new PowerShellComp(this.config)
+        return pwshGenerator.generate()
+      })(),
+      // Old Zsh (colon separator) - only if needed
+      process.env.OCLIF_AUTOCOMPLETE_TOPIC_SEPARATOR === 'colon' || !supportSpaces
+        ? this.getZshCompletionFunction()
+        : Promise.resolve(''),
+    ])
+
+    // Write all files
+    const writeOperations = [
+      writeFile(this.bashSetupScriptPath, this.bashSetupScript),
+      writeFile(this.bashCompletionFunctionPath, bashCompletionFunction),
+      writeFile(this.zshSetupScriptPath, this.zshSetupScript),
+    ]
+
+    if (process.env.OCLIF_AUTOCOMPLETE_TOPIC_SEPARATOR === 'colon' || !supportSpaces) {
+      writeOperations.push(writeFile(this.zshCompletionFunctionPath, oldZshScript))
+    } else {
+      writeOperations.push(
+        writeFile(this.zshCompletionFunctionPath, zshScript),
+        writeFile(this.pwshCompletionFunctionPath, pwshScript),
+      )
+    }
+
+    await Promise.all(writeOperations)
+  }
+
+  private async ensureDirs() {
+    // ensure autocomplete cache dir before doing the children
+    await mkdir(this.autocompleteCacheDir, {recursive: true})
+    await Promise.all([
+      mkdir(this.bashFunctionsDir, {recursive: true}),
+      mkdir(this.zshFunctionsDir, {recursive: true}),
+      mkdir(this.pwshFunctionsDir, {recursive: true}),
+    ])
+  }
+
+  private async genAllCommandsMetaString(): Promise<string> {
+    const commands = await this.getCommands()
+    return commands.map((c) => `"${c.id.replaceAll(':', '\\:')}:${c.description}"`).join('\n')
+  }
+
+  private async genCaseStatementForFlagsMetaString(): Promise<string> {
+    // command)
+    //   _command_flags=(
+    //   "--boolean[bool descr]"
+    //   "--value=-[value descr]:"
+    //   )
+    // ;;
+    const commands = await this.getCommands()
+    return commands
+      .map(
+        (c) => `${c.id})
+  _command_flags=(
+    ${this.genZshFlagSpecs(c)}
+  )
+;;\n`,
+      )
+      .join('\n')
+  }
+
+  private genCmdPublicFlags(Command: CommandCompletion): string {
+    const Flags = Command.flags || {}
+    return Object.keys(Flags)
+      .filter((flag) => !Flags[flag].hidden)
+      .map((flag) => `--${flag}`)
+      .join(' ')
+  }
+
+  private genZshFlagSpecs(Klass: any): string {
+    return Object.keys(Klass.flags || {})
+      .filter((flag) => Klass.flags && !Klass.flags[flag].hidden)
+      .map((flag) => {
+        const f = (Klass.flags && Klass.flags[flag]) || {description: ''}
+        const isBoolean = f.type === 'boolean'
+        const isOption = f.type === 'option'
+        const name = isBoolean ? flag : `${flag}=-`
+        const multiple = isOption && f.multiple ? '*' : ''
+        const valueCmpl = isBoolean ? '' : ':'
+        const completion = `${multiple}--${name}[${sanitizeDescription(f.summary || f.description)}]${valueCmpl}`
+        return `"${completion}"`
+      })
+      .join('\n')
+  }
+
+  private async getBashCommandsWithFlagsList(): Promise<string> {
+    const commands = await this.getCommands()
+    return commands
+      .map((c) => {
+        const publicFlags = this.genCmdPublicFlags(c).trim()
+        return `${c.id} ${publicFlags}`
+      })
+      .join('\n')
+  }
+
+  private async getBashCompletionFunction(): Promise<string> {
+    const {cliBin} = this
+    const supportSpaces = this.config.topicSeparator === ' '
+    const bashScript =
+      process.env.OCLIF_AUTOCOMPLETE_TOPIC_SEPARATOR === 'colon' || !supportSpaces
+        ? bashAutocomplete
+        : bashAutocompleteWithSpaces
+    const bashCommandsWithFlagsList = await this.getBashCommandsWithFlagsList()
+    return (
+      bashScript
+        // eslint-disable-next-line unicorn/prefer-spread
+        .concat(
+          ...(this.config.binAliases?.map((alias) => `complete -F _<CLI_BIN>_autocomplete ${alias}`).join('\n') ?? []),
+        )
+        .replaceAll('<CLI_BIN>', cliBin)
+        .replaceAll('<BASH_COMMANDS_WITH_FLAGS_LIST>', bashCommandsWithFlagsList)
+    )
+  }
+
+  private async getCommands(): Promise<CommandCompletion[]> {
     if (this._commands) return this._commands
 
     const cmds: CommandCompletion[] = []
@@ -93,7 +238,24 @@ export default class Create extends AutocompleteBase {
         try {
           if (c.hidden) continue
           const description = sanitizeDescription(c.summary ?? (c.description || ''))
-          const {flags} = c
+
+          // Try to load actual command class to get flags with completion properties
+          // This allows us to see dynamic completions, but gracefully falls back to
+          // manifest flags if loading fails - preserving existing behavior
+          let {flags} = c
+          try {
+            // eslint-disable-next-line no-await-in-loop
+            const CommandClass = await c.load()
+            // Use flags from command class if available and not empty (includes completion properties)
+            if (CommandClass.flags && Object.keys(CommandClass.flags).length > 0) {
+              flags = CommandClass.flags
+            }
+          } catch {
+            // Fall back to manifest flags if loading fails
+            // This ensures existing commands without completions continue to work exactly as before
+            flags = c.flags
+          }
+
           cmds.push({
             description,
             flags,
@@ -107,7 +269,7 @@ export default class Create extends AutocompleteBase {
             })
           }
         } catch (error: any) {
-          debug(`Error creating zsh flag spec for command ${c.id}`)
+          debug(`Error creating bash flag spec for command ${c.id}`)
           debug(error.message)
           this.writeLogFile(error.message)
         }
@@ -119,43 +281,10 @@ export default class Create extends AutocompleteBase {
     return this._commands
   }
 
-  private get genAllCommandsMetaString(): string {
-    // eslint-disable-next-line no-useless-escape
-    return this.commands.map((c) => `\"${c.id.replaceAll(':', '\\:')}:${c.description}\"`).join('\n')
-  }
-
-  private get genCaseStatementForFlagsMetaString(): string {
-    // command)
-    //   _command_flags=(
-    //   "--boolean[bool descr]"
-    //   "--value=-[value descr]:"
-    //   )
-    // ;;
-    return this.commands
-      .map(
-        (c) => `${c.id})
-  _command_flags=(
-    ${this.genZshFlagSpecs(c)}
-  )
-;;\n`,
-      )
-      .join('\n')
-  }
-
-  private get pwshCompletionFunctionPath(): string {
-    // <cachedir>/autocomplete/functions/powershell/<bin>.ps1
-    return path.join(this.pwshFunctionsDir, `${this.cliBin}.ps1`)
-  }
-
-  private get pwshFunctionsDir(): string {
-    // <cachedir>/autocomplete/functions/powershell
-    return path.join(this.autocompleteCacheDir, 'functions', 'powershell')
-  }
-
-  private get zshCompletionFunction(): string {
+  private async getZshCompletionFunction(): Promise<string> {
     const {cliBin} = this
-    const allCommandsMeta = this.genAllCommandsMetaString
-    const caseStatementForFlagsMeta = this.genCaseStatementForFlagsMetaString
+    const allCommandsMeta = await this.genAllCommandsMetaString()
+    const caseStatementForFlagsMeta = await this.genCaseStatementForFlagsMetaString()
 
     return `#compdef ${cliBin}
 
@@ -195,96 +324,5 @@ ${caseStatementForFlagsMeta}
 
 _${cliBin}
 `
-  }
-
-  private get zshCompletionFunctionPath(): string {
-    // <cachedir>/autocomplete/functions/zsh/_<bin>
-    return path.join(this.zshFunctionsDir, `_${this.cliBin}`)
-  }
-
-  private get zshFunctionsDir(): string {
-    // <cachedir>/autocomplete/functions/zsh
-    return path.join(this.autocompleteCacheDir, 'functions', 'zsh')
-  }
-
-  private get zshSetupScript(): string {
-    return `
-fpath=(
-${this.zshFunctionsDir}
-$fpath
-);
-autoload -Uz compinit;
-compinit;\n`
-  }
-
-  private get zshSetupScriptPath(): string {
-    // <cachedir>/autocomplete/zsh_setup
-    return path.join(this.autocompleteCacheDir, 'zsh_setup')
-  }
-
-  async run() {
-    // 1. ensure needed dirs
-    await this.ensureDirs()
-    // 2. save (generated) autocomplete files
-    await this.createFiles()
-  }
-
-  private async createFiles() {
-    // zsh
-    const supportSpaces = this.config.topicSeparator === ' '
-
-    // Generate completion scripts
-    const zshGenerator = new ZshCompWithSpaces(this.config)
-    const zshScript = await zshGenerator.generate()
-
-    await Promise.all(
-      [
-        writeFile(this.bashSetupScriptPath, this.bashSetupScript),
-        writeFile(this.bashCompletionFunctionPath, this.bashCompletionFunction),
-        writeFile(this.zshSetupScriptPath, this.zshSetupScript),
-        // eslint-disable-next-line unicorn/prefer-spread
-      ].concat(
-        process.env.OCLIF_AUTOCOMPLETE_TOPIC_SEPARATOR === 'colon' || !supportSpaces
-          ? [writeFile(this.zshCompletionFunctionPath, this.zshCompletionFunction)]
-          : [
-            writeFile(this.zshCompletionFunctionPath, zshScript),
-              writeFile(this.pwshCompletionFunctionPath, new PowerShellComp(this.config).generate()),
-            ],
-      ),
-    )
-  }
-
-  private async ensureDirs() {
-    // ensure autocomplete cache dir before doing the children
-    await mkdir(this.autocompleteCacheDir, {recursive: true})
-    await Promise.all([
-      mkdir(this.bashFunctionsDir, {recursive: true}),
-      mkdir(this.zshFunctionsDir, {recursive: true}),
-      mkdir(this.pwshFunctionsDir, {recursive: true}),
-    ])
-  }
-
-  private genCmdPublicFlags(Command: CommandCompletion): string {
-    const Flags = Command.flags || {}
-    return Object.keys(Flags)
-      .filter((flag) => !Flags[flag].hidden)
-      .map((flag) => `--${flag}`)
-      .join(' ')
-  }
-
-  private genZshFlagSpecs(Klass: any): string {
-    return Object.keys(Klass.flags || {})
-      .filter((flag) => Klass.flags && !Klass.flags[flag].hidden)
-      .map((flag) => {
-        const f = (Klass.flags && Klass.flags[flag]) || {description: ''}
-        const isBoolean = f.type === 'boolean'
-        const isOption = f.type === 'option'
-        const name = isBoolean ? flag : `${flag}=-`
-        const multiple = isOption && f.multiple ? '*' : ''
-        const valueCmpl = isBoolean ? '' : ':'
-        const completion = `${multiple}--${name}[${sanitizeDescription(f.summary || f.description)}]${valueCmpl}`
-        return `"${completion}"`
-      })
-      .join('\n')
   }
 }

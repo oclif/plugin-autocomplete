@@ -31,10 +31,6 @@ export default class ZshCompWithSpaces {
     this.commands = []
   }
 
-  async init(): Promise<void> {
-    this.commands = await this.getCommands()
-  }
-
   private get coTopics(): string[] {
     if (this._coTopics) return this._coTopics
 
@@ -133,6 +129,10 @@ _${this.config.bin}
 `
   }
 
+  async init(): Promise<void> {
+    this.commands = await this.getCommands()
+  }
+
   private genDynamicCompletionHelper(): string {
     // Using ${'$'} instead of \$ to avoid linter errors
     return `# Dynamic completion helper with timestamp-based caching
@@ -197,7 +197,9 @@ _${this.config.bin}_dynamic_comp() {
 
     if (f.options) {
       // Legacy static options
-      return f.char ? `:${flagName} options:(${f.options?.join(' ')})` : `: :${flagName} options:(${f.options.join(' ')})`
+      return f.char
+        ? `:${flagName} options:(${f.options?.join(' ')})`
+        : `: :${flagName} options:(${f.options.join(' ')})`
     }
 
     // ONLY add dynamic completion if the flag has a completion property
@@ -257,7 +259,12 @@ _${this.config.bin}_dynamic_comp() {
     return `"--${flagName}[${flagSummary}]"`
   }
 
-  private genZshOptionFlagSpec(f: Command.Flag.Cached, flagName: string, flagSummary: string, commandId?: string): string {
+  private genZshOptionFlagSpec(
+    f: Command.Flag.Cached,
+    flagName: string,
+    flagSummary: string,
+    commandId?: string,
+  ): string {
     // TypeScript doesn't narrow f to option type, so we cast
     const optionFlag = f as Command.Flag.Cached & {multiple?: boolean}
     const completionSuffix = this.genZshCompletionSuffix(f, flagName, commandId)
@@ -428,11 +435,12 @@ _${this.config.bin}_dynamic_comp() {
         // Try to load actual command class to get flags with completion properties
         // This allows us to see dynamic completions, but gracefully falls back to
         // manifest flags if loading fails - preserving existing behavior
-        let flags = c.flags
+        let {flags} = c
         try {
+          // eslint-disable-next-line no-await-in-loop
           const CommandClass = await c.load()
-          // Use flags from command class if available (includes completion properties)
-          if (CommandClass.flags) {
+          // Use flags from command class if available and not empty (includes completion properties)
+          if (CommandClass.flags && Object.keys(CommandClass.flags).length > 0) {
             flags = CommandClass.flags as CommandFlags
           }
         } catch {
