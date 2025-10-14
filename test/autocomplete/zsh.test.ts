@@ -217,13 +217,13 @@ skipWindows('zsh comp', () => {
 
 
 # Dynamic completion helper with timestamp-based caching
+# This outputs completion options to stdout for use in command substitution
 _test-cli_dynamic_comp() {
   local cmd_id="$1"
   local flag_name="$2"
   local cache_duration="$3"
   local cache_dir="$HOME/.cache/test-cli/autocomplete/flag_completions"
   local cache_file="$cache_dir/\${cmd_id//[:]/_}_\${flag_name}.cache"
-  local -a opts
   
   # Check if cache file exists and is valid
   if [[ -f "$cache_file" ]]; then
@@ -234,26 +234,15 @@ _test-cli_dynamic_comp() {
     
     # Check if cache is still valid
     if [[ -n "$cache_timestamp" ]] && (( age < cache_duration )); then
-      # Cache valid - read options (skip first line)
-      opts=("\${(@f)$(tail -n +2 "$cache_file")}")
-      
-      # Check if this is a "no completion" marker
-      if [[ "\${opts[1]}" == "__NO_COMPLETION__" ]]; then
-        # No completion available - use file completion
-        _files
-        return 0
-      fi
-      
-      if [[ \${#opts[@]} -gt 0 ]]; then
-        _describe "\${flag_name} options" opts
-        return 0
-      fi
+      # Cache valid - read and output options (skip first line and empty lines)
+      tail -n +2 "$cache_file" | grep -v "^$"
+      return 0
     fi
   fi
   
   # Cache miss or expired - call Node.js
   mkdir -p "$cache_dir" 2>/dev/null
-  local raw_output=$(test-cli autocomplete:options \${cmd_id} \${flag_name} --current-line="$words" 2>/dev/null)
+  local raw_output=$(test-cli autocomplete:options \${cmd_id} \${flag_name} 2>/dev/null)
   
   if [[ -n "$raw_output" ]]; then
     # Save to cache with timestamp
@@ -262,19 +251,10 @@ _test-cli_dynamic_comp() {
       echo "$raw_output"
     } > "$cache_file"
     
-    # Provide completions
-    opts=("\${(@f)$raw_output}")
-    _describe "\${flag_name} options" opts
-  else
-    # No completion available - cache empty result to avoid repeated Node.js calls
-    {
-      echo "$(date +%s)"
-      echo "__NO_COMPLETION__"
-    } > "$cache_file"
-    
-    # Fall back to file completion
-    _files
+    # Output the completions
+    echo "$raw_output"
   fi
+  # If no output, return nothing (will fall back to default completion)
 }
 
 
@@ -310,14 +290,14 @@ _test-cli_app_execute() {
   case "$state" in
     cmds)
 _values "completions" \\
-"code[execute code]" \\
+"code[execute code]"
 
       ;;
     args)
       case $line[1] in
         "code")
           _arguments -S \\
---help"[Show help for command]" \\
+"--help[Show help for command]" \\
 "*: :_files"
         ;;
 
@@ -332,11 +312,11 @@ _test-cli_deploy() {
     typeset -A opt_args
 
     _arguments -S \\
-"(-a --api-version)"{-a,--api-version}"[]": :_test-cli_dynamic_comp deploy api-version 86400" \\
+"(-a --api-version)"{-a,--api-version}"[]: :($(_test-cli_dynamic_comp deploy api-version 86400))" \\
 "(-i --ignore-errors)"{-i,--ignore-errors}"[Ignore errors.]" \\
---json"[Format output as json.]" \\
-"*"{-m,--metadata}"[]": :_test-cli_dynamic_comp deploy metadata 86400" \\
---help"[Show help for command]" \\
+"--json[Format output as json.]" \\
+"*"{-m,--metadata}"[]: :($(_test-cli_dynamic_comp deploy metadata 86400))" \\
+"--help[Show help for command]" \\
 "*: :_files"
   }
 
@@ -351,7 +331,7 @@ _test-cli_deploy() {
         _test-cli_deploy_flags
       else
 _values "completions" \\
-"functions[Deploy a function.]" \\
+"functions[Deploy a function.]"
 
       fi
       ;;
@@ -359,8 +339,8 @@ _values "completions" \\
       case $line[1] in
         "functions")
           _arguments -S \\
-"(-b --branch)"{-b,--branch}"[]": :_test-cli_dynamic_comp deploy:functions branch 86400" \\
---help"[Show help for command]" \\
+"(-b --branch)"{-b,--branch}"[]: :($(_test-cli_dynamic_comp deploy:functions branch 86400))" \\
+"--help[Show help for command]" \\
 "*: :_files"
         ;;
 
@@ -414,13 +394,13 @@ compdef testing=test-cli
 
 
 # Dynamic completion helper with timestamp-based caching
+# This outputs completion options to stdout for use in command substitution
 _test-cli_dynamic_comp() {
   local cmd_id="$1"
   local flag_name="$2"
   local cache_duration="$3"
   local cache_dir="$HOME/.cache/test-cli/autocomplete/flag_completions"
   local cache_file="$cache_dir/\${cmd_id//[:]/_}_\${flag_name}.cache"
-  local -a opts
   
   # Check if cache file exists and is valid
   if [[ -f "$cache_file" ]]; then
@@ -431,26 +411,15 @@ _test-cli_dynamic_comp() {
     
     # Check if cache is still valid
     if [[ -n "$cache_timestamp" ]] && (( age < cache_duration )); then
-      # Cache valid - read options (skip first line)
-      opts=("\${(@f)$(tail -n +2 "$cache_file")}")
-      
-      # Check if this is a "no completion" marker
-      if [[ "\${opts[1]}" == "__NO_COMPLETION__" ]]; then
-        # No completion available - use file completion
-        _files
-        return 0
-      fi
-      
-      if [[ \${#opts[@]} -gt 0 ]]; then
-        _describe "\${flag_name} options" opts
-        return 0
-      fi
+      # Cache valid - read and output options (skip first line and empty lines)
+      tail -n +2 "$cache_file" | grep -v "^$"
+      return 0
     fi
   fi
   
   # Cache miss or expired - call Node.js
   mkdir -p "$cache_dir" 2>/dev/null
-  local raw_output=$(test-cli autocomplete:options \${cmd_id} \${flag_name} --current-line="$words" 2>/dev/null)
+  local raw_output=$(test-cli autocomplete:options \${cmd_id} \${flag_name} 2>/dev/null)
   
   if [[ -n "$raw_output" ]]; then
     # Save to cache with timestamp
@@ -459,19 +428,10 @@ _test-cli_dynamic_comp() {
       echo "$raw_output"
     } > "$cache_file"
     
-    # Provide completions
-    opts=("\${(@f)$raw_output}")
-    _describe "\${flag_name} options" opts
-  else
-    # No completion available - cache empty result to avoid repeated Node.js calls
-    {
-      echo "$(date +%s)"
-      echo "__NO_COMPLETION__"
-    } > "$cache_file"
-    
-    # Fall back to file completion
-    _files
+    # Output the completions
+    echo "$raw_output"
   fi
+  # If no output, return nothing (will fall back to default completion)
 }
 
 
@@ -507,14 +467,14 @@ _test-cli_app_execute() {
   case "$state" in
     cmds)
 _values "completions" \\
-"code[execute code]" \\
+"code[execute code]"
 
       ;;
     args)
       case $line[1] in
         "code")
           _arguments -S \\
---help"[Show help for command]" \\
+"--help[Show help for command]" \\
 "*: :_files"
         ;;
 
@@ -529,11 +489,11 @@ _test-cli_deploy() {
     typeset -A opt_args
 
     _arguments -S \\
-"(-a --api-version)"{-a,--api-version}"[]": :_test-cli_dynamic_comp deploy api-version 86400" \\
+"(-a --api-version)"{-a,--api-version}"[]: :($(_test-cli_dynamic_comp deploy api-version 86400))" \\
 "(-i --ignore-errors)"{-i,--ignore-errors}"[Ignore errors.]" \\
---json"[Format output as json.]" \\
-"*"{-m,--metadata}"[]": :_test-cli_dynamic_comp deploy metadata 86400" \\
---help"[Show help for command]" \\
+"--json[Format output as json.]" \\
+"*"{-m,--metadata}"[]: :($(_test-cli_dynamic_comp deploy metadata 86400))" \\
+"--help[Show help for command]" \\
 "*: :_files"
   }
 
@@ -548,7 +508,7 @@ _test-cli_deploy() {
         _test-cli_deploy_flags
       else
 _values "completions" \\
-"functions[Deploy a function.]" \\
+"functions[Deploy a function.]"
 
       fi
       ;;
@@ -556,8 +516,8 @@ _values "completions" \\
       case $line[1] in
         "functions")
           _arguments -S \\
-"(-b --branch)"{-b,--branch}"[]": :_test-cli_dynamic_comp deploy:functions branch 86400" \\
---help"[Show help for command]" \\
+"(-b --branch)"{-b,--branch}"[]: :($(_test-cli_dynamic_comp deploy:functions branch 86400))" \\
+"--help[Show help for command]" \\
 "*: :_files"
         ;;
 
@@ -612,13 +572,13 @@ compdef testing2=test-cli
 
 
 # Dynamic completion helper with timestamp-based caching
+# This outputs completion options to stdout for use in command substitution
 _test-cli_dynamic_comp() {
   local cmd_id="$1"
   local flag_name="$2"
   local cache_duration="$3"
   local cache_dir="$HOME/.cache/test-cli/autocomplete/flag_completions"
   local cache_file="$cache_dir/\${cmd_id//[:]/_}_\${flag_name}.cache"
-  local -a opts
   
   # Check if cache file exists and is valid
   if [[ -f "$cache_file" ]]; then
@@ -629,26 +589,15 @@ _test-cli_dynamic_comp() {
     
     # Check if cache is still valid
     if [[ -n "$cache_timestamp" ]] && (( age < cache_duration )); then
-      # Cache valid - read options (skip first line)
-      opts=("\${(@f)$(tail -n +2 "$cache_file")}")
-      
-      # Check if this is a "no completion" marker
-      if [[ "\${opts[1]}" == "__NO_COMPLETION__" ]]; then
-        # No completion available - use file completion
-        _files
-        return 0
-      fi
-      
-      if [[ \${#opts[@]} -gt 0 ]]; then
-        _describe "\${flag_name} options" opts
-        return 0
-      fi
+      # Cache valid - read and output options (skip first line and empty lines)
+      tail -n +2 "$cache_file" | grep -v "^$"
+      return 0
     fi
   fi
   
   # Cache miss or expired - call Node.js
   mkdir -p "$cache_dir" 2>/dev/null
-  local raw_output=$(test-cli autocomplete:options \${cmd_id} \${flag_name} --current-line="$words" 2>/dev/null)
+  local raw_output=$(test-cli autocomplete:options \${cmd_id} \${flag_name} 2>/dev/null)
   
   if [[ -n "$raw_output" ]]; then
     # Save to cache with timestamp
@@ -657,19 +606,10 @@ _test-cli_dynamic_comp() {
       echo "$raw_output"
     } > "$cache_file"
     
-    # Provide completions
-    opts=("\${(@f)$raw_output}")
-    _describe "\${flag_name} options" opts
-  else
-    # No completion available - cache empty result to avoid repeated Node.js calls
-    {
-      echo "$(date +%s)"
-      echo "__NO_COMPLETION__"
-    } > "$cache_file"
-    
-    # Fall back to file completion
-    _files
+    # Output the completions
+    echo "$raw_output"
   fi
+  # If no output, return nothing (will fall back to default completion)
 }
 
 
@@ -705,14 +645,14 @@ _test-cli_app_execute() {
   case "$state" in
     cmds)
 _values "completions" \\
-"code[execute code]" \\
+"code[execute code]"
 
       ;;
     args)
       case $line[1] in
         "code")
           _arguments -S \\
---help"[Show help for command]" \\
+"--help[Show help for command]" \\
 "*: :_files"
         ;;
 
@@ -727,11 +667,11 @@ _test-cli_deploy() {
     typeset -A opt_args
 
     _arguments -S \\
-"(-a --api-version)"{-a,--api-version}"[]": :_test-cli_dynamic_comp deploy api-version 86400" \\
+"(-a --api-version)"{-a,--api-version}"[]: :($(_test-cli_dynamic_comp deploy api-version 86400))" \\
 "(-i --ignore-errors)"{-i,--ignore-errors}"[Ignore errors.]" \\
---json"[Format output as json.]" \\
-"*"{-m,--metadata}"[]": :_test-cli_dynamic_comp deploy metadata 86400" \\
---help"[Show help for command]" \\
+"--json[Format output as json.]" \\
+"*"{-m,--metadata}"[]: :($(_test-cli_dynamic_comp deploy metadata 86400))" \\
+"--help[Show help for command]" \\
 "*: :_files"
   }
 
@@ -746,7 +686,7 @@ _test-cli_deploy() {
         _test-cli_deploy_flags
       else
 _values "completions" \\
-"functions[Deploy a function.]" \\
+"functions[Deploy a function.]"
 
       fi
       ;;
@@ -754,8 +694,8 @@ _values "completions" \\
       case $line[1] in
         "functions")
           _arguments -S \\
-"(-b --branch)"{-b,--branch}"[]": :_test-cli_dynamic_comp deploy:functions branch 86400" \\
---help"[Show help for command]" \\
+"(-b --branch)"{-b,--branch}"[]: :($(_test-cli_dynamic_comp deploy:functions branch 86400))" \\
+"--help[Show help for command]" \\
 "*: :_files"
         ;;
 

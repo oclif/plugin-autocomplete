@@ -127,13 +127,13 @@ _${this.config.bin}
   private genDynamicCompletionHelper(): string {
     // Using ${'$'} instead of \$ to avoid linter errors
     return `# Dynamic completion helper with timestamp-based caching
+# This outputs completion options to stdout for use in command substitution
 _${this.config.bin}_dynamic_comp() {
   local cmd_id="$1"
   local flag_name="$2"
   local cache_duration="$3"
   local cache_dir="$HOME/.cache/${this.config.bin}/autocomplete/flag_completions"
   local cache_file="$cache_dir/${'$'}{cmd_id//[:]/_}_${'$'}{flag_name}.cache"
-  local -a opts
   
   # Check if cache file exists and is valid
   if [[ -f "$cache_file" ]]; then
@@ -144,26 +144,15 @@ _${this.config.bin}_dynamic_comp() {
     
     # Check if cache is still valid
     if [[ -n "$cache_timestamp" ]] && (( age < cache_duration )); then
-      # Cache valid - read options (skip first line)
-      opts=("${'$'}{(@f)${'$'}(tail -n +2 "$cache_file")}")
-      
-      # Check if this is a "no completion" marker
-      if [[ "${'$'}{opts[1]}" == "__NO_COMPLETION__" ]]; then
-        # No completion available - use file completion
-        _files
-        return 0
-      fi
-      
-      if [[ ${'$'}{#opts[@]} -gt 0 ]]; then
-        _describe "${'$'}{flag_name} options" opts
-        return 0
-      fi
+      # Cache valid - read and output options (skip first line and empty lines)
+      tail -n +2 "$cache_file" | grep -v "^${'$'}"
+      return 0
     fi
   fi
   
   # Cache miss or expired - call Node.js
   mkdir -p "$cache_dir" 2>/dev/null
-  local raw_output=${'$'}(${this.config.bin} autocomplete${this.config.topicSeparator}options ${'$'}{cmd_id} ${'$'}{flag_name} --current-line="$words" 2>/dev/null)
+  local raw_output=${'$'}(${this.config.bin} autocomplete:options ${'$'}{cmd_id} ${'$'}{flag_name} 2>/dev/null)
   
   if [[ -n "$raw_output" ]]; then
     # Save to cache with timestamp
@@ -172,19 +161,10 @@ _${this.config.bin}_dynamic_comp() {
       echo "$raw_output"
     } > "$cache_file"
     
-    # Provide completions
-    opts=("${'$'}{(@f)$raw_output}")
-    _describe "${'$'}{flag_name} options" opts
-  else
-    # No completion available - cache empty result to avoid repeated Node.js calls
-    {
-      echo "${'$'}(date +%s)"
-      echo "__NO_COMPLETION__"
-    } > "$cache_file"
-    
-    # Fall back to file completion
-    _files
+    # Output the completions
+    echo "$raw_output"
   fi
+  # If no output, return nothing (will fall back to default completion)
 }
 `
   }
@@ -204,20 +184,21 @@ _${this.config.bin}_dynamic_comp() {
       // STATIC: Embed options directly (instant!)
       // @ts-expect-error - we checked it's an array above
       const options = f.completion.options.join(' ')
-      return f.char ? `:${f.name}:(${options})` : `${f.name}:(${options})`
+      return f.char ? `:${f.name}:(${options})` : `: :${f.name}:(${options})`
     }
 
     if (f.options) {
       // Legacy static options
-      return f.char ? `:${f.name} options:(${f.options?.join(' ')})` : `${f.name} options:(${f.options.join(' ')})`
+      return f.char ? `:${f.name} options:(${f.options?.join(' ')})` : `: :${f.name} options:(${f.options.join(' ')})`
     }
 
     // ALWAYS try dynamic completion for option flags if we have a command ID
     // The autocomplete:options command will return empty if no completion is defined,
     // and the shell script will fall back to _files
     if (commandId) {
-      // For both char and non-char flags: format is ": :action" (no closing quote!)
-      return `: :_${this.config.bin}_dynamic_comp ${commandId} ${f.name} ${cacheDuration}`
+      // Use command substitution to generate completions inline
+      // The ~15ms from cache reads is acceptable for working completions
+      return `: :(${'$'}(_${this.config.bin}_dynamic_comp ${commandId} ${f.name} ${cacheDuration}))`
     }
 
     // No command ID - fall back to file completion
@@ -227,7 +208,7 @@ _${this.config.bin}_dynamic_comp() {
   private genZshFlagArgumentsBlock(flags?: CommandFlags, commandId?: string): string {
     // if a command doesn't have flags make it only complete files
     // also add comp for the global `--help` flag.
-    if (!flags) return '_arguments -S \\\n --help"[Show help for command]" "*: :_files'
+    if (!flags) return '_arguments -S \\\n"--help[Show help for command]" \\\n"*: :_files"'
 
     const flagNames = Object.keys(flags)
 
@@ -250,7 +231,7 @@ _${this.config.bin}_dynamic_comp() {
     }
 
     // add global `--help` flag
-    argumentsBlock += '--help"[Show help for command]" \\\n'
+    argumentsBlock += '"--help[Show help for command]" \\\n'
     // complete files if `-` is not present on the current line
     argumentsBlock += '"*: :_files"'
 
@@ -267,7 +248,7 @@ _${this.config.bin}_dynamic_comp() {
       return `"(-${f.char} --${f.name})"{-${f.char},--${f.name}}"[${flagSummary}]"`
     }
 
-    return `--${f.name}"[${flagSummary}]"`
+    return `"--${f.name}[${flagSummary}]"`
   }
 
   private genZshOptionFlagSpec(f: Command.Flag.Cached, flagSummary: string, commandId?: string): string {
@@ -279,11 +260,11 @@ _${this.config.bin}_dynamic_comp() {
       const multiplePart = optionFlag.multiple
         ? `"*"{-${f.char},--${f.name}}`
         : `"(-${f.char} --${f.name})"{-${f.char},--${f.name}}`
-      return `${multiplePart}"[${flagSummary}]"${completionSuffix}"`
+      return `${multiplePart}"[${flagSummary}]${completionSuffix}"`
     }
 
-    const multiplePart = optionFlag.multiple ? '"*"' : ''
-    return `${multiplePart}--${f.name}"[${flagSummary}]"${completionSuffix}"`
+    const multiplePart = optionFlag.multiple ? '*' : ''
+    return `"${multiplePart}--${f.name}[${flagSummary}]${completionSuffix}"`
   }
 
   private genZshTopicCompFun(id: string): string {
