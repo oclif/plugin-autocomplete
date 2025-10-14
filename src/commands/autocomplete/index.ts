@@ -102,22 +102,43 @@ export default class Index extends AutocompleteBase {
       async ({commandId, flagName}, index) => {
         ux.action.status = `${index + 1}/${total}`
         try {
-          // Call the static method directly instead of going through CLI parsing
-          await Options.getCompletionOptions(this.config, commandId, flagName)
-          return {success: true}
-        } catch {
-          // Ignore errors - some completions may fail, that's ok
-          return {success: false}
+          // Get completion options
+          const options = await Options.getCompletionOptions(this.config, commandId, flagName)
+
+          // Write to cache file (same location and format as shell helper)
+          if (options.length > 0) {
+            await this.writeCacheFile(commandId, flagName, options)
+            return {commandId, count: options.length, flagName, success: true}
+          }
+
+          // No options returned - log for debugging
+          return {commandId, count: 0, flagName, success: true}
+        } catch (error) {
+          // Log error for debugging
+          return {commandId, error: (error as Error).message, flagName, success: false}
         }
       },
     )
 
-    const successful = results.filter((r) => r.success).length
+    const withOptions = results.filter((r) => (r as any).count > 0).length
     const duration = ((Date.now() - startTime) / 1000).toFixed(1)
 
     ux.action.stop(
-      `${bold('✓')} Generated ${successful}/${total} caches in ${cyan(duration + 's')} ${cyan(`(~${(total / Number(duration)).toFixed(0)}/s)`)}`,
+      `${bold('✓')} Generated ${withOptions}/${total} caches in ${cyan(duration + 's')} ${cyan(`(~${(total / Number(duration)).toFixed(0)}/s)`)}`,
     )
+
+    // Show details for all caches
+    this.log('')
+    this.log(bold('Cache generation details:'))
+    for (const result of results as any[]) {
+      if (result.success && result.count > 0) {
+        this.log(`  ✓ ${result.commandId} --${result.flagName}: ${result.count} options cached`)
+      } else if (result.count === 0) {
+        this.log(`  ⚠️  ${result.commandId} --${result.flagName}: No options returned`)
+      } else {
+        this.log(`  ❌ ${result.commandId} --${result.flagName}: ${result.error}`)
+      }
+    }
   }
 
   private printShellInstructions(shell: string): void {
@@ -230,5 +251,24 @@ Setup Instructions for ${this.config.bin.toUpperCase()} CLI Autocomplete ---
 
     await Promise.all(executing)
     return results
+  }
+
+  private async writeCacheFile(commandId: string, flagName: string, options: string[]): Promise<void> {
+    const {join} = await import('node:path')
+    const {mkdir, writeFile} = await import('node:fs/promises')
+
+    // Match the shell helper's cache directory structure
+    const cacheDir = join(this.autocompleteCacheDir, 'flag_completions')
+    await mkdir(cacheDir, {recursive: true})
+
+    // Match the shell helper's filename format (replace colons with underscores)
+    const cacheFilename = `${commandId.replaceAll(':', '_')}_${flagName}.cache`
+    const cacheFile = join(cacheDir, cacheFilename)
+
+    // Write cache file with timestamp (same format as shell helper)
+    const timestamp = Math.floor(Date.now() / 1000) // Unix timestamp in seconds
+    const content = `${timestamp}\n${options.join('\n')}\n`
+
+    await writeFile(cacheFile, content, 'utf8')
   }
 }

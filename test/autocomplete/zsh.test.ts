@@ -222,7 +222,16 @@ _test-cli_dynamic_comp() {
   local cmd_id="$1"
   local flag_name="$2"
   local cache_duration="$3"
-  local cache_dir="$HOME/.cache/test-cli/autocomplete/flag_completions"
+  
+  # Determine cache directory based on platform (cross-platform)
+  if [[ -n "$XDG_CACHE_HOME" ]]; then
+    local cache_dir="$XDG_CACHE_HOME/test-cli/autocomplete/flag_completions"
+  elif [[ "$OSTYPE" == darwin* ]]; then
+    local cache_dir="$HOME/Library/Caches/test-cli/autocomplete/flag_completions"
+  else
+    local cache_dir="$HOME/.cache/test-cli/autocomplete/flag_completions"
+  fi
+  
   local cache_file="$cache_dir/\${cmd_id//[:]/_}_\${flag_name}.cache"
   
   # Check if cache file exists and is valid
@@ -399,7 +408,16 @@ _test-cli_dynamic_comp() {
   local cmd_id="$1"
   local flag_name="$2"
   local cache_duration="$3"
-  local cache_dir="$HOME/.cache/test-cli/autocomplete/flag_completions"
+  
+  # Determine cache directory based on platform (cross-platform)
+  if [[ -n "$XDG_CACHE_HOME" ]]; then
+    local cache_dir="$XDG_CACHE_HOME/test-cli/autocomplete/flag_completions"
+  elif [[ "$OSTYPE" == darwin* ]]; then
+    local cache_dir="$HOME/Library/Caches/test-cli/autocomplete/flag_completions"
+  else
+    local cache_dir="$HOME/.cache/test-cli/autocomplete/flag_completions"
+  fi
+  
   local cache_file="$cache_dir/\${cmd_id//[:]/_}_\${flag_name}.cache"
   
   # Check if cache file exists and is valid
@@ -577,7 +595,16 @@ _test-cli_dynamic_comp() {
   local cmd_id="$1"
   local flag_name="$2"
   local cache_duration="$3"
-  local cache_dir="$HOME/.cache/test-cli/autocomplete/flag_completions"
+  
+  # Determine cache directory based on platform (cross-platform)
+  if [[ -n "$XDG_CACHE_HOME" ]]; then
+    local cache_dir="$XDG_CACHE_HOME/test-cli/autocomplete/flag_completions"
+  elif [[ "$OSTYPE" == darwin* ]]; then
+    local cache_dir="$HOME/Library/Caches/test-cli/autocomplete/flag_completions"
+  else
+    local cache_dir="$HOME/.cache/test-cli/autocomplete/flag_completions"
+  fi
+  
   local cache_file="$cache_dir/\${cmd_id//[:]/_}_\${flag_name}.cache"
   
   # Check if cache file exists and is valid

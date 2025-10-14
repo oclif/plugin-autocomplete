@@ -21,7 +21,6 @@ export default class Options extends Command {
    * @param config - The oclif config
    * @param commandId - The command ID
    * @param flagName - The flag name
-   * @param currentLine - Optional current command line for context
    * @returns Array of completion options, or empty array if none available
    */
   static async getCompletionOptions(config: Config, commandId: string, flagName: string): Promise<string[]> {
