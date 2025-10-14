@@ -222,7 +222,7 @@ $scriptblock = {
               $CurrentLineStr = $CommandAst.ToString()
 
               try {
-                  $DynamicOptions = & ${this.config.bin} autocomplete options $CommandId $FlagName --current-line="$CurrentLineStr" 2>$null
+                  $DynamicOptions = & ${this.config.bin} autocomplete:options --command=$CommandId --flag=$FlagName --current-line="$CurrentLineStr" 2>$null
                   if ($DynamicOptions) {
                       $DynamicOptions | Where-Object {
                           $_.StartsWith("$WordToComplete")

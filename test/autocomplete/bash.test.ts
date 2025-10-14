@@ -185,7 +185,8 @@ skipWindows('bash comp', () => {
       const create = new Create([], config)
 
       // @ts-expect-error because it's a private method
-      expect(create.bashCompletionFunction.trim()).to.equal(`#!/usr/bin/env bash
+      const bashCompletionFunction = await create.getBashCompletionFunction()
+      expect(bashCompletionFunction.trim()).to.equal(`#!/usr/bin/env bash
 
 _test-cli_autocomplete()
 {
@@ -219,7 +220,7 @@ ${'app:execute:code '}
 
       local flagName="$\{prev#--}"
       # Try to get dynamic completions
-      local dynamicOpts=$(test-cli autocomplete:options "$\{__COMP_WORDS}" "$\{flagName}" --current-line="$\{COMP_LINE}" 2>/dev/null)
+      local dynamicOpts=$(test-cli autocomplete:options --command="$\{__COMP_WORDS}" --flag="$\{flagName}" --current-line="$\{COMP_LINE}" 2>/dev/null)
 
       if [[ -n "$dynamicOpts" ]]; then
         opts="$dynamicOpts"
@@ -255,7 +256,8 @@ complete -o default -F _test-cli_autocomplete test-cli`)
       config.binAliases = ['alias']
       const create = new Create([], config)
       // @ts-expect-error because it's a private method
-      expect(create.bashCompletionFunction.trim()).to.equal(`#!/usr/bin/env bash
+      const bashCompletionFunction = await create.getBashCompletionFunction()
+      expect(bashCompletionFunction.trim()).to.equal(`#!/usr/bin/env bash
 
 _test-cli_autocomplete()
 {
@@ -289,7 +291,7 @@ ${'app:execute:code '}
 
       local flagName="$\{prev#--}"
       # Try to get dynamic completions
-      local dynamicOpts=$(test-cli autocomplete:options "$\{__COMP_WORDS}" "$\{flagName}" --current-line="$\{COMP_LINE}" 2>/dev/null)
+      local dynamicOpts=$(test-cli autocomplete:options --command="$\{__COMP_WORDS}" --flag="$\{flagName}" --current-line="$\{COMP_LINE}" 2>/dev/null)
 
       if [[ -n "$dynamicOpts" ]]; then
         opts="$dynamicOpts"
@@ -326,7 +328,8 @@ complete -F _test-cli_autocomplete alias`)
       config.binAliases = ['alias', 'alias2']
       const create = new Create([], config)
       // @ts-expect-error because it's a private method
-      expect(create.bashCompletionFunction).to.equal(`#!/usr/bin/env bash
+      const bashCompletionFunction = await create.getBashCompletionFunction()
+      expect(bashCompletionFunction).to.equal(`#!/usr/bin/env bash
 
 _test-cli_autocomplete()
 {
@@ -360,7 +363,7 @@ ${'app:execute:code '}
 
       local flagName="$\{prev#--}"
       # Try to get dynamic completions
-      local dynamicOpts=$(test-cli autocomplete:options "$\{__COMP_WORDS}" "$\{flagName}" --current-line="$\{COMP_LINE}" 2>/dev/null)
+      local dynamicOpts=$(test-cli autocomplete:options --command="$\{__COMP_WORDS}" --flag="$\{flagName}" --current-line="$\{COMP_LINE}" 2>/dev/null)
 
       if [[ -n "$dynamicOpts" ]]; then
         opts="$dynamicOpts"

@@ -346,7 +346,7 @@ $scriptblock = {
               $CurrentLineStr = $CommandAst.ToString()
 
               try {
-                  $DynamicOptions = & test-cli autocomplete options $CommandId $FlagName --current-line="$CurrentLineStr" 2>$null
+                  $DynamicOptions = & test-cli autocomplete:options --command=$CommandId --flag=$FlagName --current-line="$CurrentLineStr" 2>$null
                   if ($DynamicOptions) {
                       $DynamicOptions | Where-Object {
                           $_.StartsWith("$WordToComplete")
@@ -570,7 +570,7 @@ $scriptblock = {
               $CurrentLineStr = $CommandAst.ToString()
 
               try {
-                  $DynamicOptions = & test-cli autocomplete options $CommandId $FlagName --current-line="$CurrentLineStr" 2>$null
+                  $DynamicOptions = & test-cli autocomplete:options --command=$CommandId --flag=$FlagName --current-line="$CurrentLineStr" 2>$null
                   if ($DynamicOptions) {
                       $DynamicOptions | Where-Object {
                           $_.StartsWith("$WordToComplete")
@@ -794,7 +794,7 @@ $scriptblock = {
               $CurrentLineStr = $CommandAst.ToString()
 
               try {
-                  $DynamicOptions = & test-cli autocomplete options $CommandId $FlagName --current-line="$CurrentLineStr" 2>$null
+                  $DynamicOptions = & test-cli autocomplete:options --command=$CommandId --flag=$FlagName --current-line="$CurrentLineStr" 2>$null
                   if ($DynamicOptions) {
                       $DynamicOptions | Where-Object {
                           $_.StartsWith("$WordToComplete")

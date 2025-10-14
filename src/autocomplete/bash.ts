@@ -28,7 +28,7 @@ _<CLI_BIN>_autocomplete()
 
       local flagName="\${prev#--}"
       # Try to get dynamic completions
-      local dynamicOpts=$(<CLI_BIN> autocomplete:options "\${__COMP_WORDS}" "\${flagName}" --current-line="\${COMP_LINE}" 2>/dev/null)
+      local dynamicOpts=$(<CLI_BIN> autocomplete:options --command="\${__COMP_WORDS}" --flag="\${flagName}" --current-line="\${COMP_LINE}" 2>/dev/null)
 
       if [[ -n "$dynamicOpts" ]]; then
         opts="$dynamicOpts"

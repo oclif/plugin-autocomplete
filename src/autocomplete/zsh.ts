@@ -161,7 +161,7 @@ _${this.config.bin}_dynamic_comp() {
   
   # Cache miss or expired - call Node.js
   mkdir -p "$cache_dir" 2>/dev/null
-  local raw_output=${'$'}(${this.config.bin} autocomplete:options ${'$'}{cmd_id} ${'$'}{flag_name} 2>/dev/null)
+  local raw_output=${'$'}(${this.config.bin} autocomplete:options --command=${'$'}{cmd_id} --flag=${'$'}{flag_name} 2>/dev/null)
   
   if [[ -n "$raw_output" ]]; then
     # Save to cache with timestamp

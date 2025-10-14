@@ -10,27 +10,33 @@ describe('autocomplete:options', () => {
   })
 
   it('returns empty string for non-existent command', async () => {
-    const {stdout} = await runCommand<{name: string}>(['autocomplete:options', 'nonexistent', 'someflag'], config)
+    const {stdout} = await runCommand<{name: string}>(
+      ['autocomplete:options', '--command', 'nonexistent', '--flag', 'someflag'],
+      config,
+    )
     expect(stdout).to.equal('')
   })
 
   it('returns empty string for command without flag', async () => {
     const {stdout} = await runCommand<{name: string}>(
-      ['autocomplete:options', 'autocomplete', 'nonexistentflag'],
+      ['autocomplete:options', '--command', 'autocomplete', '--flag', 'nonexistentflag'],
       config,
     )
     expect(stdout).to.equal('')
   })
 
   it('returns empty string for flag without completion', async () => {
-    const {stdout} = await runCommand<{name: string}>(['autocomplete:options', 'autocomplete', 'refresh-cache'], config)
+    const {stdout} = await runCommand<{name: string}>(
+      ['autocomplete:options', '--command', 'autocomplete', '--flag', 'refresh-cache'],
+      config,
+    )
     expect(stdout).to.equal('')
   })
 
   it('handles errors gracefully', async () => {
     // Test with invalid arguments - should return empty string
     const {stdout} = await runCommand<{name: string}>(
-      ['autocomplete:options', 'invalid:command:that:does:not:exist', 'flag'],
+      ['autocomplete:options', '--command', 'invalid:command:that:does:not:exist', '--flag', 'flag'],
       config,
     )
     // Should return empty string on error
@@ -40,7 +46,15 @@ describe('autocomplete:options', () => {
   it('accepts current-line flag', async () => {
     // Should accept the current-line flag without error
     const {stdout} = await runCommand<{name: string}>(
-      ['autocomplete:options', 'autocomplete', 'shell', '--current-line', 'mycli autocomplete --shell'],
+      [
+        'autocomplete:options',
+        '--command',
+        'autocomplete',
+        '--flag',
+        'shell',
+        '--current-line',
+        'mycli autocomplete --shell',
+      ],
       config,
     )
     // Should return empty since shell arg doesn't have completion

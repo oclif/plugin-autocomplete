@@ -1,28 +1,28 @@
-import {Args, Command, Flags, Interfaces} from '@oclif/core'
+import {Command, Flags, Interfaces} from '@oclif/core'
 
 export default class Options extends Command {
-  static args = {
-    command: Args.string({
+  static description = 'Display dynamic flag value completions'
+  static flags = {
+    command: Flags.string({
+      char: 'c',
       description: 'Command name or ID',
       required: true,
     }),
-    flag: Args.string({
-      description: 'Flag name',
-      required: true,
-    }),
-  }
-  static description = 'Display dynamic flag value completions'
-  static flags = {
     'current-line': Flags.string({
       description: 'Current command line being completed',
+    }),
+    flag: Flags.string({
+      char: 'f',
+      description: 'Flag name',
+      required: true,
     }),
   }
   static hidden = true
 
   async run(): Promise<void> {
-    const {args, flags} = await this.parse(Options)
-    const commandId = args.command
-    const flagName = args.flag
+    const {flags} = await this.parse(Options)
+    const commandId = flags.command
+    const flagName = flags.flag
 
     try {
       const command = this.config.findCommand(commandId)

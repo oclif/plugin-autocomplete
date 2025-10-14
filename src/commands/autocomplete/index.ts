@@ -40,7 +40,6 @@ export default class Index extends AutocompleteBase {
     await Create.run([], this.config)
 
     ux.action.status = 'Generating dynamic completion caches'
-    // Pre-warm dynamic completion caches
     await this.generateCompletionCaches()
 
     if (!flags['refresh-cache']) {
@@ -115,7 +114,7 @@ export default class Index extends AutocompleteBase {
           process.stdout.write = () => true
 
           try {
-            await Options.run([commandId, flagName], this.config)
+            await Options.run(['--command', commandId, '--flag', flagName], this.config)
           } finally {
             // Restore stdout
             console.log = originalLog
