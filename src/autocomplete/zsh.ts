@@ -178,7 +178,7 @@ _${this.config.bin}_dynamic_comp() {
 `
   }
 
-  private genZshCompletionSuffix(f: Command.Flag.Cached, commandId: string | undefined): string {
+  private genZshCompletionSuffix(f: Command.Flag.Cached, flagName: string, commandId: string | undefined): string {
     // Only handle option flags
     if (f.type !== 'option') return ''
 
@@ -192,22 +192,22 @@ _${this.config.bin}_dynamic_comp() {
     if (hasStaticCompletion && commandId) {
       // STATIC: Embed options directly (instant!)
       const options = completion.options.join(' ')
-      return f.char ? `:${f.name}:(${options})` : `: :${f.name}:(${options})`
+      return f.char ? `:${flagName}:(${options})` : `: :${flagName}:(${options})`
     }
 
     if (f.options) {
       // Legacy static options
-      return f.char ? `:${f.name} options:(${f.options?.join(' ')})` : `: :${f.name} options:(${f.options.join(' ')})`
+      return f.char ? `:${flagName} options:(${f.options?.join(' ')})` : `: :${flagName} options:(${f.options.join(' ')})`
     }
 
     // ONLY add dynamic completion if the flag has a completion property
     if (hasDynamicCompletion && commandId) {
       // Use command substitution to generate completions inline
-      return `: :(${'$'}(_${this.config.bin}_dynamic_comp ${commandId} ${f.name} ${cacheDuration}))`
+      return `: :(${'$'}(_${this.config.bin}_dynamic_comp ${commandId} ${flagName} ${cacheDuration}))`
     }
 
     // No completion defined - fall back to file completion
-    return f.char ? ':file:_files' : 'file:_files'
+    return ':file:_files'
   }
 
   private genZshFlagArgumentsBlock(flags?: CommandFlags, commandId?: string): string {
@@ -225,12 +225,13 @@ _${this.config.bin}_dynamic_comp() {
 
     for (const flagName of flagNames) {
       const f = flags[flagName]
+      // willie testing changes
 
       // skip hidden flags
       if (f.hidden) continue
 
       const flagSummary = this.sanitizeSummary(f.summary ?? f.description)
-      const flagSpec = this.genZshFlagSpec(f, flagSummary, commandId)
+      const flagSpec = this.genZshFlagSpec(f, flagName, flagSummary, commandId)
 
       argumentsBlock += flagSpec + ' \\\n'
     }
@@ -243,33 +244,33 @@ _${this.config.bin}_dynamic_comp() {
     return argumentsBlock
   }
 
-  private genZshFlagSpec(f: Command.Flag.Any, flagSummary: string, commandId?: string): string {
+  private genZshFlagSpec(f: Command.Flag.Any, flagName: string, flagSummary: string, commandId?: string): string {
     if (f.type === 'option') {
-      return this.genZshOptionFlagSpec(f, flagSummary, commandId)
+      return this.genZshOptionFlagSpec(f, flagName, flagSummary, commandId)
     }
 
     // Boolean flag
     if (f.char) {
-      return `"(-${f.char} --${f.name})"{-${f.char},--${f.name}}"[${flagSummary}]"`
+      return `"(-${f.char} --${flagName})"{-${f.char},--${flagName}}"[${flagSummary}]"`
     }
 
-    return `"--${f.name}[${flagSummary}]"`
+    return `"--${flagName}[${flagSummary}]"`
   }
 
-  private genZshOptionFlagSpec(f: Command.Flag.Cached, flagSummary: string, commandId?: string): string {
+  private genZshOptionFlagSpec(f: Command.Flag.Cached, flagName: string, flagSummary: string, commandId?: string): string {
     // TypeScript doesn't narrow f to option type, so we cast
     const optionFlag = f as Command.Flag.Cached & {multiple?: boolean}
-    const completionSuffix = this.genZshCompletionSuffix(f, commandId)
+    const completionSuffix = this.genZshCompletionSuffix(f, flagName, commandId)
 
     if (f.char) {
       const multiplePart = optionFlag.multiple
-        ? `"*"{-${f.char},--${f.name}}`
-        : `"(-${f.char} --${f.name})"{-${f.char},--${f.name}}`
+        ? `"*"{-${f.char},--${flagName}}`
+        : `"(-${f.char} --${flagName})"{-${f.char},--${flagName}}`
       return `${multiplePart}"[${flagSummary}]${completionSuffix}"`
     }
 
     const multiplePart = optionFlag.multiple ? '*' : ''
-    return `"${multiplePart}--${f.name}[${flagSummary}]${completionSuffix}"`
+    return `"${multiplePart}--${flagName}[${flagSummary}]${completionSuffix}"`
   }
 
   private genZshTopicCompFun(id: string): string {
