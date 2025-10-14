@@ -425,7 +425,9 @@ _${this.config.bin}_dynamic_comp() {
         if (c.hidden) continue
         const summary = this.sanitizeSummary(c.summary ?? c.description)
 
-        // Load the actual command class to get flags with completion properties
+        // Try to load actual command class to get flags with completion properties
+        // This allows us to see dynamic completions, but gracefully falls back to
+        // manifest flags if loading fails - preserving existing behavior
         let flags = c.flags
         try {
           const CommandClass = await c.load()
@@ -435,6 +437,8 @@ _${this.config.bin}_dynamic_comp() {
           }
         } catch {
           // Fall back to manifest flags if loading fails
+          // This ensures existing commands without completions continue to work exactly as before
+          flags = c.flags
         }
 
         cmds.push({

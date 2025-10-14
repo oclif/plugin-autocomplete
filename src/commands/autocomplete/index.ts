@@ -54,12 +54,14 @@ export default class Index extends AutocompleteBase {
     const commandsWithDynamicCompletions: Array<{commandId: string; flagName: string}> = []
 
     // Find all commands with flags that have completion functions
+    // This ONLY loads command classes, doesn't affect existing functionality
     for (const commandId of this.config.commandIDs) {
       const command = this.config.findCommand(commandId)
       if (!command) continue
 
       try {
         // Load the actual command class to access completion functions
+        // Falls back gracefully if loading fails - no impact on existing commands
         // eslint-disable-next-line no-await-in-loop
         const CommandClass = await command.load()
         const flags = CommandClass.flags || {}
@@ -68,6 +70,7 @@ export default class Index extends AutocompleteBase {
           if (flag.type !== 'option') continue
 
           const {completion} = flag as any
+          // Skip flags without completion property - no extra work for existing flags
           if (!completion) continue
 
           // Check if it has dynamic completion or legacy options function
@@ -78,13 +81,14 @@ export default class Index extends AutocompleteBase {
           }
         }
       } catch {
-        // Ignore errors loading command class
+        // Silently ignore errors loading command class
+        // Existing commands continue to work with manifest-based completions
         continue
       }
     }
 
+    // Early exit if no dynamic completions found - zero impact on existing functionality
     if (commandsWithDynamicCompletions.length === 0) {
-      this.log('No dynamic completions to pre-warm.')
       return
     }
 
