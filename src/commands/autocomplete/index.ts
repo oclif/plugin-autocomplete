@@ -38,14 +38,16 @@ export default class Index extends AutocompleteBase {
 
     ux.action.start(`${bold('Building the autocomplete cache')}`)
     await Create.run([], this.config)
-    ux.action.stop()
 
+
+    ux.action.status = 'Pre-warming dynamic completion caches'
     // Pre-warm dynamic completion caches
     await this.prewarmCompletionCaches()
 
     if (!flags['refresh-cache']) {
       this.printShellInstructions(shell)
-    }
+    }  
+    ux.action.stop()
   }
 
   private async prewarmCompletionCaches(): Promise<void> {
@@ -99,7 +101,22 @@ export default class Index extends AutocompleteBase {
       async ({commandId, flagName}, index) => {
         ux.action.status = `${index + 1}/${total}`
         try {
-          await Options.run([commandId, flagName], this.config)
+          // Suppress stdout by temporarily replacing console.log and process.stdout.write
+          const originalLog = console.log
+          const originalWrite = process.stdout.write.bind(process.stdout)
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          console.log = () => { }
+          // @ts-ignore - intentionally suppressing stdout
+          process.stdout.write = () => true
+
+          try {
+            await Options.run([commandId, flagName], this.config)
+          } finally {
+            // Restore stdout
+            console.log = originalLog
+            process.stdout.write = originalWrite
+          }
+
           return {success: true}
         } catch {
           // Ignore errors - some completions may fail, that's ok

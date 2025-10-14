@@ -28,7 +28,11 @@ export default class ZshCompWithSpaces {
   constructor(config: Config) {
     this.config = config
     this.topics = this.getTopics()
-    this.commands = this.getCommands()
+    this.commands = []
+  }
+
+  async init(): Promise<void> {
+    this.commands = await this.getCommands()
   }
 
   private get coTopics(): string[] {
@@ -49,7 +53,12 @@ export default class ZshCompWithSpaces {
     return this._coTopics
   }
 
-  public generate(): string {
+  public async generate(): Promise<string> {
+    // Ensure commands are loaded with completion properties
+    if (this.commands.length === 0) {
+      await this.init()
+    }
+
     const firstArgs: {id: string; summary?: string}[] = []
 
     for (const t of this.topics) {
@@ -407,14 +416,26 @@ _${this.config.bin}_dynamic_comp() {
     return valuesBlock
   }
 
-  private getCommands(): CommandCompletion[] {
+  private async getCommands(): Promise<CommandCompletion[]> {
     const cmds: CommandCompletion[] = []
 
     for (const p of this.config.getPluginsList()) {
       for (const c of p.commands) {
         if (c.hidden) continue
         const summary = this.sanitizeSummary(c.summary ?? c.description)
-        const {flags} = c
+
+        // Load the actual command class to get flags with completion properties
+        let flags = c.flags
+        try {
+          const CommandClass = await c.load()
+          // Use flags from command class if available (includes completion properties)
+          if (CommandClass.flags) {
+            flags = CommandClass.flags as CommandFlags
+          }
+        } catch {
+          // Fall back to manifest flags if loading fails
+        }
+
         cmds.push({
           flags,
           id: c.id,

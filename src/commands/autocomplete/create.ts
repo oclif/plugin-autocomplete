@@ -233,6 +233,10 @@ compinit;\n`
     // zsh
     const supportSpaces = this.config.topicSeparator === ' '
 
+    // Generate completion scripts
+    const zshGenerator = new ZshCompWithSpaces(this.config)
+    const zshScript = await zshGenerator.generate()
+
     await Promise.all(
       [
         writeFile(this.bashSetupScriptPath, this.bashSetupScript),
@@ -243,7 +247,7 @@ compinit;\n`
         process.env.OCLIF_AUTOCOMPLETE_TOPIC_SEPARATOR === 'colon' || !supportSpaces
           ? [writeFile(this.zshCompletionFunctionPath, this.zshCompletionFunction)]
           : [
-              writeFile(this.zshCompletionFunctionPath, new ZshCompWithSpaces(this.config).generate()),
+            writeFile(this.zshCompletionFunctionPath, zshScript),
               writeFile(this.pwshCompletionFunctionPath, new PowerShellComp(this.config).generate()),
             ],
       ),

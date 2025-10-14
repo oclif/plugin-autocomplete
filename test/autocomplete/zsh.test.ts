@@ -209,10 +209,10 @@ skipWindows('zsh comp', () => {
       }
     })
 
-    it('generates a valid completion file.', () => {
+    it('generates a valid completion file.', async () => {
       config.bin = 'test-cli'
       const zshCompWithSpaces = new ZshCompWithSpaces(config as Config)
-      expect(zshCompWithSpaces.generate()).to.equal(`#compdef test-cli
+      expect(await zshCompWithSpaces.generate()).to.equal(`#compdef test-cli
 
 
 
@@ -385,11 +385,11 @@ _test-cli
 `)
     })
 
-    it('generates a valid completion file with a bin alias.', () => {
+    it('generates a valid completion file with a bin alias.', async () => {
       config.bin = 'test-cli'
       config.binAliases = ['testing']
       const zshCompWithSpaces = new ZshCompWithSpaces(config as Config)
-      expect(zshCompWithSpaces.generate()).to.equal(`#compdef test-cli
+      expect(await zshCompWithSpaces.generate()).to.equal(`#compdef test-cli
 compdef testing=test-cli
 
 
@@ -562,11 +562,11 @@ _test-cli
 `)
     })
 
-    it('generates a valid completion file with multiple bin aliases.', () => {
+    it('generates a valid completion file with multiple bin aliases.', async () => {
       config.bin = 'test-cli'
       config.binAliases = ['testing', 'testing2']
       const zshCompWithSpaces = new ZshCompWithSpaces(config as Config)
-      expect(zshCompWithSpaces.generate()).to.equal(`#compdef test-cli
+      expect(await zshCompWithSpaces.generate()).to.equal(`#compdef test-cli
 compdef testing=test-cli
 compdef testing2=test-cli
 
