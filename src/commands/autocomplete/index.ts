@@ -94,33 +94,16 @@ export default class Index extends AutocompleteBase {
     const total = commandsWithDynamicCompletions.length
     const startTime = Date.now()
 
-    ux.action.start(`${bold('Pre-warming')} ${total} ${bold('dynamic completion caches')} ${cyan('(in parallel)')}`)
+    ux.action.start(`${bold('Generating')} ${total} ${bold('dynamic completion caches')} ${cyan('(in parallel)')}`)
 
-    // Pre-warm caches in parallel with concurrency limit
-    const concurrency = 10 // Run 10 at a time
     const results = await this.runWithConcurrency(
       commandsWithDynamicCompletions,
-      concurrency,
+      10,
       async ({commandId, flagName}, index) => {
         ux.action.status = `${index + 1}/${total}`
         try {
-          // Suppress stdout by temporarily replacing console.log and process.stdout.write
-          const originalLog = console.log
-          const originalWrite = process.stdout.write.bind(process.stdout)
-
-          console.log = () => {}
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore - intentionally suppressing stdout
-          process.stdout.write = () => true
-
-          try {
-            await Options.run(['--command', commandId, '--flag', flagName], this.config)
-          } finally {
-            // Restore stdout
-            console.log = originalLog
-            process.stdout.write = originalWrite
-          }
-
+          // Call the static method directly instead of going through CLI parsing
+          await Options.getCompletionOptions(this.config, commandId, flagName)
           return {success: true}
         } catch {
           // Ignore errors - some completions may fail, that's ok
@@ -133,7 +116,7 @@ export default class Index extends AutocompleteBase {
     const duration = ((Date.now() - startTime) / 1000).toFixed(1)
 
     ux.action.stop(
-      `${bold('✓')} Pre-warmed ${successful}/${total} caches in ${cyan(duration + 's')} ${cyan(`(~${(total / Number(duration)).toFixed(0)}/s)`)}`,
+      `${bold('✓')} Generated ${successful}/${total} caches in ${cyan(duration + 's')} ${cyan(`(~${(total / Number(duration)).toFixed(0)}/s)`)}`,
     )
   }
 

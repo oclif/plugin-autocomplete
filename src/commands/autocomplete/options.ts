@@ -1,4 +1,4 @@
-import {Command, Flags, Interfaces} from '@oclif/core'
+import {Command, Config, Flags, Interfaces} from '@oclif/core'
 
 export default class Options extends Command {
   static description = 'Display dynamic flag value completions'
@@ -8,9 +8,6 @@ export default class Options extends Command {
       description: 'Command name or ID',
       required: true,
     }),
-    'current-line': Flags.string({
-      description: 'Current command line being completed',
-    }),
     flag: Flags.string({
       char: 'f',
       description: 'Flag name',
@@ -19,16 +16,19 @@ export default class Options extends Command {
   }
   static hidden = true
 
-  async run(): Promise<void> {
-    const {flags} = await this.parse(Options)
-    const commandId = flags.command
-    const flagName = flags.flag
-
+  /**
+   * Get completion options for a specific command flag
+   * @param config - The oclif config
+   * @param commandId - The command ID
+   * @param flagName - The flag name
+   * @param currentLine - Optional current command line for context
+   * @returns Array of completion options, or empty array if none available
+   */
+  static async getCompletionOptions(config: Config, commandId: string, flagName: string): Promise<string[]> {
     try {
-      const command = this.config.findCommand(commandId)
+      const command = config.findCommand(commandId)
       if (!command) {
-        this.log('')
-        return
+        return []
       }
 
       // Load the actual command class to get the completion definition
@@ -37,93 +37,34 @@ export default class Options extends Command {
       // Get the flag definition
       const flagDef = CommandClass.flags?.[flagName] as Interfaces.OptionFlag<any>
       if (!flagDef || !flagDef.completion) {
-        this.log('')
-        return
-      }
-
-      // Check completion type
-      // @ts-expect-error - completion.type may not exist yet in types
-      const completionType = flagDef.completion.type
-
-      // Handle static completions
-      if (completionType === 'static') {
-        const {options} = flagDef.completion
-        if (Array.isArray(options)) {
-          this.log(options.join('\n'))
-        } else {
-          this.log('')
-        }
-
-        return
+        return []
       }
 
       // Handle dynamic completions (or legacy completions without type)
       const optionsFunc = flagDef.completion.options
       if (typeof optionsFunc !== 'function') {
-        this.log('')
-        return
+        return []
       }
-
-      // Parse command line for context
-      const currentLine = flags['current-line'] || ''
-      const context = this.parseCommandLine(currentLine)
 
       // Execute the completion function
       const completionContext: Interfaces.CompletionContext = {
-        args: context.args,
-        argv: context.argv,
-        config: this.config,
-        flags: context.flags,
+        config,
       }
 
       const options = await optionsFunc(completionContext)
-      this.log(options.join('\n'))
+      return options
     } catch {
       // Silently fail and return empty completions
-      this.log('')
+      return []
     }
   }
 
-  private parseCommandLine(line: string): {
-    args: {[name: string]: string}
-    argv: string[]
-    flags: {[name: string]: string}
-  } {
-    const args: {[name: string]: string} = {}
-    const flags: {[name: string]: string} = {}
-    const argv: string[] = []
-    const parts = line.split(/\s+/).filter(Boolean)
+  async run(): Promise<void> {
+    const {flags} = await this.parse(Options)
+    const commandId = flags.command
+    const flagName = flags.flag
 
-    let i = 0
-    // Skip the CLI bin name
-    if (parts.length > 0) i++
-
-    while (i < parts.length) {
-      const part = parts[i]
-      if (part.startsWith('--')) {
-        const flagName = part.slice(2)
-        if (i + 1 < parts.length && !parts[i + 1].startsWith('-')) {
-          flags[flagName] = parts[i + 1]
-          i += 2
-        } else {
-          flags[flagName] = 'true'
-          i++
-        }
-      } else if (part.startsWith('-') && part.length === 2) {
-        const flagChar = part.slice(1)
-        if (i + 1 < parts.length && !parts[i + 1].startsWith('-')) {
-          flags[flagChar] = parts[i + 1]
-          i += 2
-        } else {
-          flags[flagChar] = 'true'
-          i++
-        }
-      } else {
-        argv.push(part)
-        i++
-      }
-    }
-
-    return {args, argv, flags}
+    const options = await Options.getCompletionOptions(this.config, commandId, flagName)
+    this.log(options.join('\n'))
   }
 }
