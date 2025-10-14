@@ -4,6 +4,7 @@ import {EOL} from 'node:os'
 
 import {AutocompleteBase} from '../../base.js'
 import Create from './create.js'
+import Options from './options.js'
 
 export default class Index extends AutocompleteBase {
   static args = {
@@ -39,9 +40,80 @@ export default class Index extends AutocompleteBase {
     await Create.run([], this.config)
     ux.action.stop()
 
+    // Pre-warm dynamic completion caches
+    await this.prewarmCompletionCaches()
+
     if (!flags['refresh-cache']) {
       this.printShellInstructions(shell)
     }
+  }
+
+  private async prewarmCompletionCaches(): Promise<void> {
+    const commandsWithDynamicCompletions: Array<{commandId: string; flagName: string}> = []
+
+    // Find all commands with flags that have completion functions
+    for (const commandId of this.config.commandIDs) {
+      const command = this.config.findCommand(commandId)
+      if (!command) continue
+
+      try {
+        // Load the actual command class to access completion functions
+        // eslint-disable-next-line no-await-in-loop
+        const CommandClass = await command.load()
+        const flags = CommandClass.flags || {}
+
+        for (const [flagName, flag] of Object.entries(flags)) {
+          if (flag.type !== 'option') continue
+
+          const {completion} = flag as any
+          if (!completion) continue
+
+          // Check if it has dynamic completion or legacy options function
+          const isDynamic = completion.type === 'dynamic' || typeof completion.options === 'function'
+
+          if (isDynamic) {
+            commandsWithDynamicCompletions.push({commandId, flagName})
+          }
+        }
+      } catch {
+        // Ignore errors loading command class
+        continue
+      }
+    }
+
+    if (commandsWithDynamicCompletions.length === 0) {
+      this.log('No dynamic completions to pre-warm.')
+      return
+    }
+
+    const total = commandsWithDynamicCompletions.length
+    const startTime = Date.now()
+
+    ux.action.start(`${bold('Pre-warming')} ${total} ${bold('dynamic completion caches')} ${cyan('(in parallel)')}`)
+
+    // Pre-warm caches in parallel with concurrency limit
+    const concurrency = 10 // Run 10 at a time
+    const results = await this.runWithConcurrency(
+      commandsWithDynamicCompletions,
+      concurrency,
+      async ({commandId, flagName}, index) => {
+        ux.action.status = `${index + 1}/${total}`
+        try {
+          await Options.run([commandId, flagName], this.config)
+          return {success: true}
+        } catch {
+          // Ignore errors - some completions may fail, that's ok
+          return {success: false}
+        }
+      },
+    )
+
+    const successful = results.filter((r) => r.success).length
+    const duration = ((Date.now() - startTime) / 1000).toFixed(1)
+
+    ux.action.stop(
+      `${bold('✓')} Pre-warmed ${successful}/${total} caches in ${cyan(duration + 's')} ${cyan(`(~${(total / Number(duration)).toFixed(0)}/s)`)}`,
+    )
   }
 
   private printShellInstructions(shell: string): void {
@@ -63,7 +135,7 @@ Setup Instructions for ${this.config.bin.toUpperCase()} CLI Autocomplete ---
 
   The previous command adds the ${cyan(setupEnvVar)} environment variable to your Bash config file and then sources the file.
 
-  ${bold('NOTE')}: If you’ve configured your terminal to start as a login shell, you may need to modify the command so it updates either the ~/.bash_profile or ~/.profile file. For example:
+  ${bold('NOTE')}: If you've configured your terminal to start as a login shell, you may need to modify the command so it updates either the ~/.bash_profile or ~/.profile file. For example:
 
   ${cyan(`printf "$(${scriptCommand})" >> ~/.bash_profile; source ~/.bash_profile`)}
 
@@ -125,5 +197,34 @@ Setup Instructions for ${this.config.bin.toUpperCase()} CLI Autocomplete ---
   Enjoy!
 `
     this.log(instructions)
+  }
+
+  /**
+   * Run async tasks with concurrency limit
+   */
+  private async runWithConcurrency<T, R>(
+    items: T[],
+    concurrency: number,
+    fn: (item: T, index: number) => Promise<R>,
+  ): Promise<R[]> {
+    const results: R[] = []
+    const executing: Array<Promise<void>> = []
+
+    for (const [index, item] of items.entries()) {
+      const promise = fn(item, index).then((result) => {
+        results[index] = result
+        executing.splice(executing.indexOf(promise), 1)
+      })
+
+      executing.push(promise)
+
+      if (executing.length >= concurrency) {
+        // eslint-disable-next-line no-await-in-loop
+        await Promise.race(executing)
+      }
+    }
+
+    await Promise.all(executing)
+    return results
   }
 }

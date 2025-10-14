@@ -174,16 +174,15 @@ _${this.config.bin}_dynamic_comp() {
     if (f.type !== 'option') return ''
 
     // Check completion type: static, dynamic, or none
-    // @ts-expect-error - completion.type may not exist yet in types
-    const completionType = f.completion?.type
-    const hasStaticCompletion = completionType === 'static' && Array.isArray(f.completion?.options)
-    // @ts-expect-error - completion.cacheDuration may not exist yet in types
-    const cacheDuration = f.completion?.cacheDuration || 86_400 // Default: 24 hours
+    const {completion} = f as any
+    const completionType = completion?.type
+    const hasStaticCompletion = completionType === 'static' && Array.isArray(completion?.options)
+    const hasDynamicCompletion = completionType === 'dynamic' || typeof completion?.options === 'function'
+    const cacheDuration = completion?.cacheDuration || 86_400 // Default: 24 hours
 
     if (hasStaticCompletion && commandId) {
       // STATIC: Embed options directly (instant!)
-      // @ts-expect-error - we checked it's an array above
-      const options = f.completion.options.join(' ')
+      const options = completion.options.join(' ')
       return f.char ? `:${f.name}:(${options})` : `: :${f.name}:(${options})`
     }
 
@@ -192,16 +191,13 @@ _${this.config.bin}_dynamic_comp() {
       return f.char ? `:${f.name} options:(${f.options?.join(' ')})` : `: :${f.name} options:(${f.options.join(' ')})`
     }
 
-    // ALWAYS try dynamic completion for option flags if we have a command ID
-    // The autocomplete:options command will return empty if no completion is defined,
-    // and the shell script will fall back to _files
-    if (commandId) {
+    // ONLY add dynamic completion if the flag has a completion property
+    if (hasDynamicCompletion && commandId) {
       // Use command substitution to generate completions inline
-      // The ~15ms from cache reads is acceptable for working completions
       return `: :(${'$'}(_${this.config.bin}_dynamic_comp ${commandId} ${f.name} ${cacheDuration}))`
     }
 
-    // No command ID - fall back to file completion
+    // No completion defined - fall back to file completion
     return f.char ? ':file:_files' : 'file:_files'
   }
 
