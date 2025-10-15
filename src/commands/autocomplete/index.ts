@@ -132,7 +132,7 @@ export default class Index extends AutocompleteBase {
     this.log(bold('Cache generation details:'))
     for (const result of results as any[]) {
       if (result.success && result.count > 0) {
-        this.log(`  ✓ ${result.commandId} --${result.flagName}: ${result.count} options cached`)
+        // this.log(`  ✓ ${result.commandId} --${result.flagName}: ${result.count} options cached`)
       } else if (result.count === 0) {
         this.log(`  ⚠️  ${result.commandId} --${result.flagName}: No options returned`)
       } else {

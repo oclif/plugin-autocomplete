@@ -50,8 +50,7 @@ export default class Options extends Command {
         config,
       }
 
-      const options = await optionsFunc(completionContext)
-      return options
+      return await optionsFunc(completionContext)
     } catch {
       // Silently fail and return empty completions
       return []
