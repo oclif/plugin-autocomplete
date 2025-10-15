@@ -31,7 +31,16 @@ _<CLI_BIN>_autocomplete()
       local dynamicOpts=$(<CLI_BIN> autocomplete:options --command="\${__COMP_WORDS}" --flag="\${flagName}" --current-line="\${COMP_LINE}" 2>/dev/null)
 
       if [[ -n "$dynamicOpts" ]]; then
-        opts="$dynamicOpts"
+        # Handle dynamic options line-by-line to properly support special characters
+        # This avoids issues with spaces, dollar signs, and other shell metacharacters
+        COMPREPLY=()
+        while IFS= read -r option; do
+          # Only add options that match the current word being completed
+          if [[ -z "$cur" ]] || [[ "$option" == "$cur"* ]]; then
+            COMPREPLY+=("$option")
+          fi
+        done <<< "$dynamicOpts"
+        return 0
       else
         # Fall back to file completion
         COMPREPLY=($(compgen -f -- "\${cur}"))

@@ -218,11 +218,24 @@ skipWindows('zsh comp', () => {
 
 # Dynamic completion helper with timestamp-based caching
 # This outputs completion options to stdout for use in command substitution
+# Minimal escaping for zsh completion arrays - only escape truly problematic chars
+_test-cli_escape_comp() {
+  local value="$1"
+  # For zsh completion arrays :(value1 value2), we primarily need to escape:
+  # - Backslashes (must come first)
+  # - Spaces (since they separate array elements)
+  # - Colons (special meaning in some contexts)
+  value="\${value//\\\\/\\\\\\\\}"
+  value="\${value//:/\\\\:}"
+  value="\${value// /\\\\ }"
+  printf '%s\\n' "$value"
+}
+
 _test-cli_dynamic_comp() {
   local cmd_id="$1"
   local flag_name="$2"
   local cache_duration="$3"
-  
+
   # Determine cache directory based on platform (cross-platform)
   if [[ -n "$XDG_CACHE_HOME" ]]; then
     local cache_dir="$XDG_CACHE_HOME/test-cli/autocomplete/flag_completions"
@@ -243,8 +256,10 @@ _test-cli_dynamic_comp() {
     
     # Check if cache is still valid
     if [[ -n "$cache_timestamp" ]] && (( age < cache_duration )); then
-      # Cache valid - read and output options (skip first line and empty lines)
-      tail -n +2 "$cache_file" | grep -v "^$"
+      # Cache valid - read and output escaped options (skip first line and empty lines)
+      while IFS= read -r line; do
+        [[ -n "$line" ]] && _test-cli_escape_comp "$line"
+      done < <(tail -n +2 "$cache_file")
       return 0
     fi
   fi
@@ -260,8 +275,10 @@ _test-cli_dynamic_comp() {
       echo "$raw_output"
     } > "$cache_file"
     
-    # Output the completions
-    echo "$raw_output"
+    # Output the escaped completions
+    while IFS= read -r line; do
+      [[ -n "$line" ]] && _test-cli_escape_comp "$line"
+    done <<< "$raw_output"
   fi
   # If no output, return nothing (will fall back to default completion)
 }
@@ -404,11 +421,24 @@ compdef testing=test-cli
 
 # Dynamic completion helper with timestamp-based caching
 # This outputs completion options to stdout for use in command substitution
+# Minimal escaping for zsh completion arrays - only escape truly problematic chars
+_test-cli_escape_comp() {
+  local value="$1"
+  # For zsh completion arrays :(value1 value2), we primarily need to escape:
+  # - Backslashes (must come first)
+  # - Spaces (since they separate array elements)
+  # - Colons (special meaning in some contexts)
+  value="\${value//\\\\/\\\\\\\\}"
+  value="\${value//:/\\\\:}"
+  value="\${value// /\\\\ }"
+  printf '%s\\n' "$value"
+}
+
 _test-cli_dynamic_comp() {
   local cmd_id="$1"
   local flag_name="$2"
   local cache_duration="$3"
-  
+
   # Determine cache directory based on platform (cross-platform)
   if [[ -n "$XDG_CACHE_HOME" ]]; then
     local cache_dir="$XDG_CACHE_HOME/test-cli/autocomplete/flag_completions"
@@ -429,8 +459,10 @@ _test-cli_dynamic_comp() {
     
     # Check if cache is still valid
     if [[ -n "$cache_timestamp" ]] && (( age < cache_duration )); then
-      # Cache valid - read and output options (skip first line and empty lines)
-      tail -n +2 "$cache_file" | grep -v "^$"
+      # Cache valid - read and output escaped options (skip first line and empty lines)
+      while IFS= read -r line; do
+        [[ -n "$line" ]] && _test-cli_escape_comp "$line"
+      done < <(tail -n +2 "$cache_file")
       return 0
     fi
   fi
@@ -446,8 +478,10 @@ _test-cli_dynamic_comp() {
       echo "$raw_output"
     } > "$cache_file"
     
-    # Output the completions
-    echo "$raw_output"
+    # Output the escaped completions
+    while IFS= read -r line; do
+      [[ -n "$line" ]] && _test-cli_escape_comp "$line"
+    done <<< "$raw_output"
   fi
   # If no output, return nothing (will fall back to default completion)
 }
@@ -591,11 +625,24 @@ compdef testing2=test-cli
 
 # Dynamic completion helper with timestamp-based caching
 # This outputs completion options to stdout for use in command substitution
+# Minimal escaping for zsh completion arrays - only escape truly problematic chars
+_test-cli_escape_comp() {
+  local value="$1"
+  # For zsh completion arrays :(value1 value2), we primarily need to escape:
+  # - Backslashes (must come first)
+  # - Spaces (since they separate array elements)
+  # - Colons (special meaning in some contexts)
+  value="\${value//\\\\/\\\\\\\\}"
+  value="\${value//:/\\\\:}"
+  value="\${value// /\\\\ }"
+  printf '%s\\n' "$value"
+}
+
 _test-cli_dynamic_comp() {
   local cmd_id="$1"
   local flag_name="$2"
   local cache_duration="$3"
-  
+
   # Determine cache directory based on platform (cross-platform)
   if [[ -n "$XDG_CACHE_HOME" ]]; then
     local cache_dir="$XDG_CACHE_HOME/test-cli/autocomplete/flag_completions"
@@ -616,8 +663,10 @@ _test-cli_dynamic_comp() {
     
     # Check if cache is still valid
     if [[ -n "$cache_timestamp" ]] && (( age < cache_duration )); then
-      # Cache valid - read and output options (skip first line and empty lines)
-      tail -n +2 "$cache_file" | grep -v "^$"
+      # Cache valid - read and output escaped options (skip first line and empty lines)
+      while IFS= read -r line; do
+        [[ -n "$line" ]] && _test-cli_escape_comp "$line"
+      done < <(tail -n +2 "$cache_file")
       return 0
     fi
   fi
@@ -633,8 +682,10 @@ _test-cli_dynamic_comp() {
       echo "$raw_output"
     } > "$cache_file"
     
-    # Output the completions
-    echo "$raw_output"
+    # Output the escaped completions
+    while IFS= read -r line; do
+      [[ -n "$line" ]] && _test-cli_escape_comp "$line"
+    done <<< "$raw_output"
   fi
   # If no output, return nothing (will fall back to default completion)
 }
