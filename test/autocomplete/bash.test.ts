@@ -220,7 +220,7 @@ ${'app:execute:code '}
 
       local flagName="$\{prev#--}"
       # Try to get dynamic completions
-      local dynamicOpts=$(test-cli autocomplete:options --command="$\{__COMP_WORDS}" --flag="$\{flagName}" --current-line="$\{COMP_LINE}" 2>/dev/null)
+      local dynamicOpts=$(test-cli autocomplete:options --command="$\{__COMP_WORDS}" --flag="$\{flagName}" 2>/dev/null)
 
       if [[ -n "$dynamicOpts" ]]; then
         # Handle dynamic options line-by-line to properly support special characters
@@ -300,7 +300,7 @@ ${'app:execute:code '}
 
       local flagName="$\{prev#--}"
       # Try to get dynamic completions
-      local dynamicOpts=$(test-cli autocomplete:options --command="$\{__COMP_WORDS}" --flag="$\{flagName}" --current-line="$\{COMP_LINE}" 2>/dev/null)
+      local dynamicOpts=$(test-cli autocomplete:options --command="$\{__COMP_WORDS}" --flag="$\{flagName}" 2>/dev/null)
 
       if [[ -n "$dynamicOpts" ]]; then
         # Handle dynamic options line-by-line to properly support special characters
@@ -381,7 +381,7 @@ ${'app:execute:code '}
 
       local flagName="$\{prev#--}"
       # Try to get dynamic completions
-      local dynamicOpts=$(test-cli autocomplete:options --command="$\{__COMP_WORDS}" --flag="$\{flagName}" --current-line="$\{COMP_LINE}" 2>/dev/null)
+      local dynamicOpts=$(test-cli autocomplete:options --command="$\{__COMP_WORDS}" --flag="$\{flagName}" 2>/dev/null)
 
       if [[ -n "$dynamicOpts" ]]; then
         # Handle dynamic options line-by-line to properly support special characters

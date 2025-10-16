@@ -219,10 +219,9 @@ $scriptblock = {
               # Try dynamic flag value completion
               $FlagName = $PrevWord.TrimStart('-')
               $CommandId = $NextArg._command.id
-              $CurrentLineStr = $CommandAst.ToString()
 
               try {
-                  $DynamicOptions = & ${this.config.bin} autocomplete:options --command=$CommandId --flag=$FlagName --current-line="$CurrentLineStr" 2>$null
+                  $DynamicOptions = & ${this.config.bin} autocomplete:options --command=$CommandId --flag=$FlagName 2>$null
                   if ($DynamicOptions) {
                       $DynamicOptions | Where-Object {
                           $_.StartsWith("$WordToComplete")

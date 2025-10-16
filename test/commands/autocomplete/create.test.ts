@@ -103,7 +103,7 @@ foo --bar --baz --dangerous --brackets --double-quotes --multi-line --json
 
       local flagName="\${prev#--}"
       # Try to get dynamic completions
-      local dynamicOpts=$(oclif-example autocomplete:options --command="\${__COMP_WORDS}" --flag="\${flagName}" --current-line="\${COMP_LINE}" 2>/dev/null)
+      local dynamicOpts=$(oclif-example autocomplete:options --command="\${__COMP_WORDS}" --flag="\${flagName}" 2>/dev/null)
 
       if [[ -n "$dynamicOpts" ]]; then
         # Handle dynamic options line-by-line to properly support special characters
@@ -232,7 +232,7 @@ foo --bar --baz --dangerous --brackets --double-quotes --multi-line --json
       local flagName="\${prev#--}"
 
       # Try to get dynamic completions
-      local dynamicOpts=$(oclif-example autocomplete:options --command="\${normalizedCommand}" --flag="\${flagName}" --current-line="\${COMP_LINE}" 2>/dev/null)
+      local dynamicOpts=$(oclif-example autocomplete:options --command="\${normalizedCommand}" --flag="\${flagName}" 2>/dev/null)
 
       if [[ -n "$dynamicOpts" ]]; then
         # Handle dynamic options line-by-line to properly support special characters

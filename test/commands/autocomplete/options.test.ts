@@ -43,24 +43,6 @@ describe('autocomplete:options', () => {
     expect(stdout).to.equal('')
   })
 
-  it('accepts current-line flag', async () => {
-    // Should accept the current-line flag without error
-    const {stdout} = await runCommand<{name: string}>(
-      [
-        'autocomplete:options',
-        '--command',
-        'autocomplete',
-        '--flag',
-        'shell',
-        '--current-line',
-        'mycli autocomplete --shell',
-      ],
-      config,
-    )
-    // Should return empty since shell arg doesn't have completion
-    expect(stdout).to.equal('')
-  })
-
   // Note: We can't easily test actual completion results without creating a test command
   // with a completion function. The test manifest doesn't include commands with dynamic completions.
   // In a real scenario, you would:

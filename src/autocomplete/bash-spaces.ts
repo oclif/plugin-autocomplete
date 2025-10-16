@@ -71,7 +71,7 @@ _<CLI_BIN>_autocomplete()
       local flagName="\${prev#--}"
 
       # Try to get dynamic completions
-      local dynamicOpts=$(<CLI_BIN> autocomplete:options --command="\${normalizedCommand}" --flag="\${flagName}" --current-line="\${COMP_LINE}" 2>/dev/null)
+      local dynamicOpts=$(<CLI_BIN> autocomplete:options --command="\${normalizedCommand}" --flag="\${flagName}" 2>/dev/null)
 
       if [[ -n "$dynamicOpts" ]]; then
         # Handle dynamic options line-by-line to properly support special characters
