@@ -27,7 +27,7 @@ export default class PowerShellComp {
   constructor(config: Config) {
     this.config = config
     this.topics = this.getTopics()
-    this.commands = this.getCommands()
+    this.commands = []
   }
 
   private get coTopics(): string[] {
@@ -48,7 +48,12 @@ export default class PowerShellComp {
     return this._coTopics
   }
 
-  public generate(): string {
+  public async generate(): Promise<string> {
+    // Ensure commands are loaded with completion properties
+    if (this.commands.length === 0) {
+      await this.init()
+    }
+
     const genNode = (partialId: string): Record<string, any> => {
       const node: Record<string, any> = {}
 
@@ -206,9 +211,34 @@ $scriptblock = {
 
       # Start completing command.
       if ($NextArg._command -ne $null) {
-          # Complete flags
-          # \`cli config list -<TAB>\`
-          if ($WordToComplete -like '-*') {
+          # Check if we're completing a flag value
+          $PrevWord = if ($CurrentLine.Count -gt 0) { $CurrentLine[-1] } else { "" }
+          $IsCompletingFlagValue = $PrevWord -like '--*' -and $WordToComplete -notlike '-*'
+
+          if ($IsCompletingFlagValue) {
+              # Try dynamic flag value completion
+              $FlagName = $PrevWord.TrimStart('-')
+              $CommandId = $NextArg._command.id
+
+              try {
+                  $DynamicOptions = & ${this.config.bin} autocomplete:options --command=$CommandId --flag=$FlagName 2>$null
+                  if ($DynamicOptions) {
+                      $DynamicOptions | Where-Object {
+                          $_.StartsWith("$WordToComplete")
+                      } | ForEach-Object {
+                          New-Object -Type CompletionResult -ArgumentList \`
+                              $($Mode -eq "MenuComplete" ? "$_ " : "$_"),
+                              $_,
+                              "ParameterValue",
+                              " "
+                      }
+                  }
+              } catch {
+                  # Fall back to no completions if dynamic completion fails
+              }
+          } elseif ($WordToComplete -like '-*') {
+              # Complete flags
+              # \`cli config list -<TAB>\`
               $NextArg._command.flags.GetEnumerator() | Sort-Object -Property key
                   | Where-Object {
                       # Filter out already used flags (unless \`flag.multiple = true\`).
@@ -269,6 +299,10 @@ Register-ArgumentCompleter -Native -CommandName ${
     return compRegister
   }
 
+  async init(): Promise<void> {
+    this.commands = await this.getCommands()
+  }
+
   private genCmdHashtable(cmd: CommandCompletion): string {
     const flaghHashtables: string[] = []
 
@@ -289,18 +323,19 @@ Register-ArgumentCompleter -Native -CommandName ${
 
         if (f.type === 'option' && f.multiple) {
           flaghHashtables.push(
-            `    "${f.name}" = @{
+            `    "${flagName}" = @{
       "summary" = "${flagSummary}"
       "multiple" = $true
 }`,
           )
         } else {
-          flaghHashtables.push(`    "${f.name}" = @{ "summary" = "${flagSummary}" }`)
+          flaghHashtables.push(`    "${flagName}" = @{ "summary" = "${flagSummary}" }`)
         }
       }
     }
 
     const cmdHashtable = `@{
+  "id" = "${cmd.id}"
   "summary" = "${cmd.summary}"
   "flags" = @{
 ${flaghHashtables.join('\n')}
@@ -365,14 +400,31 @@ ${flaghHashtables.join('\n')}
     return leafTpl
   }
 
-  private getCommands(): CommandCompletion[] {
+  private async getCommands(): Promise<CommandCompletion[]> {
     const cmds: CommandCompletion[] = []
 
     for (const p of this.config.getPluginsList()) {
       for (const c of p.commands) {
         if (c.hidden) continue
         const summary = this.sanitizeSummary(c.summary ?? c.description)
-        const {flags} = c
+
+        // Try to load actual command class to get flags with completion properties
+        // This allows us to see dynamic completions, but gracefully falls back to
+        // manifest flags if loading fails - preserving existing behavior
+        let {flags} = c
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          const CommandClass = await c.load()
+          // Use flags from command class if available and not empty (includes completion properties)
+          if (CommandClass.flags && Object.keys(CommandClass.flags).length > 0) {
+            flags = CommandClass.flags as CommandFlags
+          }
+        } catch {
+          // Fall back to manifest flags if loading fails
+          // This ensures existing commands without completions continue to work exactly as before
+          flags = c.flags
+        }
+
         cmds.push({
           flags,
           id: c.id,

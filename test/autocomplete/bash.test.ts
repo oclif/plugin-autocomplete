@@ -185,7 +185,8 @@ skipWindows('bash comp', () => {
       const create = new Create([], config)
 
       // @ts-expect-error because it's a private method
-      expect(create.bashCompletionFunction.trim()).to.equal(`#!/usr/bin/env bash
+      const bashCompletionFunction = await create.getBashCompletionFunction()
+      expect(bashCompletionFunction.trim()).to.equal(`#!/usr/bin/env bash
 
 _test-cli_autocomplete()
 {
@@ -204,15 +205,50 @@ ${'app:execute:code '}
   if [[ "$cur" != "-"* ]]; then
     opts=$(printf "$commands" | grep -Eo '^[a-zA-Z0-9:_-]+')
   else
-    local __COMP_WORDS
-    if [[ $\{COMP_WORDS[2]} == ":" ]]; then
-      #subcommand
-      __COMP_WORDS=$(printf "%s" "$\{COMP_WORDS[@]:1:3}")
+    # Check if we're completing a flag value (previous word is a flag)
+    local prev="$\{COMP_WORDS[COMP_CWORD-1]}"
+    if [[ "$prev" == --* ]] && [[ "$cur" != "-"* ]]; then
+      # We're completing a flag value, try dynamic completion
+      local __COMP_WORDS
+      if [[ $\{COMP_WORDS[2]} == ":" ]]; then
+        #subcommand
+        __COMP_WORDS=$(printf "%s" "$\{COMP_WORDS[@]:1:3}")
+      else
+        #simple command
+        __COMP_WORDS="$\{COMP_WORDS[@]:1:1}"
+      fi
+
+      local flagName="$\{prev#--}"
+      # Try to get dynamic completions
+      local dynamicOpts=$(test-cli autocomplete:options --command="$\{__COMP_WORDS}" --flag="$\{flagName}" 2>/dev/null)
+
+      if [[ -n "$dynamicOpts" ]]; then
+        # Handle dynamic options line-by-line to properly support special characters
+        # This avoids issues with spaces, dollar signs, and other shell metacharacters
+        COMPREPLY=()
+        while IFS= read -r option; do
+          # Only add options that match the current word being completed
+          if [[ -z "$cur" ]] || [[ "$option" == "$cur"* ]]; then
+            COMPREPLY+=("$option")
+          fi
+        done <<< "$dynamicOpts"
+        return 0
+      else
+        # Fall back to file completion
+        COMPREPLY=($(compgen -f -- "$\{cur}"))
+        return 0
+      fi
     else
-      #simple command
-      __COMP_WORDS="$\{COMP_WORDS[@]:1:1}"
+      local __COMP_WORDS
+      if [[ $\{COMP_WORDS[2]} == ":" ]]; then
+        #subcommand
+        __COMP_WORDS=$(printf "%s" "$\{COMP_WORDS[@]:1:3}")
+      else
+        #simple command
+        __COMP_WORDS="$\{COMP_WORDS[@]:1:1}"
+      fi
+      opts=$(printf "$commands" | grep "$\{__COMP_WORDS}" | sed -n "s/^$\{__COMP_WORDS} //p")
     fi
-    opts=$(printf "$commands" | grep "$\{__COMP_WORDS}" | sed -n "s/^$\{__COMP_WORDS} //p")
   fi
   _get_comp_words_by_ref -n : cur
   COMPREPLY=( $(compgen -W "$\{opts}" -- $\{cur}) )
@@ -229,7 +265,8 @@ complete -o default -F _test-cli_autocomplete test-cli`)
       config.binAliases = ['alias']
       const create = new Create([], config)
       // @ts-expect-error because it's a private method
-      expect(create.bashCompletionFunction.trim()).to.equal(`#!/usr/bin/env bash
+      const bashCompletionFunction = await create.getBashCompletionFunction()
+      expect(bashCompletionFunction.trim()).to.equal(`#!/usr/bin/env bash
 
 _test-cli_autocomplete()
 {
@@ -248,15 +285,50 @@ ${'app:execute:code '}
   if [[ "$cur" != "-"* ]]; then
     opts=$(printf "$commands" | grep -Eo '^[a-zA-Z0-9:_-]+')
   else
-    local __COMP_WORDS
-    if [[ $\{COMP_WORDS[2]} == ":" ]]; then
-      #subcommand
-      __COMP_WORDS=$(printf "%s" "$\{COMP_WORDS[@]:1:3}")
+    # Check if we're completing a flag value (previous word is a flag)
+    local prev="$\{COMP_WORDS[COMP_CWORD-1]}"
+    if [[ "$prev" == --* ]] && [[ "$cur" != "-"* ]]; then
+      # We're completing a flag value, try dynamic completion
+      local __COMP_WORDS
+      if [[ $\{COMP_WORDS[2]} == ":" ]]; then
+        #subcommand
+        __COMP_WORDS=$(printf "%s" "$\{COMP_WORDS[@]:1:3}")
+      else
+        #simple command
+        __COMP_WORDS="$\{COMP_WORDS[@]:1:1}"
+      fi
+
+      local flagName="$\{prev#--}"
+      # Try to get dynamic completions
+      local dynamicOpts=$(test-cli autocomplete:options --command="$\{__COMP_WORDS}" --flag="$\{flagName}" 2>/dev/null)
+
+      if [[ -n "$dynamicOpts" ]]; then
+        # Handle dynamic options line-by-line to properly support special characters
+        # This avoids issues with spaces, dollar signs, and other shell metacharacters
+        COMPREPLY=()
+        while IFS= read -r option; do
+          # Only add options that match the current word being completed
+          if [[ -z "$cur" ]] || [[ "$option" == "$cur"* ]]; then
+            COMPREPLY+=("$option")
+          fi
+        done <<< "$dynamicOpts"
+        return 0
+      else
+        # Fall back to file completion
+        COMPREPLY=($(compgen -f -- "$\{cur}"))
+        return 0
+      fi
     else
-      #simple command
-      __COMP_WORDS="$\{COMP_WORDS[@]:1:1}"
+      local __COMP_WORDS
+      if [[ $\{COMP_WORDS[2]} == ":" ]]; then
+        #subcommand
+        __COMP_WORDS=$(printf "%s" "$\{COMP_WORDS[@]:1:3}")
+      else
+        #simple command
+        __COMP_WORDS="$\{COMP_WORDS[@]:1:1}"
+      fi
+      opts=$(printf "$commands" | grep "$\{__COMP_WORDS}" | sed -n "s/^$\{__COMP_WORDS} //p")
     fi
-    opts=$(printf "$commands" | grep "$\{__COMP_WORDS}" | sed -n "s/^$\{__COMP_WORDS} //p")
   fi
   _get_comp_words_by_ref -n : cur
   COMPREPLY=( $(compgen -W "$\{opts}" -- $\{cur}) )
@@ -274,7 +346,8 @@ complete -F _test-cli_autocomplete alias`)
       config.binAliases = ['alias', 'alias2']
       const create = new Create([], config)
       // @ts-expect-error because it's a private method
-      expect(create.bashCompletionFunction).to.equal(`#!/usr/bin/env bash
+      const bashCompletionFunction = await create.getBashCompletionFunction()
+      expect(bashCompletionFunction).to.equal(`#!/usr/bin/env bash
 
 _test-cli_autocomplete()
 {
@@ -293,15 +366,50 @@ ${'app:execute:code '}
   if [[ "$cur" != "-"* ]]; then
     opts=$(printf "$commands" | grep -Eo '^[a-zA-Z0-9:_-]+')
   else
-    local __COMP_WORDS
-    if [[ $\{COMP_WORDS[2]} == ":" ]]; then
-      #subcommand
-      __COMP_WORDS=$(printf "%s" "$\{COMP_WORDS[@]:1:3}")
+    # Check if we're completing a flag value (previous word is a flag)
+    local prev="$\{COMP_WORDS[COMP_CWORD-1]}"
+    if [[ "$prev" == --* ]] && [[ "$cur" != "-"* ]]; then
+      # We're completing a flag value, try dynamic completion
+      local __COMP_WORDS
+      if [[ $\{COMP_WORDS[2]} == ":" ]]; then
+        #subcommand
+        __COMP_WORDS=$(printf "%s" "$\{COMP_WORDS[@]:1:3}")
+      else
+        #simple command
+        __COMP_WORDS="$\{COMP_WORDS[@]:1:1}"
+      fi
+
+      local flagName="$\{prev#--}"
+      # Try to get dynamic completions
+      local dynamicOpts=$(test-cli autocomplete:options --command="$\{__COMP_WORDS}" --flag="$\{flagName}" 2>/dev/null)
+
+      if [[ -n "$dynamicOpts" ]]; then
+        # Handle dynamic options line-by-line to properly support special characters
+        # This avoids issues with spaces, dollar signs, and other shell metacharacters
+        COMPREPLY=()
+        while IFS= read -r option; do
+          # Only add options that match the current word being completed
+          if [[ -z "$cur" ]] || [[ "$option" == "$cur"* ]]; then
+            COMPREPLY+=("$option")
+          fi
+        done <<< "$dynamicOpts"
+        return 0
+      else
+        # Fall back to file completion
+        COMPREPLY=($(compgen -f -- "$\{cur}"))
+        return 0
+      fi
     else
-      #simple command
-      __COMP_WORDS="$\{COMP_WORDS[@]:1:1}"
+      local __COMP_WORDS
+      if [[ $\{COMP_WORDS[2]} == ":" ]]; then
+        #subcommand
+        __COMP_WORDS=$(printf "%s" "$\{COMP_WORDS[@]:1:3}")
+      else
+        #simple command
+        __COMP_WORDS="$\{COMP_WORDS[@]:1:1}"
+      fi
+      opts=$(printf "$commands" | grep "$\{__COMP_WORDS}" | sed -n "s/^$\{__COMP_WORDS} //p")
     fi
-    opts=$(printf "$commands" | grep "$\{__COMP_WORDS}" | sed -n "s/^$\{__COMP_WORDS} //p")
   fi
   _get_comp_words_by_ref -n : cur
   COMPREPLY=( $(compgen -W "$\{opts}" -- $\{cur}) )

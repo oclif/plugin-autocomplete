@@ -7,17 +7,13 @@
       "pluginName": "@oclif/plugin-autocomplete",
       "pluginType": "core",
       "aliases": [],
-      "examples": [
-        "$ heroku autocomplete",
-        "$ heroku autocomplete bash",
-        "$ heroku autocomplete zsh"
-      ],
+      "examples": ["$ heroku autocomplete", "$ heroku autocomplete bash", "$ heroku autocomplete zsh"],
       "flags": {
-        "skip-instructions": {
-          "name": "skip-instructions",
+        "refresh-cache": {
+          "name": "refresh-cache",
           "type": "boolean",
-          "char": "s",
-          "description": "don't show installation instructions"
+          "char": "r",
+          "description": "Refresh cache (ignores displaying instructions)"
         }
       },
       "args": [

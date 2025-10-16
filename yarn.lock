@@ -1858,6 +1858,30 @@
     wordwrap "^1.0.0"
     wrap-ansi "^7.0.0"
 
+"@oclif/core@autocomplete":
+  version "4.5.6-autocomplete.0"
+  resolved "https://registry.yarnpkg.com/@oclif/core/-/core-4.5.6-autocomplete.0.tgz#749f8a5fbdfc62f57e32aef37b6affefb045cdb0"
+  integrity sha512-PTYvKFHMR/rECFvzAvZqfrq31I8BpIM15qz9+X4BMf3lx9gbYJqPpRi4bOR8ullb6ddUVjDGRENRZQlBznsEgw==
+  dependencies:
+    ansi-escapes "^4.3.2"
+    ansis "^3.17.0"
+    clean-stack "^3.0.1"
+    cli-spinners "^2.9.2"
+    debug "^4.4.3"
+    ejs "^3.1.10"
+    get-package-type "^0.1.0"
+    indent-string "^4.0.0"
+    is-wsl "^2.2.0"
+    lilconfig "^3.1.3"
+    minimatch "^9.0.5"
+    semver "^7.7.3"
+    string-width "^4.2.3"
+    supports-color "^8"
+    tinyglobby "^0.2.14"
+    widest-line "^3.1.0"
+    wordwrap "^1.0.0"
+    wrap-ansi "^7.0.0"
+
 "@oclif/plugin-help@^6", "@oclif/plugin-help@^6.2.33":
   version "6.2.33"
   resolved "https://registry.yarnpkg.com/@oclif/plugin-help/-/plugin-help-6.2.33.tgz#931dc79b09e11ba50186a9846a2cf5a42a99e1ea"

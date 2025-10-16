@@ -55,6 +55,9 @@ const commandPluginA: Command.Loadable = {
   flags: {
     'api-version': {
       char: 'a',
+      completion: {
+        options: async () => ['50.0', '51.0', '52.0'],
+      },
       multiple: false,
       name: 'api-version',
       type: 'option',
@@ -74,6 +77,9 @@ const commandPluginA: Command.Loadable = {
     },
     metadata: {
       char: 'm',
+      completion: {
+        options: async () => ['ApexClass', 'CustomObject', 'Profile'],
+      },
       multiple: true,
       name: 'metadata',
       type: 'option',
@@ -97,6 +103,9 @@ const commandPluginB: Command.Loadable = {
   flags: {
     branch: {
       char: 'b',
+      completion: {
+        options: async () => ['main', 'develop', 'feature'],
+      },
       multiple: false,
       name: 'branch',
       type: 'option',
@@ -200,10 +209,79 @@ skipWindows('zsh comp', () => {
       }
     })
 
-    it('generates a valid completion file.', () => {
+    it('generates a valid completion file.', async () => {
       config.bin = 'test-cli'
       const zshCompWithSpaces = new ZshCompWithSpaces(config as Config)
-      expect(zshCompWithSpaces.generate()).to.equal(`#compdef test-cli
+      expect(await zshCompWithSpaces.generate()).to.equal(`#compdef test-cli
+
+
+
+# Dynamic completion helper with timestamp-based caching
+# This outputs completion options to stdout for use in command substitution
+# Minimal escaping for zsh completion arrays - only escape truly problematic chars
+_test-cli_escape_comp() {
+  local value="$1"
+  # For zsh completion arrays :(value1 value2), we primarily need to escape:
+  # - Backslashes (must come first)
+  # - Spaces (since they separate array elements)
+  # - Colons (special meaning in some contexts)
+  value="\${value//\\\\/\\\\\\\\}"
+  value="\${value//:/\\\\:}"
+  value="\${value// /\\\\ }"
+  printf '%s\\n' "$value"
+}
+
+_test-cli_dynamic_comp() {
+  local cmd_id="$1"
+  local flag_name="$2"
+  local cache_duration="$3"
+
+  # Determine cache directory based on platform (cross-platform)
+  if [[ -n "$XDG_CACHE_HOME" ]]; then
+    local cache_dir="$XDG_CACHE_HOME/test-cli/autocomplete/flag_completions"
+  elif [[ "$OSTYPE" == darwin* ]]; then
+    local cache_dir="$HOME/Library/Caches/test-cli/autocomplete/flag_completions"
+  else
+    local cache_dir="$HOME/.cache/test-cli/autocomplete/flag_completions"
+  fi
+  
+  local cache_file="$cache_dir/\${cmd_id//[:]/_}_\${flag_name}.cache"
+  
+  # Check if cache file exists and is valid
+  if [[ -f "$cache_file" ]]; then
+    # Read timestamp from first line
+    local cache_timestamp=$(head -n 1 "$cache_file" 2>/dev/null)
+    local current_timestamp=$(date +%s)
+    local age=$((current_timestamp - cache_timestamp))
+    
+    # Check if cache is still valid
+    if [[ -n "$cache_timestamp" ]] && (( age < cache_duration )); then
+      # Cache valid - read and output escaped options (skip first line and empty lines)
+      while IFS= read -r line; do
+        [[ -n "$line" ]] && _test-cli_escape_comp "$line"
+      done < <(tail -n +2 "$cache_file")
+      return 0
+    fi
+  fi
+  
+  # Cache miss or expired - call Node.js
+  mkdir -p "$cache_dir" 2>/dev/null
+  local raw_output=$(test-cli autocomplete:options --command=\${cmd_id} --flag=\${flag_name} 2>/dev/null)
+  
+  if [[ -n "$raw_output" ]]; then
+    # Save to cache with timestamp
+    {
+      echo "$(date +%s)"
+      echo "$raw_output"
+    } > "$cache_file"
+    
+    # Output the escaped completions
+    while IFS= read -r line; do
+      [[ -n "$line" ]] && _test-cli_escape_comp "$line"
+    done <<< "$raw_output"
+  fi
+  # If no output, return nothing (will fall back to default completion)
+}
 
 
 _test-cli_app() {
@@ -215,7 +293,7 @@ _test-cli_app() {
   case "$state" in
     cmds)
 _values "completions" \\
-"execute[execute code]" \\
+"execute[execute code]"
 
       ;;
     args)
@@ -238,14 +316,14 @@ _test-cli_app_execute() {
   case "$state" in
     cmds)
 _values "completions" \\
-"code[execute code]" \\
+"code[execute code]"
 
       ;;
     args)
       case $line[1] in
         "code")
           _arguments -S \\
---help"[Show help for command]" \\
+"--help[Show help for command]" \\
 "*: :_files"
         ;;
 
@@ -260,11 +338,11 @@ _test-cli_deploy() {
     typeset -A opt_args
 
     _arguments -S \\
-"(-a --api-version)"{-a,--api-version}"[]:file:_files" \\
+"(-a --api-version)"{-a,--api-version}"[]: :($(_test-cli_dynamic_comp deploy api-version 86400))" \\
 "(-i --ignore-errors)"{-i,--ignore-errors}"[Ignore errors.]" \\
---json"[Format output as json.]" \\
-"*"{-m,--metadata}"[]:file:_files" \\
---help"[Show help for command]" \\
+"--json[Format output as json.]" \\
+"*"{-m,--metadata}"[]: :($(_test-cli_dynamic_comp deploy metadata 86400))" \\
+"--help[Show help for command]" \\
 "*: :_files"
   }
 
@@ -279,7 +357,7 @@ _test-cli_deploy() {
         _test-cli_deploy_flags
       else
 _values "completions" \\
-"functions[Deploy a function.]" \\
+"functions[Deploy a function.]"
 
       fi
       ;;
@@ -287,8 +365,8 @@ _values "completions" \\
       case $line[1] in
         "functions")
           _arguments -S \\
-"(-b --branch)"{-b,--branch}"[]:file:_files" \\
---help"[Show help for command]" \\
+"(-b --branch)"{-b,--branch}"[]: :($(_test-cli_dynamic_comp deploy:functions branch 86400))" \\
+"--help[Show help for command]" \\
 "*: :_files"
         ;;
 
@@ -312,7 +390,7 @@ _test-cli() {
       _values "completions" \\
 "app[execute code]" \\
 "deploy[Deploy a project]" \\
-"search[Search for a command]" \\
+"search[Search for a command]"
 
     ;;
     args)
@@ -333,12 +411,81 @@ _test-cli
 `)
     })
 
-    it('generates a valid completion file with a bin alias.', () => {
+    it('generates a valid completion file with a bin alias.', async () => {
       config.bin = 'test-cli'
       config.binAliases = ['testing']
       const zshCompWithSpaces = new ZshCompWithSpaces(config as Config)
-      expect(zshCompWithSpaces.generate()).to.equal(`#compdef test-cli
+      expect(await zshCompWithSpaces.generate()).to.equal(`#compdef test-cli
 compdef testing=test-cli
+
+
+# Dynamic completion helper with timestamp-based caching
+# This outputs completion options to stdout for use in command substitution
+# Minimal escaping for zsh completion arrays - only escape truly problematic chars
+_test-cli_escape_comp() {
+  local value="$1"
+  # For zsh completion arrays :(value1 value2), we primarily need to escape:
+  # - Backslashes (must come first)
+  # - Spaces (since they separate array elements)
+  # - Colons (special meaning in some contexts)
+  value="\${value//\\\\/\\\\\\\\}"
+  value="\${value//:/\\\\:}"
+  value="\${value// /\\\\ }"
+  printf '%s\\n' "$value"
+}
+
+_test-cli_dynamic_comp() {
+  local cmd_id="$1"
+  local flag_name="$2"
+  local cache_duration="$3"
+
+  # Determine cache directory based on platform (cross-platform)
+  if [[ -n "$XDG_CACHE_HOME" ]]; then
+    local cache_dir="$XDG_CACHE_HOME/test-cli/autocomplete/flag_completions"
+  elif [[ "$OSTYPE" == darwin* ]]; then
+    local cache_dir="$HOME/Library/Caches/test-cli/autocomplete/flag_completions"
+  else
+    local cache_dir="$HOME/.cache/test-cli/autocomplete/flag_completions"
+  fi
+  
+  local cache_file="$cache_dir/\${cmd_id//[:]/_}_\${flag_name}.cache"
+  
+  # Check if cache file exists and is valid
+  if [[ -f "$cache_file" ]]; then
+    # Read timestamp from first line
+    local cache_timestamp=$(head -n 1 "$cache_file" 2>/dev/null)
+    local current_timestamp=$(date +%s)
+    local age=$((current_timestamp - cache_timestamp))
+    
+    # Check if cache is still valid
+    if [[ -n "$cache_timestamp" ]] && (( age < cache_duration )); then
+      # Cache valid - read and output escaped options (skip first line and empty lines)
+      while IFS= read -r line; do
+        [[ -n "$line" ]] && _test-cli_escape_comp "$line"
+      done < <(tail -n +2 "$cache_file")
+      return 0
+    fi
+  fi
+  
+  # Cache miss or expired - call Node.js
+  mkdir -p "$cache_dir" 2>/dev/null
+  local raw_output=$(test-cli autocomplete:options --command=\${cmd_id} --flag=\${flag_name} 2>/dev/null)
+  
+  if [[ -n "$raw_output" ]]; then
+    # Save to cache with timestamp
+    {
+      echo "$(date +%s)"
+      echo "$raw_output"
+    } > "$cache_file"
+    
+    # Output the escaped completions
+    while IFS= read -r line; do
+      [[ -n "$line" ]] && _test-cli_escape_comp "$line"
+    done <<< "$raw_output"
+  fi
+  # If no output, return nothing (will fall back to default completion)
+}
+
 
 _test-cli_app() {
   local context state state_descr line
@@ -349,7 +496,7 @@ _test-cli_app() {
   case "$state" in
     cmds)
 _values "completions" \\
-"execute[execute code]" \\
+"execute[execute code]"
 
       ;;
     args)
@@ -372,14 +519,14 @@ _test-cli_app_execute() {
   case "$state" in
     cmds)
 _values "completions" \\
-"code[execute code]" \\
+"code[execute code]"
 
       ;;
     args)
       case $line[1] in
         "code")
           _arguments -S \\
---help"[Show help for command]" \\
+"--help[Show help for command]" \\
 "*: :_files"
         ;;
 
@@ -394,11 +541,11 @@ _test-cli_deploy() {
     typeset -A opt_args
 
     _arguments -S \\
-"(-a --api-version)"{-a,--api-version}"[]:file:_files" \\
+"(-a --api-version)"{-a,--api-version}"[]: :($(_test-cli_dynamic_comp deploy api-version 86400))" \\
 "(-i --ignore-errors)"{-i,--ignore-errors}"[Ignore errors.]" \\
---json"[Format output as json.]" \\
-"*"{-m,--metadata}"[]:file:_files" \\
---help"[Show help for command]" \\
+"--json[Format output as json.]" \\
+"*"{-m,--metadata}"[]: :($(_test-cli_dynamic_comp deploy metadata 86400))" \\
+"--help[Show help for command]" \\
 "*: :_files"
   }
 
@@ -413,7 +560,7 @@ _test-cli_deploy() {
         _test-cli_deploy_flags
       else
 _values "completions" \\
-"functions[Deploy a function.]" \\
+"functions[Deploy a function.]"
 
       fi
       ;;
@@ -421,8 +568,8 @@ _values "completions" \\
       case $line[1] in
         "functions")
           _arguments -S \\
-"(-b --branch)"{-b,--branch}"[]:file:_files" \\
---help"[Show help for command]" \\
+"(-b --branch)"{-b,--branch}"[]: :($(_test-cli_dynamic_comp deploy:functions branch 86400))" \\
+"--help[Show help for command]" \\
 "*: :_files"
         ;;
 
@@ -446,7 +593,7 @@ _test-cli() {
       _values "completions" \\
 "app[execute code]" \\
 "deploy[Deploy a project]" \\
-"search[Search for a command]" \\
+"search[Search for a command]"
 
     ;;
     args)
@@ -467,13 +614,82 @@ _test-cli
 `)
     })
 
-    it('generates a valid completion file with multiple bin aliases.', () => {
+    it('generates a valid completion file with multiple bin aliases.', async () => {
       config.bin = 'test-cli'
       config.binAliases = ['testing', 'testing2']
       const zshCompWithSpaces = new ZshCompWithSpaces(config as Config)
-      expect(zshCompWithSpaces.generate()).to.equal(`#compdef test-cli
+      expect(await zshCompWithSpaces.generate()).to.equal(`#compdef test-cli
 compdef testing=test-cli
 compdef testing2=test-cli
+
+
+# Dynamic completion helper with timestamp-based caching
+# This outputs completion options to stdout for use in command substitution
+# Minimal escaping for zsh completion arrays - only escape truly problematic chars
+_test-cli_escape_comp() {
+  local value="$1"
+  # For zsh completion arrays :(value1 value2), we primarily need to escape:
+  # - Backslashes (must come first)
+  # - Spaces (since they separate array elements)
+  # - Colons (special meaning in some contexts)
+  value="\${value//\\\\/\\\\\\\\}"
+  value="\${value//:/\\\\:}"
+  value="\${value// /\\\\ }"
+  printf '%s\\n' "$value"
+}
+
+_test-cli_dynamic_comp() {
+  local cmd_id="$1"
+  local flag_name="$2"
+  local cache_duration="$3"
+
+  # Determine cache directory based on platform (cross-platform)
+  if [[ -n "$XDG_CACHE_HOME" ]]; then
+    local cache_dir="$XDG_CACHE_HOME/test-cli/autocomplete/flag_completions"
+  elif [[ "$OSTYPE" == darwin* ]]; then
+    local cache_dir="$HOME/Library/Caches/test-cli/autocomplete/flag_completions"
+  else
+    local cache_dir="$HOME/.cache/test-cli/autocomplete/flag_completions"
+  fi
+  
+  local cache_file="$cache_dir/\${cmd_id//[:]/_}_\${flag_name}.cache"
+  
+  # Check if cache file exists and is valid
+  if [[ -f "$cache_file" ]]; then
+    # Read timestamp from first line
+    local cache_timestamp=$(head -n 1 "$cache_file" 2>/dev/null)
+    local current_timestamp=$(date +%s)
+    local age=$((current_timestamp - cache_timestamp))
+    
+    # Check if cache is still valid
+    if [[ -n "$cache_timestamp" ]] && (( age < cache_duration )); then
+      # Cache valid - read and output escaped options (skip first line and empty lines)
+      while IFS= read -r line; do
+        [[ -n "$line" ]] && _test-cli_escape_comp "$line"
+      done < <(tail -n +2 "$cache_file")
+      return 0
+    fi
+  fi
+  
+  # Cache miss or expired - call Node.js
+  mkdir -p "$cache_dir" 2>/dev/null
+  local raw_output=$(test-cli autocomplete:options --command=\${cmd_id} --flag=\${flag_name} 2>/dev/null)
+  
+  if [[ -n "$raw_output" ]]; then
+    # Save to cache with timestamp
+    {
+      echo "$(date +%s)"
+      echo "$raw_output"
+    } > "$cache_file"
+    
+    # Output the escaped completions
+    while IFS= read -r line; do
+      [[ -n "$line" ]] && _test-cli_escape_comp "$line"
+    done <<< "$raw_output"
+  fi
+  # If no output, return nothing (will fall back to default completion)
+}
+
 
 _test-cli_app() {
   local context state state_descr line
@@ -484,7 +700,7 @@ _test-cli_app() {
   case "$state" in
     cmds)
 _values "completions" \\
-"execute[execute code]" \\
+"execute[execute code]"
 
       ;;
     args)
@@ -507,14 +723,14 @@ _test-cli_app_execute() {
   case "$state" in
     cmds)
 _values "completions" \\
-"code[execute code]" \\
+"code[execute code]"
 
       ;;
     args)
       case $line[1] in
         "code")
           _arguments -S \\
---help"[Show help for command]" \\
+"--help[Show help for command]" \\
 "*: :_files"
         ;;
 
@@ -529,11 +745,11 @@ _test-cli_deploy() {
     typeset -A opt_args
 
     _arguments -S \\
-"(-a --api-version)"{-a,--api-version}"[]:file:_files" \\
+"(-a --api-version)"{-a,--api-version}"[]: :($(_test-cli_dynamic_comp deploy api-version 86400))" \\
 "(-i --ignore-errors)"{-i,--ignore-errors}"[Ignore errors.]" \\
---json"[Format output as json.]" \\
-"*"{-m,--metadata}"[]:file:_files" \\
---help"[Show help for command]" \\
+"--json[Format output as json.]" \\
+"*"{-m,--metadata}"[]: :($(_test-cli_dynamic_comp deploy metadata 86400))" \\
+"--help[Show help for command]" \\
 "*: :_files"
   }
 
@@ -548,7 +764,7 @@ _test-cli_deploy() {
         _test-cli_deploy_flags
       else
 _values "completions" \\
-"functions[Deploy a function.]" \\
+"functions[Deploy a function.]"
 
       fi
       ;;
@@ -556,8 +772,8 @@ _values "completions" \\
       case $line[1] in
         "functions")
           _arguments -S \\
-"(-b --branch)"{-b,--branch}"[]:file:_files" \\
---help"[Show help for command]" \\
+"(-b --branch)"{-b,--branch}"[]: :($(_test-cli_dynamic_comp deploy:functions branch 86400))" \\
+"--help[Show help for command]" \\
 "*: :_files"
         ;;
 
@@ -581,7 +797,7 @@ _test-cli() {
       _values "completions" \\
 "app[execute code]" \\
 "deploy[Deploy a project]" \\
-"search[Search for a command]" \\
+"search[Search for a command]"
 
     ;;
     args)

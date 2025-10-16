@@ -62,13 +62,42 @@ _<CLI_BIN>_autocomplete()
   else 
     # Flag
 
-    # The full CLI command separated by colons (e.g. "mycli command subcommand --fl" -> "command:subcommand")
-    # This needs to be defined with $COMP_CWORD-1 as opposed to above because the current "word" on the command line is a flag and the command is everything before the flag
-    normalizedCommand="$( printf "%s" "$(join_by ":" "\${COMP_WORDS[@]:1:($COMP_CWORD - 1)}")" )"
+    # Check if we're completing a flag value (previous word is a flag)
+    local prev="\${COMP_WORDS[COMP_CWORD-1]}"
+    if [[ "$prev" == --* ]] && [[ "$cur" != "-"* ]]; then
+      # We're completing a flag value, try dynamic completion
+      # The full CLI command separated by colons
+      normalizedCommand="$( printf "%s" "$(join_by ":" "\${COMP_WORDS[@]:1:($COMP_CWORD - 2)}")" )"
+      local flagName="\${prev#--}"
 
-    # The line below finds the command in $commands using grep
-    # Then, using sed, it removes everything from the found command before the --flags (e.g. "command:subcommand:subsubcom --flag1 --flag2" -> "--flag1 --flag2")
-    opts=$(printf "%s " "\${commands[@]}" | grep "\${normalizedCommand}" | sed -n "s/^\${normalizedCommand} //p")
+      # Try to get dynamic completions
+      local dynamicOpts=$(<CLI_BIN> autocomplete:options --command="\${normalizedCommand}" --flag="\${flagName}" 2>/dev/null)
+
+      if [[ -n "$dynamicOpts" ]]; then
+        # Handle dynamic options line-by-line to properly support special characters
+        # This avoids issues with spaces, dollar signs, and other shell metacharacters
+        COMPREPLY=()
+        while IFS= read -r option; do
+          # Only add options that match the current word being completed
+          if [[ -z "$cur" ]] || [[ "$option" == "$cur"* ]]; then
+            COMPREPLY+=("$option")
+          fi
+        done <<< "$dynamicOpts"
+        return 0
+      else
+        # Fall back to file completion
+        COMPREPLY=($(compgen -f -- "\${cur}"))
+        return 0
+      fi
+    else
+      # The full CLI command separated by colons (e.g. "mycli command subcommand --fl" -> "command:subcommand")
+      # This needs to be defined with $COMP_CWORD-1 as opposed to above because the current "word" on the command line is a flag and the command is everything before the flag
+      normalizedCommand="$( printf "%s" "$(join_by ":" "\${COMP_WORDS[@]:1:($COMP_CWORD - 1)}")" )"
+
+      # The line below finds the command in $commands using grep
+      # Then, using sed, it removes everything from the found command before the --flags (e.g. "command:subcommand:subsubcom --flag1 --flag2" -> "--flag1 --flag2")
+      opts=$(printf "%s " "\${commands[@]}" | grep "\${normalizedCommand}" | sed -n "s/^\${normalizedCommand} //p")
+    fi
   fi
 
   COMPREPLY=($(compgen -W "$opts" -- "\${cur}"))
