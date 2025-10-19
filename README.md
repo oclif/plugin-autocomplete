@@ -43,7 +43,7 @@ USAGE
   $ oclif-example autocomplete [SHELL] [-r]
 
 ARGUMENTS
-  SHELL  (zsh|bash|powershell) Shell type
+  [SHELL]  (zsh|bash|powershell) Shell type
 
 FLAGS
   -r, --refresh-cache  Refresh cache (ignores displaying instructions)
@@ -63,7 +63,7 @@ EXAMPLES
   $ oclif-example autocomplete --refresh-cache
 ```
 
-_See code: [src/commands/autocomplete/index.ts](https://github.com/oclif/plugin-autocomplete/blob/3.2.36/src/commands/autocomplete/index.ts)_
+_See code: [src/commands/autocomplete/index.ts](https://github.com/oclif/plugin-autocomplete/blob/3.2.37/src/commands/autocomplete/index.ts)_
 
 <!-- commandsstop -->
 
