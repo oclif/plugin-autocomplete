@@ -2,7 +2,7 @@ import makeDebug from 'debug'
 import {mkdir, writeFile} from 'node:fs/promises'
 import path from 'node:path'
 
-import bashAutocompleteWithSpaces from '../../autocomplete/bash-spaces.js'
+import BashCompWithSpaces from '../../autocomplete/bash-spaces.js'
 import bashAutocomplete from '../../autocomplete/bash.js'
 import PowerShellComp from '../../autocomplete/powershell.js'
 import ZshCompWithSpaces from '../../autocomplete/zsh.js'
@@ -43,21 +43,25 @@ export default class Create extends AutocompleteBase {
   }
 
   private get bashCompletionFunction(): string {
-    const {cliBin} = this
     const supportSpaces = this.config.topicSeparator === ' '
-    const bashScript =
-      process.env.OCLIF_AUTOCOMPLETE_TOPIC_SEPARATOR === 'colon' || !supportSpaces
-        ? bashAutocomplete
-        : bashAutocompleteWithSpaces
-    return (
-      bashScript
-        // eslint-disable-next-line unicorn/prefer-spread
-        .concat(
-          ...(this.config.binAliases?.map((alias) => `complete -F _<CLI_BIN>_autocomplete ${alias}`).join('\n') ?? []),
-        )
-        .replaceAll('<CLI_BIN>', cliBin)
-        .replaceAll('<BASH_COMMANDS_WITH_FLAGS_LIST>', this.bashCommandsWithFlagsList)
-    )
+    
+    if (process.env.OCLIF_AUTOCOMPLETE_TOPIC_SEPARATOR === 'colon' || !supportSpaces) {
+      // Use the old static bash script for colon-separated topics
+      const {cliBin} = this
+      return (
+        bashAutocomplete
+          // eslint-disable-next-line unicorn/prefer-spread
+          .concat(
+            ...(this.config.binAliases?.map((alias) => `complete -F _<CLI_BIN>_autocomplete ${alias}`).join('\n') ?? []),
+          )
+          .replaceAll('<CLI_BIN>', cliBin)
+          .replaceAll('<BASH_COMMANDS_WITH_FLAGS_LIST>', this.bashCommandsWithFlagsList)
+      )
+    }
+    
+    // Use the new BashCompWithSpaces class for space-separated topics
+    const bashComp = new BashCompWithSpaces(this.config)
+    return bashComp.generate()
   }
 
   private get bashCompletionFunctionPath(): string {
