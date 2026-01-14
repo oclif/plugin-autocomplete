@@ -177,6 +177,28 @@ _${this.config.bin}
 
       flagSpec += ' \\\n'
       argumentsBlock += flagSpec
+
+      // Add completions for flag aliases
+      const aliases = (f as any).aliases as string[] | undefined
+      if (aliases && aliases.length > 0) {
+        for (const alias of aliases) {
+          let aliasSpec = ''
+          if (f.type === 'option') {
+            if (f.multiple) {
+              aliasSpec += '"*"'
+            }
+
+            aliasSpec += `--${alias}"[${flagSummary}]:`
+            aliasSpec += f.options ? `${f.name} options:(${f.options.join(' ')})"` : 'file:_files"'
+          } else {
+            // Flag.Boolean
+            aliasSpec += `--${alias}"[${flagSummary}]"`
+          }
+
+          aliasSpec += ' \\\n'
+          argumentsBlock += aliasSpec
+        }
+      }
     }
 
     // add global `--help` flag

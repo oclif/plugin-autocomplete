@@ -146,6 +146,39 @@ const commandPluginD: Command.Loadable = {
   summary: 'execute code',
 }
 
+// Command with flag aliases for testing
+const commandWithFlagAliases: Command.Loadable = {
+  aliases: [],
+  args: {},
+  flags: {
+    'no-progress': {
+      aliases: ['noProgress'],
+      allowNo: false,
+      name: 'no-progress',
+      summary: 'Disable progress output.',
+      type: 'boolean',
+    },
+    'use-cache': {
+      aliases: ['useCache', 'cache'],
+      char: 'c',
+      multiple: false,
+      name: 'use-cache',
+      summary: 'Use cached data.',
+      type: 'option',
+    },
+  },
+  hidden: false,
+  hiddenAliases: [],
+  id: 'build',
+  async load(): Promise<Command.Class> {
+    return new MyCommandClass() as unknown as Command.Class
+  },
+  pluginAlias: '@My/plugine',
+  pluginType: 'core',
+  strict: false,
+  summary: 'Build a project',
+}
+
 const pluginA: IPlugin = {
   _base: '',
   alias: '@My/plugina',
@@ -600,6 +633,63 @@ esac
 
 _test-cli
 `)
+    })
+  })
+
+  describe('zsh completion with flag aliases', () => {
+    const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../package.json')
+    const config = new Config({root})
+
+    const pluginWithFlagAliases: IPlugin = {
+      _base: '',
+      alias: '@My/pluginWithFlagAliases',
+      commandIDs: ['build'],
+      commands: [commandWithFlagAliases],
+      commandsDir: '',
+      async findCommand(): Promise<Command.Class> {
+        return new MyCommandClass() as unknown as Command.Class
+      },
+      hasManifest: false,
+      hooks: {},
+      isRoot: false,
+      async load(): Promise<void> {},
+      moduleType: 'commonjs',
+      name: '@My/pluginWithFlagAliases',
+      options: {root: ''},
+      pjson: {} as any,
+      root: '',
+      tag: 'tag',
+      topics: [],
+      type: 'core',
+      valid: true,
+      version: '0.0.0',
+    }
+
+    before(async () => {
+      await config.load()
+      config.plugins.set(pluginWithFlagAliases.name, pluginWithFlagAliases)
+      config.plugins.delete('@oclif/plugin-autocomplete')
+      for (const plugin of config.getPluginsList()) {
+        // @ts-expect-error private method
+        config.loadCommands(plugin)
+        // @ts-expect-error private method
+        config.loadTopics(plugin)
+      }
+    })
+
+    it('includes flag aliases in the completion output', () => {
+      config.bin = 'test-cli'
+      const zshCompWithSpaces = new ZshCompWithSpaces(config as Config)
+      const output = zshCompWithSpaces.generate()
+
+      // Check that main flags are present
+      expect(output).to.include('--no-progress')
+      expect(output).to.include('--use-cache')
+
+      // Check that flag aliases are present
+      expect(output).to.include('--noProgress')
+      expect(output).to.include('--useCache')
+      expect(output).to.include('--cache')
     })
   })
 })
