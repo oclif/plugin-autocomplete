@@ -1,3 +1,9 @@
+## [3.2.40](https://github.com/oclif/plugin-autocomplete/compare/3.2.39...3.2.40) (2026-01-22)
+
+### Bug Fixes
+
+- **deps:** bump lodash from 4.17.21 to 4.17.23 ([#1093](https://github.com/oclif/plugin-autocomplete/issues/1093)) ([eea1f68](https://github.com/oclif/plugin-autocomplete/commit/eea1f68a992373dafa3f4516a2e0079493b7e5d2))
+
 ## [3.2.39](https://github.com/oclif/plugin-autocomplete/compare/3.2.38...3.2.39) (2025-11-02)
 
 ### Bug Fixes
