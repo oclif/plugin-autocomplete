@@ -297,6 +297,23 @@ Register-ArgumentCompleter -Native -CommandName ${
         } else {
           flaghHashtables.push(`    "${f.name}" = @{ "summary" = "${flagSummary}" }`)
         }
+
+        // Add flag aliases
+        const aliases = (f as any).aliases as string[] | undefined
+        if (aliases && aliases.length > 0) {
+          for (const alias of aliases) {
+            if (f.type === 'option' && f.multiple) {
+              flaghHashtables.push(
+                `    "${alias}" = @{
+      "summary" = "${flagSummary}"
+      "multiple" = $true
+}`,
+              )
+            } else {
+              flaghHashtables.push(`    "${alias}" = @{ "summary" = "${flagSummary}" }`)
+            }
+          }
+        }
       }
     }
 

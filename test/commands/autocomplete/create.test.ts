@@ -272,5 +272,49 @@ _oclif-example\n`)
 
       /* eslint-enable no-useless-escape */
     })
+
+    it('#bashCompletionFunction includes flag aliases', async () => {
+      const aliasConfig = new Config({root})
+      await aliasConfig.load()
+      const aliasCmd: any = new Create([], aliasConfig)
+      const aliasPlugin: any = new Plugin({root})
+      aliasCmd.config.plugins = [aliasPlugin]
+      aliasPlugin._manifest = () =>
+        readJson(
+          path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../test.oclif.manifest.flag-aliases.json'),
+        )
+      await aliasPlugin.load()
+
+      const bashOutput = aliasCmd.bashCompletionFunction as string
+      // Check that main flags are present
+      expect(bashOutput).to.include('--no-progress')
+      expect(bashOutput).to.include('--use-cache')
+      // Check that flag aliases are present
+      expect(bashOutput).to.include('--noProgress')
+      expect(bashOutput).to.include('--useCache')
+      expect(bashOutput).to.include('--cache')
+    })
+
+    it('#zshCompletionFunction includes flag aliases', async () => {
+      const aliasConfig = new Config({root})
+      await aliasConfig.load()
+      const aliasCmd: any = new Create([], aliasConfig)
+      const aliasPlugin: any = new Plugin({root})
+      aliasCmd.config.plugins = [aliasPlugin]
+      aliasPlugin._manifest = () =>
+        readJson(
+          path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../test.oclif.manifest.flag-aliases.json'),
+        )
+      await aliasPlugin.load()
+
+      const zshOutput = aliasCmd.zshCompletionFunction as string
+      // Check that main flags are present
+      expect(zshOutput).to.include('--no-progress')
+      expect(zshOutput).to.include('--use-cache')
+      // Check that flag aliases are present
+      expect(zshOutput).to.include('--noProgress')
+      expect(zshOutput).to.include('--useCache')
+      expect(zshOutput).to.include('--cache')
+    })
   })
 })

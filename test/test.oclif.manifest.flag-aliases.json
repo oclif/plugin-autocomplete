@@ -1,0 +1,28 @@
+{
+  "version": "0.0.0",
+  "commands": {
+    "build": {
+      "id": "build",
+      "description": "build a project",
+      "pluginName": "@oclif/plugin-autocomplete",
+      "pluginType": "core",
+      "aliases": [],
+      "flags": {
+        "no-progress": {
+          "name": "no-progress",
+          "type": "boolean",
+          "description": "disable progress output",
+          "aliases": ["noProgress"]
+        },
+        "use-cache": {
+          "name": "use-cache",
+          "type": "option",
+          "char": "c",
+          "description": "use cached data",
+          "aliases": ["useCache", "cache"]
+        }
+      },
+      "args": []
+    }
+  }
+}
