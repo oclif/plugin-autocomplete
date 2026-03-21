@@ -1,3 +1,9 @@
+## [3.2.42](https://github.com/oclif/plugin-autocomplete/compare/3.2.41...3.2.42) (2026-03-21)
+
+### Bug Fixes
+
+- **deps:** bump flatted from 3.3.2 to 3.4.2 ([#1118](https://github.com/oclif/plugin-autocomplete/issues/1118)) ([fd847d4](https://github.com/oclif/plugin-autocomplete/commit/fd847d4bd6078d5ede6c21eabb1d3b4bbd2b313e))
+
 ## [3.2.41](https://github.com/oclif/plugin-autocomplete/compare/3.2.40...3.2.41) (2026-03-15)
 
 ### Bug Fixes
