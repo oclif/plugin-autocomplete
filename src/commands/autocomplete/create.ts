@@ -262,25 +262,47 @@ compinit;\n`
 
   private genCmdPublicFlags(Command: CommandCompletion): string {
     const Flags = Command.flags || {}
-    return Object.keys(Flags)
-      .filter((flag) => !Flags[flag].hidden)
-      .map((flag) => `--${flag}`)
-      .join(' ')
+    const flagList: string[] = []
+    for (const flag of Object.keys(Flags)) {
+      if (Flags[flag].hidden) continue
+      flagList.push(`--${flag}`)
+      // Add flag aliases
+      const aliases = (Flags[flag] as any).aliases as string[] | undefined
+      if (aliases && aliases.length > 0) {
+        for (const alias of aliases) {
+          flagList.push(`--${alias}`)
+        }
+      }
+    }
+
+    return flagList.join(' ')
   }
 
   private genZshFlagSpecs(Klass: any): string {
-    return Object.keys(Klass.flags || {})
-      .filter((flag) => Klass.flags && !Klass.flags[flag].hidden)
-      .map((flag) => {
-        const f = (Klass.flags && Klass.flags[flag]) || {description: ''}
-        const isBoolean = f.type === 'boolean'
-        const isOption = f.type === 'option'
-        const name = isBoolean ? flag : `${flag}=-`
-        const multiple = isOption && f.multiple ? '*' : ''
-        const valueCmpl = isBoolean ? '' : ':'
-        const completion = `${multiple}--${name}[${sanitizeDescription(f.summary || f.description)}]${valueCmpl}`
-        return `"${completion}"`
-      })
-      .join('\n')
+    const specs: string[] = []
+    for (const flag of Object.keys(Klass.flags || {})) {
+      if (Klass.flags && Klass.flags[flag].hidden) continue
+      const f = (Klass.flags && Klass.flags[flag]) || {description: ''}
+      const isBoolean = f.type === 'boolean'
+      const isOption = f.type === 'option'
+      const name = isBoolean ? flag : `${flag}=-`
+      const multiple = isOption && f.multiple ? '*' : ''
+      const valueCmpl = isBoolean ? '' : ':'
+      const summary = sanitizeDescription(f.summary || f.description)
+      const completion = `${multiple}--${name}[${summary}]${valueCmpl}`
+      specs.push(`"${completion}"`)
+
+      // Add flag aliases
+      const aliases = (f as any).aliases as string[] | undefined
+      if (aliases && aliases.length > 0) {
+        for (const alias of aliases) {
+          const aliasName = isBoolean ? alias : `${alias}=-`
+          const aliasCompletion = `${multiple}--${aliasName}[${summary}]${valueCmpl}`
+          specs.push(`"${aliasCompletion}"`)
+        }
+      }
+    }
+
+    return specs.join('\n')
   }
 }
