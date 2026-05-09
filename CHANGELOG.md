@@ -1,3 +1,9 @@
+## [3.2.48](https://github.com/oclif/plugin-autocomplete/compare/3.2.47...3.2.48) (2026-05-09)
+
+### Bug Fixes
+
+- **deps:** bump fast-xml-builder from 1.1.3 to 1.2.0 ([#1143](https://github.com/oclif/plugin-autocomplete/issues/1143)) ([1283869](https://github.com/oclif/plugin-autocomplete/commit/128386989e56b97bc17af1f1c83efbe3cd7532d9))
+
 ## [3.2.47](https://github.com/oclif/plugin-autocomplete/compare/3.2.46...3.2.47) (2026-05-03)
 
 ### Bug Fixes
