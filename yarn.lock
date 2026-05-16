@@ -1884,9 +1884,9 @@
     wrap-ansi "^7.0.0"
 
 "@oclif/core@^4", "@oclif/core@^4.10.2":
-  version "4.11.2"
-  resolved "https://registry.yarnpkg.com/@oclif/core/-/core-4.11.2.tgz#c8062fc16f0d82c247f60670364026483a48d522"
-  integrity sha512-LWDalCgy+hYyAkLa9sMIXMXk6ws5RzQhVnkmfXtVIIyEEYigbXQ/9/x+s76p53MiXxNc6SJB7lfwkPF+SdzfMQ==
+  version "4.11.3"
+  resolved "https://registry.yarnpkg.com/@oclif/core/-/core-4.11.3.tgz#87ebe0d3a47d162359482ecf5f5a7220ac709a36"
+  integrity sha512-gQCSYAtUhJilGKaSaZhqejH9X1dDu+jWQjLmtGOgN/XcKaAEPPSeT2mu1UvlvtPox1/NNRdlBcUa8KRKo2HnJQ==
   dependencies:
     ansi-escapes "^4.3.2"
     ansis "^3.17.0"
@@ -1902,7 +1902,7 @@
     semver "^7.8.0"
     string-width "^4.2.3"
     supports-color "^8"
-    tinyglobby "^0.2.14"
+    tinyglobby "^0.2.16"
     widest-line "^3.1.0"
     wordwrap "^1.0.0"
     wrap-ansi "^7.0.0"
@@ -6975,6 +6975,11 @@ picomatch@^4.0.3:
   resolved "https://registry.yarnpkg.com/picomatch/-/picomatch-4.0.3.tgz#796c76136d1eead715db1e7bad785dedd695a042"
   integrity sha512-5gTmgEY/sqK6gFXLIsQNH19lWb4ebPDLA4SdLP7dsWkIXHWlG66oPuVvXSGFPppYZz8ZDZq0dYYrbHfBCVUb1Q==
 
+picomatch@^4.0.4:
+  version "4.0.4"
+  resolved "https://registry.yarnpkg.com/picomatch/-/picomatch-4.0.4.tgz#fd6f5e00a143086e074dffe4c924b8fb293b0589"
+  integrity sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A==
+
 pidtree@^0.6.0:
   version "0.6.0"
   resolved "https://registry.yarnpkg.com/pidtree/-/pidtree-0.6.0.tgz#90ad7b6d42d5841e69e0a2419ef38f8883aa057c"
@@ -7872,13 +7877,13 @@ tinyexec@^1.0.0:
   resolved "https://registry.yarnpkg.com/tinyexec/-/tinyexec-1.0.1.tgz#70c31ab7abbb4aea0a24f55d120e5990bfa1e0b1"
   integrity sha512-5uC6DDlmeqiOwCPmK9jMSdOuZTh8bU39Ys6yidB+UTt5hfZUPGAypSgFRiEp+jbi9qH40BLDvy85jIU88wKSqw==
 
-tinyglobby@^0.2.13, tinyglobby@^0.2.14, tinyglobby@^0.2.15, tinyglobby@^0.2.9:
-  version "0.2.15"
-  resolved "https://registry.yarnpkg.com/tinyglobby/-/tinyglobby-0.2.15.tgz#e228dd1e638cea993d2fdb4fcd2d4602a79951c2"
-  integrity sha512-j2Zq4NyQYG5XMST4cbs02Ak8iJUdxRM0XI5QyxXuZOzKOINmWurp3smXu3y5wDcJrptwpSjgXHzIQxR0omXljQ==
+tinyglobby@^0.2.13, tinyglobby@^0.2.14, tinyglobby@^0.2.15, tinyglobby@^0.2.16, tinyglobby@^0.2.9:
+  version "0.2.16"
+  resolved "https://registry.yarnpkg.com/tinyglobby/-/tinyglobby-0.2.16.tgz#1c3b7eb953fce42b226bc5a1ee06428281aff3d6"
+  integrity sha512-pn99VhoACYR8nFHhxqix+uvsbXineAasWm5ojXoN8xEwK5Kd3/TrhNn1wByuD52UxWRLy8pu+kRMniEi6Eq9Zg==
   dependencies:
     fdir "^6.5.0"
-    picomatch "^4.0.3"
+    picomatch "^4.0.4"
 
 to-fast-properties@^2.0.0:
   version "2.0.0"
