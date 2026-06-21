@@ -1,3 +1,9 @@
+## [3.2.51](https://github.com/oclif/plugin-autocomplete/compare/3.2.50...3.2.51) (2026-06-21)
+
+### Bug Fixes
+
+- **deps:** bump @babel/core from 7.10.3 to 7.29.7 ([#1166](https://github.com/oclif/plugin-autocomplete/issues/1166)) ([9c9fc57](https://github.com/oclif/plugin-autocomplete/commit/9c9fc57ad27a11bd7fdfb1f18d8343515bee4ec1))
+
 ## [3.2.50](https://github.com/oclif/plugin-autocomplete/compare/3.2.49...3.2.50) (2026-05-24)
 
 ### Bug Fixes
