@@ -1,3 +1,9 @@
+## [3.2.54](https://github.com/oclif/plugin-autocomplete/compare/3.2.53...3.2.54) (2026-07-26)
+
+### Bug Fixes
+
+- **deps:** bump @oclif/core from 4.11.14 to 4.13.0 ([#1182](https://github.com/oclif/plugin-autocomplete/issues/1182)) ([b7e1eea](https://github.com/oclif/plugin-autocomplete/commit/b7e1eea052484514d422092145285dd735426764))
+
 ## [3.2.53](https://github.com/oclif/plugin-autocomplete/compare/3.2.52...3.2.53) (2026-06-28)
 
 ### Bug Fixes
