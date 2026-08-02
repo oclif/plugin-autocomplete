@@ -1111,9 +1111,9 @@
   integrity sha512-nn5ozdjYQpUCZlWGuxcJY/KpxkWQs4DcbMCmKojjyrYDEAGy4Ce19NN4v5MduafTwJlbKc99UA8YhSVqq9yPZA==
 
 "@oclif/core@^4", "@oclif/core@^4.11.11", "@oclif/core@^4.11.4":
-  version "4.13.0"
-  resolved "https://registry.yarnpkg.com/@oclif/core/-/core-4.13.0.tgz#fc50d40f567e486e6535f0d0e8c6f3733a8c0e39"
-  integrity sha512-j3NKgXE3qd0gvSYsCqDLb3VhW5KEg030VQhMnv5c0qNzPp6jBmF7cCDIQG4ROZIOqEfGbUoDDMAAzaC30vV99g==
+  version "4.13.2"
+  resolved "https://registry.yarnpkg.com/@oclif/core/-/core-4.13.2.tgz#3a716b90f40becdf25f6b9d9b63ec05dec3dce94"
+  integrity sha512-YWQs0JvESCliWopKtCZqPLgEB1e3oqR+KYecMReseYWbo7E73Rz2tFwQDFQtAp48VLMiAsiTPKKQaZAo+ghzLw==
   dependencies:
     ansi-escapes "^4.3.2"
     ansis "^3.17.0"
