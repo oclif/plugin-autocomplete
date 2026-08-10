@@ -1,0 +1,333 @@
+{
+  "eslint.config.js": {
+    "import-x/no-anonymous-default-export": {
+      "count": 1
+    }
+  },
+  "src/autocomplete/bash-spaces.ts": {
+    "unicorn/no-incorrect-template-string-interpolation": {
+      "count": 1
+    }
+  },
+  "src/autocomplete/powershell.ts": {
+    "@typescript-eslint/consistent-indexed-object-style": {
+      "count": 1
+    },
+    "@typescript-eslint/consistent-type-imports": {
+      "count": 1
+    },
+    "@typescript-eslint/no-loop-func": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-argument": {
+      "count": 3
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 5
+    },
+    "@typescript-eslint/prefer-nullish-coalescing": {
+      "count": 1
+    },
+    "@typescript-eslint/prefer-readonly": {
+      "count": 2
+    },
+    "unicorn/consistent-class-member-order": {
+      "count": 1
+    },
+    "unicorn/logical-assignment-operators": {
+      "count": 1
+    },
+    "unicorn/no-array-sort": {
+      "count": 1
+    },
+    "unicorn/no-break-in-nested-loop": {
+      "count": 1
+    },
+    "unicorn/no-negated-array-predicate": {
+      "count": 1
+    },
+    "unicorn/prefer-array-from-map": {
+      "count": 1
+    },
+    "unicorn/prefer-continue": {
+      "count": 2
+    },
+    "unicorn/prefer-simple-sort-comparator": {
+      "count": 1
+    }
+  },
+  "src/autocomplete/zsh.ts": {
+    "@typescript-eslint/array-type": {
+      "count": 4
+    },
+    "@typescript-eslint/consistent-indexed-object-style": {
+      "count": 1
+    },
+    "@typescript-eslint/consistent-type-imports": {
+      "count": 1
+    },
+    "@typescript-eslint/no-loop-func": {
+      "count": 1
+    },
+    "@typescript-eslint/prefer-readonly": {
+      "count": 2
+    },
+    "require-unicode-regexp": {
+      "count": 2
+    },
+    "unicorn/consistent-class-member-order": {
+      "count": 1
+    },
+    "unicorn/no-array-sort": {
+      "count": 1
+    },
+    "unicorn/no-break-in-nested-loop": {
+      "count": 1
+    },
+    "unicorn/no-duplicate-loops": {
+      "count": 4
+    },
+    "unicorn/no-negated-array-predicate": {
+      "count": 2
+    },
+    "unicorn/prefer-simple-sort-comparator": {
+      "count": 1
+    },
+    "unicorn/prefer-split-limit": {
+      "count": 1
+    }
+  },
+  "src/base.ts": {
+    "unicorn/consistent-class-member-order": {
+      "count": 1
+    }
+  },
+  "src/commands/autocomplete/create.ts": {
+    "@typescript-eslint/no-unsafe-argument": {
+      "count": 4
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 13
+    },
+    "@typescript-eslint/prefer-nullish-coalescing": {
+      "count": 5
+    },
+    "@typescript-eslint/prefer-optional-chain": {
+      "count": 1
+    },
+    "require-unicode-regexp": {
+      "count": 2
+    },
+    "unicorn/consistent-boolean-name": {
+      "count": 2
+    },
+    "unicorn/consistent-class-member-order": {
+      "count": 1
+    },
+    "unicorn/max-nested-calls": {
+      "count": 4
+    },
+    "unicorn/no-break-in-nested-loop": {
+      "count": 1
+    },
+    "unicorn/no-unsafe-string-replacement": {
+      "count": 2
+    },
+    "unicorn/prefer-simple-condition-first": {
+      "count": 2
+    },
+    "unicorn/prefer-split-limit": {
+      "count": 1
+    }
+  },
+  "src/commands/autocomplete/index.ts": {
+    "@stylistic/lines-between-class-members": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unnecessary-template-expression": {
+      "count": 1
+    },
+    "@typescript-eslint/switch-exhaustiveness-check": {
+      "count": 1
+    },
+    "unicorn/consistent-class-member-order": {
+      "count": 1
+    }
+  },
+  "src/commands/autocomplete/script.ts": {
+    "@stylistic/lines-between-class-members": {
+      "count": 1
+    }
+  },
+  "src/hooks/refresh-cache.ts": {
+    "@typescript-eslint/consistent-type-imports": {
+      "count": 1
+    }
+  },
+  "src/index.ts": {
+    "import-x/no-anonymous-default-export": {
+      "count": 1
+    }
+  },
+  "test/autocomplete/bash.test.ts": {
+    "@typescript-eslint/consistent-indexed-object-style": {
+      "count": 1
+    },
+    "@typescript-eslint/consistent-type-imports": {
+      "count": 2
+    },
+    "@typescript-eslint/no-empty-function": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unnecessary-template-expression": {
+      "count": 6
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 2
+    },
+    "@typescript-eslint/promise-function-async": {
+      "count": 1
+    },
+    "import-x/no-named-default": {
+      "count": 1
+    },
+    "unicorn/consistent-template-literal-escape": {
+      "count": 6
+    },
+    "unicorn/no-named-default": {
+      "count": 1
+    },
+    "unicorn/prefer-private-class-fields": {
+      "count": 1
+    }
+  },
+  "test/autocomplete/powershell.test.ts": {
+    "@typescript-eslint/consistent-indexed-object-style": {
+      "count": 1
+    },
+    "@typescript-eslint/consistent-type-imports": {
+      "count": 2
+    },
+    "@typescript-eslint/no-empty-function": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 3
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 2
+    },
+    "@typescript-eslint/promise-function-async": {
+      "count": 1
+    },
+    "unicorn/prefer-private-class-fields": {
+      "count": 1
+    }
+  },
+  "test/autocomplete/zsh.test.ts": {
+    "@typescript-eslint/consistent-indexed-object-style": {
+      "count": 1
+    },
+    "@typescript-eslint/consistent-type-imports": {
+      "count": 2
+    },
+    "@typescript-eslint/no-empty-function": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unnecessary-type-assertion": {
+      "count": 3
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 2
+    },
+    "@typescript-eslint/promise-function-async": {
+      "count": 1
+    },
+    "import-x/no-named-default": {
+      "count": 1
+    },
+    "unicorn/no-named-default": {
+      "count": 1
+    },
+    "unicorn/prefer-private-class-fields": {
+      "count": 1
+    }
+  },
+  "test/commands/autocomplete/create.test.ts": {
+    "@eslint-community/eslint-comments/require-description": {
+      "count": 1
+    },
+    "@typescript-eslint/consistent-type-imports": {
+      "count": 1
+    },
+    "@typescript-eslint/no-shadow": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unnecessary-template-expression": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-assignment": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-call": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unsafe-member-access": {
+      "count": 17
+    },
+    "@typescript-eslint/no-unsafe-return": {
+      "count": 1
+    },
+    "@typescript-eslint/promise-function-async": {
+      "count": 2
+    },
+    "import-x/no-named-default": {
+      "count": 1
+    },
+    "unicorn/max-nested-calls": {
+      "count": 2
+    },
+    "unicorn/no-incorrect-template-string-interpolation": {
+      "count": 1
+    },
+    "unicorn/no-named-default": {
+      "count": 1
+    }
+  },
+  "test/commands/autocomplete/index.test.ts": {
+    "import-x/no-named-default": {
+      "count": 1
+    },
+    "unicorn/no-named-default": {
+      "count": 1
+    }
+  },
+  "test/commands/autocomplete/script.test.ts": {
+    "import-x/no-named-default": {
+      "count": 1
+    },
+    "unicorn/no-named-default": {
+      "count": 1
+    }
+  },
+  "test/helpers/runtest.ts": {
+    "@typescript-eslint/no-confusing-void-expression": {
+      "count": 1
+    },
+    "import-x/no-anonymous-default-export": {
+      "count": 1
+    }
+  }
+}
