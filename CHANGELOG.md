@@ -1,3 +1,9 @@
+# [3.3.0](https://github.com/oclif/plugin-autocomplete/compare/3.2.56...3.3.0) (2026-08-24)
+
+### Features
+
+- bumping eslint to v10 (W-23473845) ([1b9e2ba](https://github.com/oclif/plugin-autocomplete/commit/1b9e2ba27da77271d46a6929a4afb3534837b133))
+
 ## [3.2.56](https://github.com/oclif/plugin-autocomplete/compare/3.2.55...3.2.56) (2026-08-09)
 
 ### Bug Fixes
