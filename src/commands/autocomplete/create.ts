@@ -51,7 +51,6 @@ export default class Create extends AutocompleteBase {
         : bashAutocompleteWithSpaces
     return (
       bashScript
-        // eslint-disable-next-line unicorn/prefer-spread
         .concat(
           ...(this.config.binAliases?.map((alias) => `complete -F _<CLI_BIN>_autocomplete ${alias}`).join('\n') ?? []),
         )
