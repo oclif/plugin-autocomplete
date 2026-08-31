@@ -5,7 +5,7 @@
   "author": "Salesforce",
   "bugs": "https://github.com/oclif/plugin-autocomplete/issues",
   "dependencies": {
-    "@oclif/core": "^4",
+    "@oclif/core": "^5.0.0",
     "ansis": "^3.16.0",
     "debug": "^4.4.1",
     "ejs": "^3.1.10"
@@ -15,7 +15,7 @@
     "@eslint/compat": "^1.4.1",
     "@oclif/plugin-help": "^6",
     "@oclif/prettier-config": "^0.2.1",
-    "@oclif/test": "^4",
+    "@oclif/test": "^5.0.0",
     "@types/chai": "^4",
     "@types/debug": "^4.1.13",
     "@types/ejs": "^3.1.5",
