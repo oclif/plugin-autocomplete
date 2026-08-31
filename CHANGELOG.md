@@ -1,3 +1,11 @@
+# [4.0.0](https://github.com/oclif/plugin-autocomplete/compare/3.3.0...4.0.0) (2026-08-31)
+
+- feat!: upgrade oclif/core to v5 @W-23512455@ ([7310a34](https://github.com/oclif/plugin-autocomplete/commit/7310a34953d68f4303f2904116242039bad37cb1))
+
+### BREAKING CHANGES
+
+- bump node engine to >=22.0.0
+
 # [3.3.0](https://github.com/oclif/plugin-autocomplete/compare/3.2.56...3.3.0) (2026-08-24)
 
 ### Features
