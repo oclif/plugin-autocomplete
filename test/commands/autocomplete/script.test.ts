@@ -3,7 +3,7 @@ import {runCommand} from '@oclif/test'
 import {expect} from 'chai'
 
 // autocomplete will throw error on windows ci
-import {default as skipWindows} from '../../helpers/runtest.js'
+import skipWindows from '../../helpers/runtest.js'
 
 skipWindows('autocomplete:script', () => {
   it('provides bash profile config', async () => {

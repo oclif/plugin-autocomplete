@@ -1,4 +1,4 @@
-import {Command, Config, Interfaces} from '@oclif/core'
+import {type Command, type Config, type Interfaces} from '@oclif/core'
 import * as ejs from 'ejs'
 import {format} from 'node:util'
 
@@ -10,9 +10,7 @@ type CommandCompletion = {
   summary: string
 }
 
-type CommandFlags = {
-  [name: string]: Command.Flag.Cached
-}
+type CommandFlags = Record<string, Command.Flag.Cached>
 
 type Topic = {
   description: string
@@ -22,8 +20,8 @@ type Topic = {
 export default class ZshCompWithSpaces {
   protected config: Config
   private _coTopics?: string[]
-  private commands: CommandCompletion[]
-  private topics: Topic[]
+  private readonly commands: CommandCompletion[]
+  private readonly topics: Topic[]
 
   constructor(config: Config) {
     this.config = config
@@ -50,7 +48,7 @@ export default class ZshCompWithSpaces {
   }
 
   public generate(): string {
-    const firstArgs: {id: string; summary?: string}[] = []
+    const firstArgs: Array<{id: string; summary?: string}> = []
 
     for (const t of this.topics) {
       if (!t.name.includes(':'))
@@ -61,7 +59,7 @@ export default class ZshCompWithSpaces {
     }
 
     for (const c of this.commands) {
-      if (!firstArgs.some((a) => a.id === c.id) && !c.id.includes(':'))
+      if (firstArgs.every((a) => a.id !== c.id) && !c.id.includes(':'))
         firstArgs.push({
           id: c.id,
           summary: c.summary,
@@ -240,7 +238,7 @@ _${this.config.bin}
   esac
 }
 `
-      const subArgs: {id: string; summary?: string}[] = []
+      const subArgs: Array<{id: string; summary?: string}> = []
 
       let argsBlock = ''
 
@@ -274,7 +272,7 @@ _${this.config.bin}
 
     let argsBlock = ''
 
-    const subArgs: {id: string; summary?: string}[] = []
+    const subArgs: Array<{id: string; summary?: string}> = []
     for (const t of this.topics.filter((t) => t.name.startsWith(id + ':') && t.name.split(':').length === depth + 1)) {
       const subArg = t.name.split(':')[depth]
 
@@ -319,7 +317,7 @@ _${this.config.bin}
     return format(topicCompFunc, this.genZshValuesBlock(subArgs), argsBlock)
   }
 
-  private genZshValuesBlock(subArgs: {id: string; summary?: string}[]): string {
+  private genZshValuesBlock(subArgs: Array<{id: string; summary?: string}>): string {
     let valuesBlock = '_values "completions" \\\n'
 
     for (const subArg of subArgs) {
@@ -360,7 +358,7 @@ _${this.config.bin}
           // but aliases aren't guaranteed to follow the plugin command tree
           // so we need to add any missing topic between the starting point and the alias.
           for (let i = 0; i < split.length - 1; i++) {
-            if (!this.topics.some((t) => t.name === topic)) {
+            if (this.topics.every((t) => t.name !== topic)) {
               this.topics.push({
                 description: `${topic.replaceAll(':', ' ')} commands`,
                 name: topic,
@@ -418,6 +416,6 @@ _${this.config.bin}
       .replaceAll(/(["`])/g, '\\\\\\$1') // backticks and double-quotes require triple-backslashes
 
       .replaceAll(/([[\]])/g, '\\\\$1') // square brackets require double-backslashes
-      .split('\n')[0] // only use the first line
+      .split('\n', 1)[0] // only use the first line
   }
 }

@@ -1,19 +1,18 @@
-import {Command, Config} from '@oclif/core'
-import {Deprecation, Plugin as IPlugin} from '@oclif/core/interfaces'
+import {type Command, Config} from '@oclif/core'
+import {type Deprecation, type Plugin as IPlugin} from '@oclif/core/interfaces'
 import {expect} from 'chai'
 import path from 'node:path'
 import {fileURLToPath} from 'node:url'
 
 import ZshCompWithSpaces from '../../src/autocomplete/zsh.js'
 // autocomplete will throw error on windows ci
-import {default as skipWindows} from '../helpers/runtest.js'
+import skipWindows from '../helpers/runtest.js'
 
 class MyCommandClass implements Command.Cached {
   [key: string]: unknown
-  _base = ''
   aliases: string[] = []
   aliasPermutations?: string[] | undefined
-  args: {[name: string]: Command.Arg.Cached} = {}
+  args: Record<string, Command.Arg.Cached> = {}
   deprecateAliases?: boolean | undefined
   deprecationOptions?: Deprecation | undefined
   description?: string | undefined
@@ -34,13 +33,12 @@ class MyCommandClass implements Command.Cached {
   summary?: string | undefined
   type?: string | undefined
   usage?: string | string[] | undefined
+  readonly #base = ''
 
   new(): Command.Cached {
     // @ts-expect-error this is not the full interface but enough for testing
     return {
-      _run(): Promise<any> {
-        return Promise.resolve()
-      },
+      async _run(): Promise<any> {},
     }
   }
 
@@ -202,7 +200,7 @@ skipWindows('zsh comp', () => {
 
     it('generates a valid completion file.', () => {
       config.bin = 'test-cli'
-      const zshCompWithSpaces = new ZshCompWithSpaces(config as Config)
+      const zshCompWithSpaces = new ZshCompWithSpaces(config)
       expect(zshCompWithSpaces.generate()).to.equal(`#compdef test-cli
 
 
@@ -336,7 +334,7 @@ _test-cli
     it('generates a valid completion file with a bin alias.', () => {
       config.bin = 'test-cli'
       config.binAliases = ['testing']
-      const zshCompWithSpaces = new ZshCompWithSpaces(config as Config)
+      const zshCompWithSpaces = new ZshCompWithSpaces(config)
       expect(zshCompWithSpaces.generate()).to.equal(`#compdef test-cli
 compdef testing=test-cli
 
@@ -470,7 +468,7 @@ _test-cli
     it('generates a valid completion file with multiple bin aliases.', () => {
       config.bin = 'test-cli'
       config.binAliases = ['testing', 'testing2']
-      const zshCompWithSpaces = new ZshCompWithSpaces(config as Config)
+      const zshCompWithSpaces = new ZshCompWithSpaces(config)
       expect(zshCompWithSpaces.generate()).to.equal(`#compdef test-cli
 compdef testing=test-cli
 compdef testing2=test-cli

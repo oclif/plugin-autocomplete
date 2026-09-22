@@ -1,5 +1,5 @@
-import {Command, Config} from '@oclif/core'
-import {Deprecation, Plugin as IPlugin} from '@oclif/core/interfaces'
+import {type Command, Config} from '@oclif/core'
+import {type Deprecation, type Plugin as IPlugin} from '@oclif/core/interfaces'
 import {expect} from 'chai'
 import path from 'node:path'
 import {fileURLToPath} from 'node:url'
@@ -8,10 +8,9 @@ import PowerShellComp from '../../src/autocomplete/powershell.js'
 
 class MyCommandClass implements Command.Cached {
   [key: string]: unknown
-  _base = ''
   aliases: string[] = []
   aliasPermutations?: string[] | undefined
-  args: {[name: string]: Command.Arg.Cached} = {}
+  args: Record<string, Command.Arg.Cached> = {}
   deprecateAliases?: boolean | undefined
   deprecationOptions?: Deprecation | undefined
   description?: string | undefined
@@ -32,13 +31,12 @@ class MyCommandClass implements Command.Cached {
   summary?: string | undefined
   type?: string | undefined
   usage?: string | string[] | undefined
+  readonly #base = ''
 
   new(): Command.Cached {
     // @ts-expect-error this is not the full interface but enough for testing
     return {
-      _run(): Promise<any> {
-        return Promise.resolve()
-      },
+      async _run(): Promise<any> {},
     }
   }
 
@@ -196,7 +194,7 @@ describe('powershell completion', () => {
 
   it('generates a valid completion file.', () => {
     config.bin = 'test-cli'
-    const powerShellComp = new PowerShellComp(config as Config)
+    const powerShellComp = new PowerShellComp(config)
     expect(powerShellComp.generate()).to.equal(`
 using namespace System.Management.Automation
 using namespace System.Management.Automation.Language
@@ -389,7 +387,7 @@ Register-ArgumentCompleter -Native -CommandName test-cli -ScriptBlock $scriptblo
   it('generates a valid completion file with a bin alias.', () => {
     config.bin = 'test-cli'
     config.binAliases = ['test']
-    const powerShellComp = new PowerShellComp(config as Config)
+    const powerShellComp = new PowerShellComp(config)
     expect(powerShellComp.generate()).to.equal(`
 using namespace System.Management.Automation
 using namespace System.Management.Automation.Language
@@ -582,7 +580,7 @@ Register-ArgumentCompleter -Native -CommandName @("test","test-cli") -ScriptBloc
   it('generates a valid completion file with multiple bin aliases.', () => {
     config.bin = 'test-cli'
     config.binAliases = ['test', 'test1']
-    const powerShellComp = new PowerShellComp(config as Config)
+    const powerShellComp = new PowerShellComp(config)
     expect(powerShellComp.generate()).to.equal(`
 using namespace System.Management.Automation
 using namespace System.Management.Automation.Language

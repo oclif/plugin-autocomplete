@@ -11,6 +11,7 @@ export default class Script extends AutocompleteBase {
       required: false,
     }),
   }
+
   static description = 'outputs autocomplete config script for shells'
   static hidden = true
 

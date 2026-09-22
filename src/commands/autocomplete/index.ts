@@ -13,6 +13,7 @@ export default class Index extends AutocompleteBase {
       required: false,
     }),
   }
+
   static description = 'Display autocomplete installation instructions.'
   static examples = [
     '$ <%= config.bin %> autocomplete',
@@ -21,6 +22,7 @@ export default class Index extends AutocompleteBase {
     '$ <%= config.bin %> autocomplete powershell',
     '$ <%= config.bin %> autocomplete --refresh-cache',
   ]
+
   static flags = {
     'refresh-cache': Flags.boolean({char: 'r', description: 'Refresh cache (ignores displaying instructions)'}),
   }
@@ -35,7 +37,7 @@ export default class Index extends AutocompleteBase {
       )
     }
 
-    ux.action.start(`${bold('Building the autocomplete cache')}`)
+    ux.action.start(bold('Building the autocomplete cache'))
     await Create.run([], this.config)
     ux.action.stop()
 

@@ -25,7 +25,7 @@ function sanitizeDescription(description?: string): string {
     .replaceAll(/(["`])/g, '\\\\\\$1') // backticks and double-quotes require triple-backslashes
 
     .replaceAll(/([[\]])/g, '\\\\$1') // square brackets require double-backslashes
-    .split('\n')[0] // only use the first line
+    .split('\n', 1)[0] // only use the first line
 }
 
 export default class Create extends AutocompleteBase {
@@ -44,19 +44,17 @@ export default class Create extends AutocompleteBase {
 
   private get bashCompletionFunction(): string {
     const {cliBin} = this
-    const supportSpaces = this.config.topicSeparator === ' '
+    const isSupportSpaces = this.config.topicSeparator === ' '
     const bashScript =
-      process.env.OCLIF_AUTOCOMPLETE_TOPIC_SEPARATOR === 'colon' || !supportSpaces
+      process.env.OCLIF_AUTOCOMPLETE_TOPIC_SEPARATOR === 'colon' || !isSupportSpaces
         ? bashAutocomplete
         : bashAutocompleteWithSpaces
-    return (
-      bashScript
-        .concat(
-          ...(this.config.binAliases?.map((alias) => `complete -F _<CLI_BIN>_autocomplete ${alias}`).join('\n') ?? []),
-        )
-        .replaceAll('<CLI_BIN>', cliBin)
-        .replaceAll('<BASH_COMMANDS_WITH_FLAGS_LIST>', this.bashCommandsWithFlagsList)
-    )
+    return bashScript
+      .concat(
+        ...(this.config.binAliases?.map((alias) => `complete -F _<CLI_BIN>_autocomplete ${alias}`).join('\n') ?? []),
+      )
+      .replaceAll('<CLI_BIN>', cliBin)
+      .replaceAll('<BASH_COMMANDS_WITH_FLAGS_LIST>', this.bashCommandsWithFlagsList)
   }
 
   private get bashCompletionFunctionPath(): string {
@@ -230,7 +228,7 @@ compinit;\n`
 
   private async createFiles() {
     // zsh
-    const supportSpaces = this.config.topicSeparator === ' '
+    const isSupportSpaces = this.config.topicSeparator === ' '
 
     await Promise.all(
       [
@@ -239,7 +237,7 @@ compinit;\n`
         writeFile(this.zshSetupScriptPath, this.zshSetupScript),
         // eslint-disable-next-line unicorn/prefer-spread
       ].concat(
-        process.env.OCLIF_AUTOCOMPLETE_TOPIC_SEPARATOR === 'colon' || !supportSpaces
+        process.env.OCLIF_AUTOCOMPLETE_TOPIC_SEPARATOR === 'colon' || !isSupportSpaces
           ? [writeFile(this.zshCompletionFunctionPath, this.zshCompletionFunction)]
           : [
               writeFile(this.zshCompletionFunctionPath, new ZshCompWithSpaces(this.config).generate()),
@@ -271,7 +269,7 @@ compinit;\n`
     return Object.keys(Klass.flags || {})
       .filter((flag) => Klass.flags && !Klass.flags[flag].hidden)
       .map((flag) => {
-        const f = (Klass.flags && Klass.flags[flag]) || {description: ''}
+        const f = Klass.flags?.[flag] || {description: ''}
         const isBoolean = f.type === 'boolean'
         const isOption = f.type === 'option'
         const name = isBoolean ? flag : `${flag}=-`
