@@ -1,3 +1,9 @@
+## [4.0.1](https://github.com/oclif/plugin-autocomplete/compare/4.0.0...4.0.1) (2026-09-22)
+
+### Bug Fixes
+
+- resolving autofixable eslint violations (W-24099831) ([300af9b](https://github.com/oclif/plugin-autocomplete/commit/300af9ba381c2eb678e952bd2243d863a181937c))
+
 # [4.0.0](https://github.com/oclif/plugin-autocomplete/compare/3.3.0...4.0.0) (2026-08-31)
 
 - feat!: upgrade oclif/core to v5 @W-23512455@ ([7310a34](https://github.com/oclif/plugin-autocomplete/commit/7310a34953d68f4303f2904116242039bad37cb1))
