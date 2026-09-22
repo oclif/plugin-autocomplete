@@ -1,4 +1,4 @@
-import {Hook} from '@oclif/core'
+import {type Hook} from '@oclif/core'
 
 const hook: Hook<'refresh'> = async function (opts) {
   // this `config` instance already have installed/uninstalled plugins loaded

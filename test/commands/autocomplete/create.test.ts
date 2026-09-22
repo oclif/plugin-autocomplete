@@ -1,4 +1,4 @@
-import {Config, Interfaces, Plugin} from '@oclif/core'
+import {Config, type Interfaces, Plugin} from '@oclif/core'
 import {expect} from 'chai'
 import {readFile} from 'node:fs/promises'
 import path from 'node:path'
@@ -6,7 +6,7 @@ import {fileURLToPath} from 'node:url'
 
 import Create from '../../../src/commands/autocomplete/create.js'
 // autocomplete will throw error on windows ci
-import {default as skipWindows} from '../../helpers/runtest.js'
+import skipWindows from '../../helpers/runtest.js'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../package.json')
 const config = new Config({root})
@@ -27,7 +27,7 @@ skipWindows('Create', () => {
       cmd = new Create([], config)
       plugin = new Plugin({root})
       cmd.config.plugins = [plugin]
-      plugin._manifest = () =>
+      plugin._manifest = async () =>
         readJson(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../test.oclif.manifest.json'))
       await plugin.load()
     })
@@ -114,7 +114,7 @@ complete -o default -F _oclif-example_autocomplete oclif-example\n`)
       const spacedCmd: any = new Create([], spacedConfig)
       const spacedPlugin: any = new Plugin({root})
       spacedCmd.config.plugins = [spacedPlugin]
-      spacedPlugin._manifest = () =>
+      spacedPlugin._manifest = async () =>
         readJson(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../test.oclif.manifest.json'))
       await spacedPlugin.load()
 
@@ -181,7 +181,7 @@ foo --bar --baz --dangerous --brackets --double-quotes --multi-line --json
 
       opts=$(printf "%s " "\${commands[@]}") # | grep -Eo '^[a-zA-Z0-9_-]+'
     fi
-  ${'else '}
+  else 
     # Flag
 
     # The full CLI command separated by colons (e.g. "mycli command subcommand --fl" -> "command:subcommand")

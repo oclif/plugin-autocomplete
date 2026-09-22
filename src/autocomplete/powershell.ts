@@ -1,4 +1,4 @@
-import {Command, Config, Interfaces} from '@oclif/core'
+import {type Command, type Config, type Interfaces} from '@oclif/core'
 import * as ejs from 'ejs'
 import {EOL} from 'node:os'
 import {format} from 'node:util'
@@ -9,9 +9,7 @@ type CommandCompletion = {
   summary: string
 }
 
-type CommandFlags = {
-  [name: string]: Command.Flag.Cached
-}
+type CommandFlags = Record<string, Command.Flag.Cached>
 
 type Topic = {
   description: string
@@ -21,8 +19,8 @@ type Topic = {
 export default class PowerShellComp {
   protected config: Config
   private _coTopics?: string[]
-  private commands: CommandCompletion[]
-  private topics: Topic[]
+  private readonly commands: CommandCompletion[]
+  private readonly topics: Topic[]
 
   constructor(config: Config) {
     this.config = config
@@ -100,29 +98,33 @@ export default class PowerShellComp {
 
     // Collect top-level topics and generate a cmd tree node for each one of them.
     for (const t of this.topics) {
-      if (!t.name.includes(':')) {
-        commandTree[t.name] = this.coTopics.includes(t.name)
-          ? {
-              ...genNode(t.name),
-            }
-          : {
-              _summary: t.description,
-              ...genNode(t.name),
-            }
-
-        topLevelArgs.push(t.name)
+      if (t.name.includes(':')) {
+        continue
       }
+
+      commandTree[t.name] = this.coTopics.includes(t.name)
+        ? {
+            ...genNode(t.name),
+          }
+        : {
+            _summary: t.description,
+            ...genNode(t.name),
+          }
+
+      topLevelArgs.push(t.name)
     }
 
     // Collect top-level commands and add a cmd tree node with the command ID.
     for (const c of this.commands) {
-      if (!c.id.includes(':') && !this.coTopics.includes(c.id)) {
-        commandTree[c.id] = {
-          _command: c.id,
-        }
-
-        topLevelArgs.push(c.id)
+      if (c.id.includes(':') || this.coTopics.includes(c.id)) {
+        continue
       }
+
+      commandTree[c.id] = {
+        _command: c.id,
+      }
+
+      topLevelArgs.push(c.id)
     }
 
     const hashtables: string[] = []
@@ -325,11 +327,7 @@ ${flaghHashtables.join('\n')}
 
       const newKeys = nodeKeys.filter((k) => k !== '_summary')
       if (newKeys.length > 0) {
-        const childNodes: string[] = []
-
-        for (const newKey of newKeys) {
-          childNodes.push(this.genHashtable(newKey, node[key]))
-        }
+        const childNodes: string[] = Array.from(newKeys, (newKey) => this.genHashtable(newKey, node[key]))
 
         childTpl = format(childTpl, childNodes.join('\n'))
 
@@ -396,7 +394,7 @@ ${flaghHashtables.join('\n')}
           // but aliases aren't guaranteed to follow the plugin command tree
           // so we need to add any missing topic between the starting point and the alias.
           for (let i = 0; i < split.length - 1; i++) {
-            if (!this.topics.some((t) => t.name === topic)) {
+            if (this.topics.every((t) => t.name !== topic)) {
               this.topics.push({
                 description: `${topic.replaceAll(':', ' ')} commands`,
                 name: topic,

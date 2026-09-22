@@ -1,30 +1,28 @@
-import {Command, Config} from '@oclif/core'
-import {Plugin as IPlugin} from '@oclif/core/interfaces'
+import {type Command, Config} from '@oclif/core'
+import {type Plugin as IPlugin} from '@oclif/core/interfaces'
 import {expect} from 'chai'
 import path from 'node:path'
 import {fileURLToPath} from 'node:url'
 
 import Create from '../../src/commands/autocomplete/create.js'
 // autocomplete will throw error on windows ci
-import {default as skipWindows} from '../helpers/runtest.js'
+import skipWindows from '../helpers/runtest.js'
 
 class MyCommandClass implements Command.Cached {
   [key: string]: unknown
 
-  _base = ''
   aliases: string[] = []
-  args: {[name: string]: Command.Arg.Cached} = {}
+  args: Record<string, Command.Arg.Cached> = {}
   flags = {}
   hidden = false
   hiddenAliases!: string[]
   id = 'foo:bar'
+  readonly #base = ''
 
   new(): Command.Cached {
     // @ts-expect-error this is not the full interface but enough for testing
     return {
-      _run(): Promise<any> {
-        return Promise.resolve()
-      },
+      async _run(): Promise<any> {},
     }
   }
 
@@ -190,32 +188,32 @@ skipWindows('bash comp', () => {
 _test-cli_autocomplete()
 {
 
-  local cur="$\{COMP_WORDS[COMP_CWORD]}" opts IFS=$' \\t\\n'
+  local cur="\${COMP_WORDS[COMP_CWORD]}" opts IFS=$' \\t\\n'
   COMPREPLY=()
 
   local commands="
 autocomplete --refresh-cache
 deploy --api-version --ignore-errors --json --metadata
 deploy:functions --branch
-${'search '}
-${'app:execute:code '}
+search 
+app:execute:code 
 "
 
   if [[ "$cur" != "-"* ]]; then
     opts=$(printf "$commands" | grep -Eo '^[a-zA-Z0-9:_-]+')
   else
     local __COMP_WORDS
-    if [[ $\{COMP_WORDS[2]} == ":" ]]; then
+    if [[ \${COMP_WORDS[2]} == ":" ]]; then
       #subcommand
-      __COMP_WORDS=$(printf "%s" "$\{COMP_WORDS[@]:1:3}")
+      __COMP_WORDS=$(printf "%s" "\${COMP_WORDS[@]:1:3}")
     else
       #simple command
-      __COMP_WORDS="$\{COMP_WORDS[@]:1:1}"
+      __COMP_WORDS="\${COMP_WORDS[@]:1:1}"
     fi
-    opts=$(printf "$commands" | grep "$\{__COMP_WORDS}" | sed -n "s/^$\{__COMP_WORDS} //p")
+    opts=$(printf "$commands" | grep "\${__COMP_WORDS}" | sed -n "s/^\${__COMP_WORDS} //p")
   fi
   _get_comp_words_by_ref -n : cur
-  COMPREPLY=( $(compgen -W "$\{opts}" -- $\{cur}) )
+  COMPREPLY=( $(compgen -W "\${opts}" -- \${cur}) )
   __ltrim_colon_completions "$cur"
   return 0
 
@@ -234,32 +232,32 @@ complete -o default -F _test-cli_autocomplete test-cli`)
 _test-cli_autocomplete()
 {
 
-  local cur="$\{COMP_WORDS[COMP_CWORD]}" opts IFS=$' \\t\\n'
+  local cur="\${COMP_WORDS[COMP_CWORD]}" opts IFS=$' \\t\\n'
   COMPREPLY=()
 
   local commands="
 autocomplete --refresh-cache
 deploy --api-version --ignore-errors --json --metadata
 deploy:functions --branch
-${'search '}
-${'app:execute:code '}
+search 
+app:execute:code 
 "
 
   if [[ "$cur" != "-"* ]]; then
     opts=$(printf "$commands" | grep -Eo '^[a-zA-Z0-9:_-]+')
   else
     local __COMP_WORDS
-    if [[ $\{COMP_WORDS[2]} == ":" ]]; then
+    if [[ \${COMP_WORDS[2]} == ":" ]]; then
       #subcommand
-      __COMP_WORDS=$(printf "%s" "$\{COMP_WORDS[@]:1:3}")
+      __COMP_WORDS=$(printf "%s" "\${COMP_WORDS[@]:1:3}")
     else
       #simple command
-      __COMP_WORDS="$\{COMP_WORDS[@]:1:1}"
+      __COMP_WORDS="\${COMP_WORDS[@]:1:1}"
     fi
-    opts=$(printf "$commands" | grep "$\{__COMP_WORDS}" | sed -n "s/^$\{__COMP_WORDS} //p")
+    opts=$(printf "$commands" | grep "\${__COMP_WORDS}" | sed -n "s/^\${__COMP_WORDS} //p")
   fi
   _get_comp_words_by_ref -n : cur
-  COMPREPLY=( $(compgen -W "$\{opts}" -- $\{cur}) )
+  COMPREPLY=( $(compgen -W "\${opts}" -- \${cur}) )
   __ltrim_colon_completions "$cur"
   return 0
 
@@ -279,32 +277,32 @@ complete -F _test-cli_autocomplete alias`)
 _test-cli_autocomplete()
 {
 
-  local cur="$\{COMP_WORDS[COMP_CWORD]}" opts IFS=$' \\t\\n'
+  local cur="\${COMP_WORDS[COMP_CWORD]}" opts IFS=$' \\t\\n'
   COMPREPLY=()
 
   local commands="
 autocomplete --refresh-cache
 deploy --api-version --ignore-errors --json --metadata
 deploy:functions --branch
-${'search '}
-${'app:execute:code '}
+search 
+app:execute:code 
 "
 
   if [[ "$cur" != "-"* ]]; then
     opts=$(printf "$commands" | grep -Eo '^[a-zA-Z0-9:_-]+')
   else
     local __COMP_WORDS
-    if [[ $\{COMP_WORDS[2]} == ":" ]]; then
+    if [[ \${COMP_WORDS[2]} == ":" ]]; then
       #subcommand
-      __COMP_WORDS=$(printf "%s" "$\{COMP_WORDS[@]:1:3}")
+      __COMP_WORDS=$(printf "%s" "\${COMP_WORDS[@]:1:3}")
     else
       #simple command
-      __COMP_WORDS="$\{COMP_WORDS[@]:1:1}"
+      __COMP_WORDS="\${COMP_WORDS[@]:1:1}"
     fi
-    opts=$(printf "$commands" | grep "$\{__COMP_WORDS}" | sed -n "s/^$\{__COMP_WORDS} //p")
+    opts=$(printf "$commands" | grep "\${__COMP_WORDS}" | sed -n "s/^\${__COMP_WORDS} //p")
   fi
   _get_comp_words_by_ref -n : cur
-  COMPREPLY=( $(compgen -W "$\{opts}" -- $\{cur}) )
+  COMPREPLY=( $(compgen -W "\${opts}" -- \${cur}) )
   __ltrim_colon_completions "$cur"
   return 0
 
