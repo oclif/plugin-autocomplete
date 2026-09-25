@@ -1,3 +1,9 @@
+## [4.0.2](https://github.com/oclif/plugin-autocomplete/compare/4.0.1...4.0.2) (2026-09-25)
+
+### Bug Fixes
+
+- **deps:** bump browserslist from 4.28.2 to 4.28.9 ([4b70f0e](https://github.com/oclif/plugin-autocomplete/commit/4b70f0ee2b1aa3bea92e8480da88c603a64dfa64))
+
 ## [4.0.1](https://github.com/oclif/plugin-autocomplete/compare/4.0.0...4.0.1) (2026-09-22)
 
 ### Bug Fixes
