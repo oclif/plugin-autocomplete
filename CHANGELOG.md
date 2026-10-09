@@ -1,3 +1,9 @@
+## [4.0.3](https://github.com/oclif/plugin-autocomplete/compare/4.0.2...4.0.3) (2026-10-09)
+
+### Bug Fixes
+
+- **deps:** bump @humanfs/node from 0.16.6 to 0.16.8 ([#1203](https://github.com/oclif/plugin-autocomplete/issues/1203)) ([03d99a5](https://github.com/oclif/plugin-autocomplete/commit/03d99a5aa6daeb27e665b77551ddbf049d775dd0))
+
 ## [4.0.2](https://github.com/oclif/plugin-autocomplete/compare/4.0.1...4.0.2) (2026-09-25)
 
 ### Bug Fixes
