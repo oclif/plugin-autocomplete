@@ -1,3 +1,9 @@
+## [4.0.4](https://github.com/oclif/plugin-autocomplete/compare/4.0.3...4.0.4) (2026-10-09)
+
+### Bug Fixes
+
+- **deps:** bump source-map-js from 1.2.1 to 1.2.2 ([#1207](https://github.com/oclif/plugin-autocomplete/issues/1207)) ([7f5758d](https://github.com/oclif/plugin-autocomplete/commit/7f5758dec62f04451245cd7feb47cc397e92cf54))
+
 ## [4.0.3](https://github.com/oclif/plugin-autocomplete/compare/4.0.2...4.0.3) (2026-10-09)
 
 ### Bug Fixes
