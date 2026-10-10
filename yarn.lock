@@ -2681,10 +2681,10 @@ eslint-compat-utils@^0.5.1:
   dependencies:
     semver "^7.5.4"
 
-eslint-config-oclif@^7.1.7:
-  version "7.1.7"
-  resolved "https://registry.yarnpkg.com/eslint-config-oclif/-/eslint-config-oclif-7.1.7.tgz#3eaee259e933735abe14512940accd9f6e0634e5"
-  integrity sha512-ByozqpcFAcWLTBCKJMGs9V8+GVDTOfv3CE5dTww3nn+ykPLk5a7nfPqM4vOZDT0idLTUsbUAVL0lW7inYsKcbw==
+eslint-config-oclif@^7.1.8:
+  version "7.1.8"
+  resolved "https://registry.yarnpkg.com/eslint-config-oclif/-/eslint-config-oclif-7.1.8.tgz#6e49496a074d7780ed336d17480e78b6ec6e0c65"
+  integrity sha512-jtukjD3hZjK/c7M5WI7XA02gfgPV8JGssYwQaBV2wnBxw+7luehnQyulGe3LfIaUtaUAqLR8ZJmzsd1IFqSoJA==
   dependencies:
     "@eslint/js" "^10.0.1"
     "@stylistic/eslint-plugin" "^5.10.0"
