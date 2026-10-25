@@ -15,7 +15,7 @@
     "@eslint/compat": "^1.4.1",
     "@oclif/plugin-help": "^6",
     "@oclif/prettier-config": "^0.2.2",
-    "@oclif/test": "^5.0.2",
+    "@oclif/test": "^5.0.3",
     "@types/chai": "^4",
     "@types/debug": "^4.1.13",
     "@types/ejs": "^3.1.5",
