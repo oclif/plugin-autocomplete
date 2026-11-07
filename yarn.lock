@@ -1227,10 +1227,10 @@
     wrap-ansi "^7.0.0"
     wsl-utils "^0.4.0"
 
-"@oclif/core@^5.1.9":
-  version "5.1.9"
-  resolved "https://registry.yarnpkg.com/@oclif/core/-/core-5.1.9.tgz#6781c6c08ffeb1bc308f5501f77904859b1d3103"
-  integrity sha512-jZfN6pxHkgDpHD0dk4nhtaUtYdK39oZoWJCfmkpp7CUE+6mUZSb3WDrdBHnxI5n6CJIiWBrLchM7rBvuV0lRSA==
+"@oclif/core@^5.1.11":
+  version "5.1.11"
+  resolved "https://registry.yarnpkg.com/@oclif/core/-/core-5.1.11.tgz#b4c416441639c263d76e8810956ba758bc2ebcfe"
+  integrity sha512-SIB9o3zofFA8CzjnCWbBWjdDNOKV7zYlKnDeE0V7+kHl89qzMPRNhrbAAh0+0HkUiVpiR6wIoL8yJI6QtoWsqg==
   dependencies:
     ansi-escapes "^4.3.2"
     ansis "^3.17.0"
