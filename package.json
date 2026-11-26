@@ -54,6 +54,7 @@
   "oclif": {
     "commands": "./lib/commands",
     "bin": "oclif-example",
+    "topicSeparator": " ",
     "devPlugins": [
       "@oclif/plugin-help"
     ],
